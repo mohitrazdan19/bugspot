@@ -1727,7 +1727,9 @@ function showShare() {
     body: '', share: text,
     buttons: [
       { label: 'Copy result', primary: true, fn: btn => copyText(text, btn) },
-      { label: 'Share as picture', fn: btn => shareImage(btn) },
+      signedIn()
+        ? { label: 'Share as picture', fn: btn => shareImage(btn) }
+        : { label: '🔒 Sign in to share as a picture', fn: () => { closeSheet(); showSignIn(); } },
       { label: 'Close', fn: closeSheet },
     ],
   });
