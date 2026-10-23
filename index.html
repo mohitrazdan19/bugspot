@@ -1,0 +1,1189 @@
+<!doctype html><html><head><meta charset=utf8><title>Bugspot: Daily Spot the Bug Game for QA Testers</title><meta name="description" content="A free daily bug puzzle for QA testers. Spot the bug on a fake app screen in three tries, then read the bug report."><meta property="og:title" content="Bugspot: Daily Spot the Bug Game for QA Testers"><meta property="og:description" content="One screen. One bug. Three tries. Can you spot it?"><meta property="og:type" content="website"><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* Layout concept: a tester's desk. A quiet bug-tracker chrome (ticket strip, mono ids,
+     severity pills) around one loud object, the phone showing the app under test.
+     Bug red is used only for bugs: brand mark, tries, found highlight. */
+  :root {
+    color-scheme: light;
+    --bg: #eceff6;
+    --surface: #ffffff;
+    --raise: #f4f6fb;
+    --ink: #101729;
+    --dim: #566078;
+    --line: #d7dce8;
+    --bug: #d6283a;
+    --ok: #0f7d58;
+    --ok-soft: #dcf4ea;
+    --focus: #2b59ff;
+    --p1: #d6283a; --p2: #c4640a; --p3: #2f64e0; --p4: #5d667c;
+    --on-sev: #ffffff;
+    --display: 'Bricolage Grotesque', system-ui, sans-serif;
+    --body: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --bg: #0d1222; --surface: #161d33; --raise: #1d2642; --ink: #eef1fb; --dim: #9ba5c2; --line: #2b3554;
+      --bug: #ff6673; --ok: #4fd7a6; --ok-soft: #14352c; --focus: #8aa4ff;
+      --p1: #ff6673; --p2: #ffa14a; --p3: #7ea6ff; --p4: #9aa4ba; --on-sev: #140c12;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #0d1222; --surface: #161d33; --raise: #1d2642; --ink: #eef1fb; --dim: #9ba5c2; --line: #2b3554;
+    --bug: #ff6673; --ok: #4fd7a6; --ok-soft: #14352c; --focus: #8aa4ff;
+    --p1: #ff6673; --p2: #ffa14a; --p3: #7ea6ff; --p4: #9aa4ba; --on-sev: #140c12;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 400 16px/1.5 var(--body);
+    padding-block: 12px 56px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    -webkit-tap-highlight-color: transparent;
+  }
+  button { font: inherit; color: inherit; border: 0; background: none; cursor: pointer; touch-action: manipulation; }
+  button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  #app { max-width: 520px; margin: 0 auto; }
+  h1, h2, p { margin: 0; }
+
+  .top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+  .brand { display: flex; align-items: center; gap: 8px; font: 800 27px/1 var(--display); letter-spacing: -0.4px; }
+  .brand svg { width: 30px; height: 30px; color: var(--bug); flex: none; }
+  .tabs { display: flex; background: var(--raise); border: 1px solid var(--line); border-radius: 999px; padding: 3px; flex: none; }
+  .tabs button { padding: 8px 14px; border-radius: 999px; font: 600 14px/1 var(--body); color: var(--dim); }
+  .tabs button[aria-selected="true"] { background: var(--ink); color: var(--bg); }
+
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 18px; }
+  .eyebrow { font: 500 12px/1.2 var(--mono); letter-spacing: 1px; text-transform: uppercase; color: var(--dim); }
+  .hero h1 { font: 800 clamp(29px, 8.4vw, 38px)/1.04 var(--display); letter-spacing: -0.6px; text-wrap: balance; margin: 10px 0 10px; }
+  .lede { color: var(--dim); max-width: 44ch; }
+  .stack { display: grid; gap: 10px; }
+  .btn-p { background: var(--ink); color: var(--bg); border-radius: 14px; min-height: 52px; padding: 0 20px; font: 700 17px/1 var(--display); width: 100%; }
+  .btn-s { border: 1.5px solid var(--line); border-radius: 14px; min-height: 48px; padding: 0 18px; font: 600 16px/1 var(--body); width: 100%; background: var(--surface); }
+  .meta { font: 500 13px/1.3 var(--mono); color: var(--dim); }
+  .meta b { color: var(--ink); }
+  .how { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
+  .how div { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px; font-size: 13px; color: var(--dim); line-height: 1.35; }
+  .how b { display: block; font: 600 12px/1 var(--mono); letter-spacing: 1px; text-transform: uppercase; color: var(--ink); margin-bottom: 6px; }
+
+  .sevpill { display: inline-block; font: 600 12px/1 var(--mono); padding: 5px 8px; border-radius: 6px; background: var(--p4); color: var(--on-sev); letter-spacing: 0.4px; }
+  .sevpill[data-sev="P1"] { background: var(--p1); } .sevpill[data-sev="P2"] { background: var(--p2); }
+  .sevpill[data-sev="P3"] { background: var(--p3); } .sevpill[data-sev="P4"] { background: var(--p4); }
+  .sqs { display: flex; gap: 6px; margin: 4px 0 2px; }
+  .sq { width: 26px; height: 26px; border-radius: 7px; background: var(--bug); }
+  .sq.g { background: var(--ok); }
+  .res { font: 800 30px/1.05 var(--display); letter-spacing: -0.4px; margin: 8px 0 4px; text-wrap: balance; }
+  .rt { color: var(--dim); font-size: 15px; }
+
+  .sumrow { display: flex; justify-content: space-between; align-items: baseline; margin: 18px 0 10px; }
+  .sumrow h2 { font: 700 18px/1.2 var(--display); }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .tile { text-align: left; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px; display: grid; gap: 4px; align-content: start; min-height: 98px; }
+  .tile .n { font: 500 12px/1 var(--mono); color: var(--dim); }
+  .tile .a { font: 700 15px/1.2 var(--display); }
+  .tile .d { font-size: 12px; color: var(--dim); }
+  .tile .st { font-size: 15px; letter-spacing: 2px; color: var(--p2); margin-top: 2px; }
+  .tile .st i { font-style: normal; color: var(--line); }
+  .tile.done { background: var(--raise); }
+
+  .playbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+  .link { font: 600 15px/1 var(--body); color: var(--ink); padding: 10px 0; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--line); }
+  .ptitle { font: 700 17px/1.2 var(--display); text-align: center; }
+  .tries { display: flex; gap: 3px; }
+  .tries svg { width: 26px; height: 26px; color: var(--bug); }
+  .tries svg.off { color: var(--line); }
+  .ticket { display: flex; align-items: center; gap: 8px 10px; flex-wrap: wrap; padding: 10px 12px; background: var(--surface); border: 1px dashed var(--line); border-radius: 12px; font-size: 14px; }
+  .tid { font: 600 12px/1 var(--mono); background: var(--raise); padding: 5px 7px; border-radius: 6px; }
+  .ticket .grow { flex: 1 1 160px; min-width: 0; }
+
+  .phone { width: min(100%, 346px); margin: 14px auto 0; background: #0a0e18; border-radius: 40px; padding: 10px; position: relative; box-shadow: 0 18px 40px rgba(10, 16, 40, 0.28); }
+  .phone.shake { animation: shake 0.32s; }
+  @keyframes shake { 20% { transform: translateX(-6px); } 45% { transform: translateX(6px); } 70% { transform: translateX(-3px); } 100% { transform: none; } }
+  .screen { position: relative; overflow: hidden; background: #fff; color: #1b2030; border-radius: 31px; min-height: 440px; cursor: crosshair;
+    font: 400 14px/1.4 Roboto, 'Segoe UI', system-ui, sans-serif; -webkit-user-select: none; user-select: none; }
+  .screen::before { content: ""; position: absolute; top: 8px; left: 50%; width: 74px; height: 6px; margin-left: -37px; border-radius: 3px; background: #0a0e18; opacity: 0.9; }
+  .screen *, .screen *::before, .screen *::after { box-sizing: border-box; }
+  .sb { display: flex; justify-content: space-between; padding: 22px 22px 4px; font-size: 12px; font-weight: 600; }
+  .ab { display: flex; align-items: center; gap: 10px; padding: 8px 18px; font-size: 18px; font-weight: 700; }
+  .logo { width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; color: #fff; font-weight: 800; font-size: 15px; background: var(--ac); flex: none; }
+  .pad { padding: 6px 18px 22px; display: grid; gap: 12px; }
+  .card2, .screen .card { border: 1px solid #e6e9f0; border-radius: 14px; padding: 4px 14px; background: #fff; }
+  .screen .row { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid #eef0f5; }
+  .screen .row:last-child { border-bottom: 0; }
+  .screen .m { color: #6a7285; } .screen .s { font-size: 12px; } .screen .b { font-weight: 700; }
+  .screen .btn { background: var(--ac); color: #fff; text-align: center; border-radius: 12px; padding: 12px; font-weight: 700; }
+  .screen .btn.o { background: #fff; color: var(--ac); border: 1.5px solid var(--ac); }
+  .screen .fld { border: 1.5px solid #d3d8e3; border-radius: 10px; padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; background: #fff; gap: 8px; }
+  .screen .fl { font-size: 12px; color: #6a7285; margin: 0 0 4px 2px; }
+  .screen .tick { color: #12935f; font-weight: 600; }
+  .screen .chip { display: inline-block; padding: 2px 10px; border-radius: 999px; background: #e9f6ee; color: #0e7a4c; font-size: 12px; font-weight: 600; }
+  .screen .bar { height: 9px; border-radius: 5px; background: #e7e9f0; overflow: hidden; }
+  .screen .bar i { display: block; height: 100%; background: var(--ac); }
+  .screen .tab { display: flex; justify-content: space-around; border-top: 1px solid #eceef4; padding: 12px 0; font-size: 12px; color: #6a7285; margin-top: 6px; }
+  .screen span[data-bug] { display: inline-block; padding: 12px 10px; margin: -12px -10px; }
+  .screen .ab span[data-bug] { margin-right: 0; }
+  .screen .hi { font-size: 22px; font-weight: 800; line-height: 1.2; }
+  .screen i.dotp { width: 26px; height: 6px; border-radius: 3px; background: #e1e4ec; display: block; }
+  .screen i.dotp.on { background: var(--ac); }
+  .screen .tl { display: flex; gap: 12px; align-items: center; padding: 9px 0; }
+  .screen .tl i { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-size: 13px; flex: none; }
+  .screen .tl i.dn { background: #16a34a; color: #fff; }
+  .screen .tl i.pn { border: 2px solid #c8ccd8; background: #fff; }
+  .screen .img { height: 140px; border-radius: 14px; background: linear-gradient(135deg, var(--ac), #f6c7b9); opacity: 0.88; }
+
+  .screen [data-bug].found { outline: 3px solid #e5303f; outline-offset: 3px; border-radius: 10px; box-shadow: 0 0 0 8px rgba(229, 48, 63, 0.18); animation: ring 1.1s ease-in-out infinite; }
+  @keyframes ring { 50% { box-shadow: 0 0 0 12px rgba(229, 48, 63, 0.06); } }
+  .miss { position: absolute; width: 28px; height: 28px; margin: -14px 0 0 -14px; border-radius: 50%; border: 2px solid #e5303f; color: #e5303f; background: rgba(255, 255, 255, 0.88);
+    display: grid; place-items: center; font: 700 15px/1 system-ui, sans-serif; pointer-events: none; animation: missfade 0.8s forwards; z-index: 5; }
+  @keyframes missfade { 0% { transform: scale(0.6); opacity: 1; } 100% { transform: scale(1.3); opacity: 0; } }
+
+  .after { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+
+  .sheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; max-height: 82vh; overflow-y: auto; background: var(--surface); border-top: 1px solid var(--line);
+    border-radius: 24px 24px 0 0; box-shadow: 0 -24px 60px rgba(8, 12, 30, 0.35);
+    padding: 16px max(16px, env(safe-area-inset-right, 0px)) calc(18px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+    transform: translateY(105%); transition: transform 0.36s cubic-bezier(0.2, 0.9, 0.25, 1); }
+  .sheet.show { transform: none; }
+  .sheet-in { max-width: 520px; margin: 0 auto; display: grid; gap: 12px; }
+  .shtop { display: flex; align-items: center; gap: 10px; }
+  .shtop .mono { font: 500 13px/1 var(--mono); color: var(--dim); flex: 1; }
+  .x { width: 40px; height: 40px; border-radius: 12px; border: 1px solid var(--line); font-size: 16px; line-height: 1; }
+  .status { font: 600 13px/1.3 var(--mono); }
+  .status.ok { color: var(--ok); } .status.no { color: var(--bug); }
+  .sheet h2 { font: 800 24px/1.15 var(--display); letter-spacing: -0.3px; text-wrap: balance; }
+  .rep { display: grid; gap: 12px; font-size: 15px; }
+  .rep h3 { margin: 0 0 4px; font: 600 12px/1 var(--mono); letter-spacing: 1px; text-transform: uppercase; color: var(--dim); }
+  .rep ol { margin: 0; padding-left: 20px; display: grid; gap: 2px; }
+  .ea { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .ea > div { background: var(--raise); border-radius: 12px; padding: 10px 12px; }
+  .ea p { font-size: 14px; line-height: 1.4; min-width: 0; overflow-wrap: anywhere; }
+  .tip { background: var(--ok-soft); border-radius: 12px; padding: 10px 12px; font-size: 14px; }
+  .tip b { font-family: var(--mono); font-size: 12px; letter-spacing: 1px; text-transform: uppercase; display: block; margin-bottom: 4px; color: var(--ok); }
+  .btns { display: grid; gap: 10px; }
+  .sharebox { margin: 0; padding: 10px 12px; border-radius: 12px; background: var(--raise); font: 500 14px/1.5 var(--mono); white-space: pre-wrap; -webkit-user-select: text; user-select: text; }
+
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  @media (max-width: 380px) { .ea { grid-template-columns: 1fr; } .brand { font-size: 23px; } }
+  @media (prefers-reduced-motion: reduce) { .sheet { transition: none; } .phone.shake, .screen [data-bug].found { animation: none; } }
+</style>
+
+<div id="app">
+  <header class="top">
+    <div class="brand"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 8.2c-2.6 0-4.4 1.9-4.4 4.6S9.4 19 12 19s4.4-3.6 4.4-6.2S14.6 8.2 12 8.2Z"/><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M12 8.2V19M9.3 6.4a2.7 2.7 0 0 1 5.4 0M7.6 12.3 4 10.6M16.4 12.3 20 10.6M8 16.4l-3.4 1.6M16 16.4l3.4 1.6"/></svg>Bugspot</div>
+    <nav class="tabs" aria-label="Mode">
+      <button id="tabDaily" type="button" aria-selected="true">Daily</button>
+      <button id="tabPractice" type="button" aria-selected="false">Practice</button>
+    </nav>
+  </header>
+  <main id="view"></main>
+
+  <div id="sheet" class="sheet" role="dialog" aria-modal="false" aria-labelledby="shT" hidden>
+    <div class="sheet-in">
+      <div class="shtop"><span id="shSev" class="sevpill">P3</span><span id="shId" class="mono"></span><button id="shClose" class="x" type="button" aria-label="Close report">✕</button></div>
+      <p id="shStatus" class="status"></p>
+      <h2 id="shT"></h2>
+      <div id="shBody" class="rep"></div>
+      <pre id="shShare" class="sharebox" hidden></pre>
+      <div id="shBtns" class="btns"></div>
+    </div>
+  </div>
+  <div id="live" class="sr" aria-live="polite"></div>
+</div>
+
+<script>
+// Each puzzle is a fake app screen with exactly one planted bug.
+// The planted bug is whatever element carries the data-bug attribute.
+const SB = '<div class="sb"><span>9:41</span><span>5G ▂▄▆ 82%</span></div>';
+
+const PUZZLES = [
+  {
+    id: 'greeting', area: 'Home', sev: 'P3', diff: 'Easy', ac: '#c25b1f',
+    hint: 'Start at the top and read every word.',
+    html: SB + `
+<div class="ab"><span class="logo">C</span>ChaiBox</div>
+<div class="pad">
+  <div><div class="hi" data-bug>Welcome back, undefined 👋</div><div class="m s" style="margin-top:4px">Your next box ships on Friday</div></div>
+  <div class="card">
+    <div class="row"><div><div class="b">Masala Classic</div><div class="m s">Delivery · 25 Oct</div></div><span class="chip">Active</span></div>
+    <div class="row"><div><div class="b">Ginger Boost</div><div class="m s">Delivery · paused</div></div><span class="m s">Paused</span></div>
+  </div>
+  <div class="btn">Skip next delivery</div>
+  <div class="btn o">Manage subscription</div>
+</div>
+<div class="tab"><span>Home</span><span>Orders</span><span>Account</span></div>`,
+    rep: {
+      title: 'Greeting shows “undefined” instead of the customer’s name',
+      steps: ['Sign in with an account that has no first name saved', 'Open the Home tab'],
+      expected: 'Welcome back, Riya (or a plain “Welcome back” if the name is missing)',
+      actual: 'Welcome back, undefined',
+      tip: 'Raw words like undefined, null and NaN leak onto screens when data is missing. Always test accounts with empty profiles.',
+    },
+  },
+  {
+    id: 'cta-typo', area: 'Sign in', sev: 'P4', diff: 'Easy', ac: '#2563eb',
+    hint: 'Read the words on the buttons.',
+    html: SB + `
+<div class="ab"><span class="logo">P</span>PayWise</div>
+<div class="pad">
+  <div class="hi">Sign in to continue</div>
+  <div><div class="fl">Email</div><div class="fld">riya.sharma@mail.com</div></div>
+  <div><div class="fl">Password</div><div class="fld"><span>••••••••••</span><span class="m s">Show</span></div></div>
+  <div class="btn" data-bug>Sing in</div>
+  <div class="s" style="text-align:center;color:var(--ac);font-weight:600">Forgot password?</div>
+  <div class="s m" style="text-align:center">New here? Create an account</div>
+</div>`,
+    rep: {
+      title: 'Typo on the main button: “Sing in”',
+      steps: ['Open the app while signed out', 'Read the primary button on the sign-in screen'],
+      expected: 'Sign in',
+      actual: 'Sing in',
+      tip: 'Every user sees the primary button. Proofread visible text as carefully as code, and check translated versions too.',
+    },
+  },
+  {
+    id: 'pagination', area: 'Search', sev: 'P3', diff: 'Easy', ac: '#0f9d8a',
+    hint: 'Check the numbers at the bottom of the list.',
+    html: SB + `
+<div class="ab"><span class="logo">S</span>ShopNest</div>
+<div class="pad">
+  <div class="fld"><span>earbuds</span><span class="m s">Clear</span></div>
+  <div class="card">
+    <div class="row"><span>Wireless earbuds Pro</span><span class="b">₹1,499</span></div>
+    <div class="row"><span>Earbuds case, silicone</span><span class="b">₹199</span></div>
+    <div class="row"><span>Earbuds with mic</span><span class="b">₹799</span></div>
+    <div class="row"><span>Sport earbuds, red</span><span class="b">₹999</span></div>
+  </div>
+  <div data-bug class="s m" style="text-align:center;padding:12px 6px">Showing 21–20 of 45 results</div>
+  <div style="display:flex;gap:10px"><div class="btn o" style="flex:1">‹ Prev</div><div class="btn" style="flex:1">Next ›</div></div>
+</div>`,
+    rep: {
+      title: 'Result range reads “21–20 of 45”',
+      steps: ['Search for “earbuds”', 'Go to page 3 of the results'],
+      expected: 'Showing 21–30 of 45 results',
+      actual: 'Showing 21–20 of 45 results',
+      tip: 'Counts and ranges break at boundaries. Test the first page, the last page, and a page with fewer items than the page size.',
+    },
+  },
+  {
+    id: 'cart-total', area: 'Cart', sev: 'P1', diff: 'Medium', ac: '#16a34a',
+    hint: 'Do the sums yourself.',
+    html: SB + `
+<div class="ab"><span class="logo">G</span>GreenGrocer · Cart</div>
+<div class="pad">
+  <div class="card">
+    <div class="row"><div><div class="b">Basmati rice</div><div class="m s">5 kg</div></div><span>₹620</span></div>
+    <div class="row"><div><div class="b">Toor dal</div><div class="m s">1 kg</div></div><span>₹165</span></div>
+    <div class="row"><div><div class="b">Cow ghee</div><div class="m s">500 ml</div></div><span>₹340</span></div>
+  </div>
+  <div class="card">
+    <div class="row"><span class="m">Subtotal</span><span>₹1,125</span></div>
+    <div class="row"><span class="m">Delivery</span><span>₹40</span></div>
+    <div class="row" data-bug><span class="b">Total</span><span class="b">₹1,065</span></div>
+  </div>
+  <div class="btn">Place order</div>
+</div>`,
+    rep: {
+      title: 'Order total is ₹100 lower than the items plus delivery',
+      steps: ['Add rice, dal and ghee to the cart', 'Open the cart and compare the totals'],
+      expected: '₹1,165 (₹1,125 + ₹40)',
+      actual: '₹1,065',
+      tip: 'Money bugs are always high severity. Add the numbers up yourself, every time.',
+    },
+  },
+  {
+    id: 'password-plain', area: 'Sign up', sev: 'P1', diff: 'Medium', ac: '#6d28d9',
+    hint: 'Compare the two password fields.',
+    html: SB + `
+<div class="ab"><span class="logo">N</span>NoteNest</div>
+<div class="pad">
+  <div class="hi">Create your account</div>
+  <div><div class="fl">Full name</div><div class="fld">Riya Sharma</div></div>
+  <div><div class="fl">Password</div><div class="fld" data-bug><span>MyPass@123</span><span class="m s">🔒 Show</span></div><div class="s tick" style="margin:4px 0 0 2px">Strong password</div></div>
+  <div><div class="fl">Confirm password</div><div class="fld"><span>••••••••••</span><span class="m s">🔒 Show</span></div></div>
+  <div class="btn">Create account</div>
+</div>`,
+    rep: {
+      title: 'Password is visible on screen while the field says it is hidden',
+      steps: ['Open Create account', 'Type a password and look at the field'],
+      expected: 'Masked characters such as ••••••••••',
+      actual: 'The password is shown as plain text: MyPass@123',
+      tip: 'Security bugs often look harmless. Check masking, copy and paste, screenshots, logs and URLs.',
+    },
+  },
+  {
+    id: 'age-250', area: 'Profile', sev: 'P2', diff: 'Medium', ac: '#0284c7',
+    hint: 'Is every value believable?',
+    html: SB + `
+<div class="ab"><span class="logo">F</span>FitTrail</div>
+<div class="pad">
+  <div class="hi">Tell us about you</div>
+  <div><div class="fl">Name</div><div class="fld"><span>Aman</span><span class="tick">✓</span></div></div>
+  <div><div class="fl">Age</div><div class="fld" data-bug><span>250</span><span class="tick">✓ Looks good!</span></div></div>
+  <div><div class="fl">City</div><div class="fld"><span>Pune</span><span class="tick">✓</span></div></div>
+  <div class="btn">Continue</div>
+</div>`,
+    rep: {
+      title: 'Age field accepts 250 and marks it valid',
+      steps: ['Open Profile setup', 'Type 250 in the Age field'],
+      expected: 'A message such as “Enter an age between 13 and 100”',
+      actual: 'A green tick and “Looks good!”',
+      tip: 'Use boundary values: one below the minimum, the minimum, the maximum and one above it.',
+    },
+  },
+  {
+    id: 'dates', area: 'Travel', sev: 'P2', diff: 'Medium', ac: '#d97706',
+    hint: 'Read the dates in order.',
+    html: SB + `
+<div class="ab"><span class="logo">S</span>StayEasy</div>
+<div class="pad">
+  <div class="hi">Find a hotel</div>
+  <div><div class="fl">Where</div><div class="fld">Goa</div></div>
+  <div style="display:flex;gap:10px">
+    <div style="flex:1"><div class="fl">Check-in</div><div class="fld">Sat, 24 Oct</div></div>
+    <div style="flex:1"><div class="fl">Check-out</div><div class="fld" data-bug>Wed, 21 Oct</div></div>
+  </div>
+  <div class="m s" style="margin-left:2px">3 nights · 2 adults</div>
+  <div class="btn">Search hotels</div>
+</div>`,
+    rep: {
+      title: 'Check-out date is before the check-in date',
+      steps: ['Choose check-in Sat 24 Oct', 'Choose check-out Wed 21 Oct', 'Tap Search hotels'],
+      expected: 'The earlier check-out date is blocked, or an error is shown',
+      actual: 'Search is allowed and the screen says “3 nights”',
+      tip: 'Test date pairs: reversed, the same day, across a month or year end, and across time zones.',
+    },
+  },
+  {
+    id: 'neg-qty', area: 'Cart', sev: 'P2', diff: 'Medium', ac: '#db2777',
+    hint: 'Can you buy minus one of something?',
+    html: SB + `
+<div class="ab"><span class="logo">D</span>Deskmate · Cart</div>
+<div class="pad">
+  <div class="card">
+    <div class="row" data-bug><div><div class="b">Spiral notebook A5</div><div class="m s">₹149 each</div></div><div style="text-align:right"><div class="fld" style="padding:4px 12px;display:inline-flex;gap:14px"><span>−</span><b>-1</b><span>+</span></div><div class="b s" style="margin-top:3px">−₹149</div></div></div>
+    <div class="row"><div><div class="b">Gel pens, pack of 5</div><div class="m s">₹95 each</div></div><div style="text-align:right"><div class="fld" style="padding:4px 12px;display:inline-flex;gap:14px"><span>−</span><b>2</b><span>+</span></div><div class="b s" style="margin-top:3px">₹190</div></div></div>
+  </div>
+  <div class="row"><span class="b">Total</span><span class="b">₹41</span></div>
+  <div class="btn">Checkout</div>
+</div>`,
+    rep: {
+      title: 'Cart accepts quantity -1 and lowers the total',
+      steps: ['Add a notebook to the cart', 'Tap − until the quantity goes below 1'],
+      expected: 'Quantity stops at 1, or the app offers to remove the item',
+      actual: 'Quantity shows -1 with a price of −₹149',
+      tip: 'Try zero, negative and very large quantities. Business rules live at the edges.',
+    },
+  },
+  {
+    id: 'zero-results', area: 'Search', sev: 'P3', diff: 'Medium', ac: '#2563eb',
+    hint: 'Do the heading and the list agree?',
+    html: SB + `
+<div class="ab"><span class="logo">T</span>TeaTrove</div>
+<div class="pad">
+  <div class="fld"><span>chai</span><span class="m s">Clear</span></div>
+  <div data-bug style="display:grid;gap:10px">
+    <div class="b" style="font-size:16px">0 results for “chai”</div>
+    <div class="card">
+      <div class="row"><span>Masala chai, 250 g</span><span class="b">₹180</span></div>
+      <div class="row"><span>Ginger chai, 250 g</span><span class="b">₹210</span></div>
+      <div class="row"><span>Chai cup set, 4 pcs</span><span class="b">₹399</span></div>
+    </div>
+  </div>
+  <div class="m s" style="text-align:center">Sort · Filter</div>
+</div>`,
+    rep: {
+      title: 'Search says “0 results” but lists three products',
+      steps: ['Search for “chai”', 'Compare the heading with the list underneath'],
+      expected: '3 results for “chai”',
+      actual: '“0 results for chai” with three products shown below',
+      tip: 'When two parts of a screen disagree, find where each gets its data. One is usually stale or from a different request.',
+    },
+  },
+  {
+    id: 'progress', area: 'Onboarding', sev: 'P3', diff: 'Medium', ac: '#7c3aed',
+    hint: 'Compare the words with the picture.',
+    html: SB + `
+<div class="ab"><span class="logo">L</span>LingoLeap</div>
+<div class="pad">
+  <div style="display:flex;gap:6px"><i class="dotp on"></i><i class="dotp on"></i><i class="dotp"></i><i class="dotp"></i><i class="dotp"></i></div>
+  <div class="m s">Step 2 of 5</div>
+  <div class="hi">Pick what you want to learn</div>
+  <div data-bug style="display:grid;gap:6px;padding:8px 0"><div class="s b">40% complete</div><div class="bar"><i style="width:80%"></i></div></div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap"><span class="chip">Hindi</span><span class="chip">Tamil</span><span class="chip">Bengali</span><span class="chip">Marathi</span></div>
+  <div class="btn">Continue</div>
+</div>`,
+    rep: {
+      title: 'Progress bar shows about 80% while the label says 40%',
+      steps: ['Start onboarding', 'Reach step 2 of 5'],
+      expected: 'Bar filled to 40%',
+      actual: 'Bar filled to about 80%',
+      tip: 'Visuals and text can come from different code. Compare what you see with what is written.',
+    },
+  },
+  {
+    id: 'phone-letters', area: 'Forms', sev: 'P3', diff: 'Hard', ac: '#0891b2',
+    hint: 'Look at what the phone field accepted.',
+    html: SB + `
+<div class="ab"><span class="logo">K</span>Kisan Connect</div>
+<div class="pad">
+  <div class="hi">Contact details</div>
+  <div><div class="fl">Name</div><div class="fld"><span>Riya Sharma</span><span class="tick">✓</span></div></div>
+  <div><div class="fl">Mobile number</div><div class="fld" data-bug><span>98ABC-xy123</span><span class="tick">✓ Valid number</span></div></div>
+  <div><div class="fl">Email</div><div class="fld"><span>riya@mail.com</span><span class="tick">✓</span></div></div>
+  <div class="btn">Save</div>
+</div>`,
+    rep: {
+      title: 'Phone field accepts letters and shows “Valid number”',
+      steps: ['Open Contact details', 'Enter 98ABC-xy123 as the mobile number'],
+      expected: 'An error asking for a valid mobile number',
+      actual: '“Valid number” with a green tick',
+      tip: 'For every input, try letters, symbols, spaces, too short, too long and pasted text.',
+    },
+  },
+  {
+    id: 'currency', area: 'Checkout', sev: 'P3', diff: 'Hard', ac: '#4f46e5',
+    hint: 'Look at the symbol next to each price.',
+    html: SB + `
+<div class="ab"><span class="logo">M</span>MugShop · Summary</div>
+<div class="pad">
+  <div class="card">
+    <div class="row"><div><div class="b">Tea sampler</div><div class="m s">Qty 1</div></div><span>₹349</span></div>
+    <div class="row"><div><div class="b">Ceramic mug</div><div class="m s">Qty 1</div></div><span>₹249</span></div>
+  </div>
+  <div class="card">
+    <div class="row"><span class="m">Subtotal</span><span>₹598</span></div>
+    <div class="row" data-bug><span class="m">Delivery</span><span>$49</span></div>
+    <div class="row"><span class="b">Total</span><span class="b">₹647</span></div>
+  </div>
+  <div class="btn">Pay ₹647</div>
+</div>`,
+    rep: {
+      title: 'Delivery fee shown in dollars on a rupee order',
+      steps: ['Add two items to the cart', 'Open the order summary'],
+      expected: 'Delivery ₹49',
+      actual: 'Delivery $49, while the total adds it as ₹647',
+      tip: 'Check every currency symbol, decimal format and rounding, especially after a localisation change.',
+    },
+  },
+  {
+    id: 'tracker', area: 'Tracking', sev: 'P3', diff: 'Hard', ac: '#16a34a',
+    hint: 'Is that order of events possible?',
+    html: SB + `
+<div class="ab"><span class="logo">D</span>DeliverIt · Track order</div>
+<div class="pad">
+  <div class="card">
+    <div class="tl"><i class="dn">✓</i><div><div class="b">Order placed</div><div class="m s">22 Oct, 10:02</div></div></div>
+    <div class="tl" data-bug><i class="pn"></i><div><div class="b">Packed</div><div class="m s">&nbsp;</div></div></div>
+    <div class="tl"><i class="dn">✓</i><div><div class="b">Shipped</div><div class="m s">22 Oct, 14:30</div></div></div>
+    <div class="tl"><i class="dn">✓</i><div><div class="b">Out for delivery</div><div class="m s">23 Oct, 08:10</div></div></div>
+    <div class="tl"><i class="dn">✓</i><div><div class="b">Delivered</div><div class="m s">23 Oct, 12:45</div></div></div>
+  </div>
+  <div class="btn o">Need help with this order?</div>
+</div>`,
+    rep: {
+      title: '“Packed” step is empty although Shipped and Delivered are done',
+      steps: ['Place an order', 'Open Track order after it is delivered'],
+      expected: 'Every step complete, in order, each with a time',
+      actual: '“Packed” is still pending while later steps are complete',
+      tip: 'Status flows are state machines. Test skipped, repeated and out-of-order states.',
+    },
+  },
+  {
+    id: 'discount', area: 'Offers', sev: 'P2', diff: 'Hard', ac: '#dc2626',
+    hint: 'Check the discount maths.',
+    html: SB + `
+<div class="ab"><span class="logo">W</span>WearWell</div>
+<div class="pad">
+  <div class="img"></div>
+  <div style="display:flex;justify-content:space-between;align-items:center"><div class="b" style="font-size:17px">Cotton kurta</div><span class="chip" style="background:#fde8ea;color:#b4232f">15% OFF</span></div>
+  <div class="card">
+    <div class="row"><span class="m">Price</span><span style="text-decoration:line-through" class="m">₹1,200</span></div>
+    <div class="row"><span class="m">You save</span><span class="tick">₹180</span></div>
+    <div class="row" data-bug><span class="b">You pay</span><span class="b">₹1,080</span></div>
+  </div>
+  <div class="btn">Buy now</div>
+</div>`,
+    rep: {
+      title: '“You pay” does not match the 15% discount',
+      steps: ['Open the cotton kurta offer', 'Compare the price, the saving and “You pay”'],
+      expected: '₹1,020 (₹1,200 minus ₹180)',
+      actual: '₹1,080',
+      tip: 'Work out every percentage by hand. Wrong base values and rounding are classic discount bugs.',
+    },
+  },
+  {
+    id: 'overlap', area: 'Product', sev: 'P3', diff: 'Hard', ac: '#0d9488',
+    hint: 'Look closely at where things sit.',
+    html: SB + `
+<div class="ab"><span class="logo">H</span>HomeHaat</div>
+<div class="pad">
+  <div class="img" style="height:120px"></div>
+  <div class="b" style="font-size:17px">Handloom cushion cover</div>
+  <div class="m s">★ 4.4 · 1,203 ratings</div>
+  <div data-bug style="position:relative;height:46px">
+    <span style="font-size:24px;font-weight:800">₹1,299</span>
+    <span class="m s" style="text-decoration:line-through;margin-left:6px">₹1,799</span>
+    <div class="btn" style="position:absolute;left:62px;top:4px;width:170px;padding:9px 12px;box-shadow:0 2px 8px rgba(0,0,0,.18)">Add to cart</div>
+  </div>
+  <div class="card"><div class="row"><span class="m">Delivery</span><span>Free · 3 days</span></div><div class="row"><span class="m">Returns</span><span>7 days</span></div></div>
+</div>`,
+    rep: {
+      title: 'The “Add to cart” button covers the price',
+      steps: ['Open the product on a small phone', 'Look at the price row'],
+      expected: 'Price and button sit apart and are fully readable',
+      actual: 'The button is drawn on top of the price',
+      tip: 'Layout bugs show up on small screens, large text sizes and other languages. Test on real devices.',
+    },
+  },
+];
+
+// Batch 2: API, mobile, security, data and accessibility bugs.
+PUZZLES.push(
+  {
+    id: 'api-200', area: 'API log', sev: 'P2', diff: 'Medium', ac: '#475569',
+    hint: 'A status code is only half of the story. Read the body.',
+    html: SB + `
+<div class="ab"><span class="logo">N</span>Network log</div>
+<div class="pad">
+  <div class="card">
+    <div class="row"><div><div class="b">POST /login</div><div class="m s">200 OK · {"token":"eyJhb…"}</div></div></div>
+    <div class="row"><div data-bug><div class="b">GET /orders/8841</div><div class="m s">200 OK · {"error":"Order not found"}</div></div></div>
+    <div class="row"><div><div class="b">GET /profile</div><div class="m s">200 OK · {"name":"Riya"}</div></div></div>
+    <div class="row"><div><div class="b">GET /offers</div><div class="m s">200 OK · {"items":[…12]}</div></div></div>
+  </div>
+  <div class="m s">Tap a request to see its response</div>
+</div>`,
+    rep: {
+      title: 'Orders API returns 200 OK with an error message in the body',
+      steps: ['Request an order ID that does not exist', 'Check the HTTP status and the response body'],
+      expected: '404 Not Found with an error body',
+      actual: '200 OK with {"error":"Order not found"}',
+      tip: 'Always assert status code and body together. Clients that trust a 200 will treat a failure as success.',
+    },
+  },
+  {
+    id: 'otp-shown', area: 'Verify', sev: 'P1', diff: 'Medium', ac: '#7c3aed',
+    hint: 'A secret code should reach you by SMS, not on the page.',
+    html: SB + `
+<div class="ab"><span class="logo">B</span>BankEasy</div>
+<div class="pad">
+  <div class="hi">Verify your number</div>
+  <div class="m s">We sent a 6-digit code to +91 98•••••210</div>
+  <div class="fld"><span>4 8 2 9 1 3</span><span class="m s">Paste</span></div>
+  <div data-bug class="chip" style="background:#fff3cd;color:#7a5b00;padding:8px 12px;border-radius:10px">Debug: your OTP is 482913</div>
+  <div class="btn">Verify</div>
+  <div class="s m" style="text-align:center">Resend code in 00:24</div>
+</div>`,
+    rep: {
+      title: 'One-time password is shown on the verification screen',
+      steps: ['Enter a phone number and request an OTP', 'Look at the verification screen'],
+      expected: 'The OTP appears only in the SMS',
+      actual: 'The OTP is printed on the screen (leftover debug message)',
+      tip: 'Debug text that ships to production is a security bug. Check test builds for leftover logs and banners.',
+    },
+  },
+  {
+    id: 'pass-url', area: 'Browser', sev: 'P1', diff: 'Medium', ac: '#dc2626',
+    hint: 'Look at the web address.',
+    html: SB + `
+<div class="pad" style="padding-top:10px">
+  <div class="fld" style="border-radius:999px"><span class="s">🔒</span><span data-bug class="s" style="flex:1;overflow-wrap:anywhere">shopzone.in/login?user=riya&amp;password=Riya@123</span></div>
+  <div class="hi" style="margin-top:12px">Welcome back</div>
+  <div><div class="fl">Email</div><div class="fld">riya@mail.com</div></div>
+  <div><div class="fl">Password</div><div class="fld">••••••••</div></div>
+  <div class="btn">Log in</div>
+</div>`,
+    rep: {
+      title: 'Password is sent in the URL query string',
+      steps: ['Log in with any account', 'Read the address bar after submitting'],
+      expected: 'Credentials go in the request body over HTTPS, never in the URL',
+      actual: 'The URL contains user and password in plain text',
+      tip: 'URLs end up in history, logs and referrer headers. Anything secret in a URL is a leak.',
+    },
+  },
+  {
+    id: 'keyboard', area: 'Checkout', sev: 'P2', diff: 'Medium', ac: '#0891b2',
+    hint: 'Imagine typing in the last box.',
+    html: SB + `
+<div class="ab"><span class="logo">Z</span>ZapPay</div>
+<div class="pad" style="gap:8px">
+  <div class="hi" style="font-size:18px">Enter card details</div>
+  <div class="fld">4111 1111 1111 1111</div>
+  <div class="fld"><span>08/29</span><span class="m s">CVV</span></div>
+  <div class="fld" style="border-color:var(--ac)"><span>Riya Sharma|</span></div>
+  <div data-bug style="position:relative;height:120px;margin:4px -14px -14px;background:#cfd3dc;border-radius:12px 12px 0 0;display:grid;place-items:center;color:#4b5263;font-size:13px">
+    <span>keyboard</span>
+    <div class="btn" style="position:absolute;top:-150px;left:14px;right:14px;opacity:0;pointer-events:none">Pay ₹899</div>
+  </div>
+</div>`,
+    rep: {
+      title: 'On-screen keyboard hides the Pay button',
+      steps: ['Open checkout on a small phone', 'Tap the last field so the keyboard opens', 'Try to find the Pay button'],
+      expected: 'The page scrolls so the Pay button stays reachable',
+      actual: 'The keyboard covers the button and the form cannot scroll',
+      tip: 'Always test forms with the keyboard open, on small screens, in both orientations.',
+    },
+  },
+  {
+    id: 'timezone', area: 'Email', sev: 'P2', diff: 'Hard', ac: '#2563eb',
+    hint: 'Compare the two time zones.',
+    html: SB + `
+<div class="ab"><span class="logo">D</span>DocNow</div>
+<div class="pad">
+  <div class="hi" style="font-size:20px">Booking confirmed</div>
+  <div class="card">
+    <div class="row"><span class="m">Doctor</span><span>Dr. Mehta</span></div>
+    <div class="row"><span class="m">App shows</span><span>Mon 26 Oct · 10:00 AM IST</span></div>
+    <div class="row"><span class="m">Email says</span><span data-bug>Mon 26 Oct · 10:00 AM PST</span></div>
+  </div>
+  <div class="btn">Add to calendar</div>
+</div>`,
+    rep: {
+      title: 'Confirmation email shows the time in PST instead of IST',
+      steps: ['Book a 10:00 AM IST appointment', 'Compare the app with the confirmation email'],
+      expected: 'Both show 10:00 AM IST',
+      actual: 'The email says 10:00 AM PST, 13.5 hours later',
+      tip: 'Time zones break between app, server and email. Test with users in different zones and during daylight-saving changes.',
+    },
+  },
+  {
+    id: 'a11y-label', area: 'Accessibility', sev: 'P2', diff: 'Medium', ac: '#0d9488',
+    hint: 'This is what a screen reader says. One thing says nothing useful.',
+    html: SB + `
+<div class="ab"><span class="logo">F</span>FoodDash · screen reader</div>
+<div class="pad">
+  <div class="card">
+    <div class="row"><span class="m">Focus 1</span><span>Link, Home</span></div>
+    <div class="row"><span class="m">Focus 2</span><span>Search, edit text</span></div>
+    <div class="row"><span class="m">Focus 3</span><span data-bug>Button</span></div>
+    <div class="row"><span class="m">Focus 4</span><span>Button, Add to cart</span></div>
+  </div>
+  <div class="m s">Focus 3 is the cart icon at the top right</div>
+</div>`,
+    rep: {
+      title: 'Cart icon button has no accessible name',
+      steps: ['Turn on TalkBack or VoiceOver', 'Move focus to the top-right icon'],
+      expected: 'Announces “Cart, 3 items, button”',
+      actual: 'Announces only “Button”',
+      tip: 'Icon-only buttons need a label. Run one screen with the screen reader on, it takes two minutes.',
+    },
+  },
+  {
+    id: 'contrast', area: 'Payment', sev: 'P3', diff: 'Easy', ac: '#c2410c',
+    hint: 'Which line is hard to read?',
+    html: SB + `
+<div class="ab"><span class="logo">M</span>MovieNow</div>
+<div class="pad">
+  <div class="card">
+    <div class="row"><span>2 tickets</span><span>₹600</span></div>
+    <div class="row"><span>Convenience fee</span><span>₹60</span></div>
+    <div class="row"><span class="b" data-bug style="color:#dcdfe6">Total payable</span><span class="b" style="color:#dcdfe6">₹660</span></div>
+  </div>
+  <div class="btn">Pay now</div>
+</div>`,
+    rep: {
+      title: 'Total payable is almost unreadable (very low contrast)',
+      steps: ['Open the payment summary', 'Look at the Total payable row'],
+      expected: 'Text contrast ratio of at least 4.5 to 1',
+      actual: 'Light grey on white, about 1.4 to 1',
+      tip: 'The most important number on a screen must also be the clearest. Use a contrast checker on key text.',
+    },
+  },
+  {
+    id: 'badge', area: 'Inbox', sev: 'P4', diff: 'Easy', ac: '#4f46e5',
+    hint: 'Count the bold rows.',
+    html: SB + `
+<div class="ab"><span class="logo">M</span>Mailo <span data-bug class="chip" style="margin-left:auto;background:#fee2e2;color:#b91c1c">Inbox (7)</span></div>
+<div class="pad">
+  <div class="card">
+    <div class="row"><div class="b">Bank statement</div><span class="m s">9:10</span></div>
+    <div class="row"><div class="b">Interview invite</div><span class="m s">8:42</span></div>
+    <div class="row"><div class="m">Weekly digest</div><span class="m s">Mon</span></div>
+    <div class="row"><div class="b">Cab receipt</div><span class="m s">Sun</span></div>
+    <div class="row"><div class="m">Newsletter</div><span class="m s">Sat</span></div>
+  </div>
+  <div class="m s">Bold = unread</div>
+</div>`,
+    rep: {
+      title: 'Inbox badge says 7 unread but only 3 messages are unread',
+      steps: ['Open the inbox with 3 unread emails', 'Compare the badge with the bold rows'],
+      expected: 'Inbox (3)',
+      actual: 'Inbox (7)',
+      tip: 'Counters and badges are cached separately from lists. Always compare them against the real data.',
+    },
+  },
+  {
+    id: 'dup-row', area: 'Orders', sev: 'P2', diff: 'Medium', ac: '#b45309',
+    hint: 'Read the order numbers.',
+    html: SB + `
+<div class="ab"><span class="logo">K</span>KiranaKart · Orders</div>
+<div class="pad">
+  <div class="card">
+    <div class="row"><div><div class="b">ORD-5519</div><div class="m s">12 Oct · ₹420</div></div><span class="chip">Delivered</span></div>
+    <div class="row"><div><div class="b">ORD-5521</div><div class="m s">15 Oct · ₹1,180</div></div><span class="chip">Delivered</span></div>
+    <div class="row" data-bug><div><div class="b">ORD-5521</div><div class="m s">15 Oct · ₹1,180</div></div><span class="chip">Delivered</span></div>
+    <div class="row"><div><div class="b">ORD-5530</div><div class="m s">19 Oct · ₹260</div></div><span class="chip">On the way</span></div>
+  </div>
+  <div class="m s">You placed 3 orders this month</div>
+</div>`,
+    rep: {
+      title: 'Order ORD-5521 appears twice in the order history',
+      steps: ['Place an order, then open Orders', 'Scroll the list'],
+      expected: 'Each order appears once (3 orders)',
+      actual: 'ORD-5521 is listed twice (4 rows)',
+      tip: 'Duplicates often come from paging, retries or joins. Check counts and unique IDs, not just that data shows.',
+    },
+  },
+  {
+    id: 'sort', area: 'Search', sev: 'P3', diff: 'Medium', ac: '#be185d',
+    hint: 'The list says how it is sorted. Is it?',
+    html: SB + `
+<div class="ab"><span class="logo">S</span>ShoeBox</div>
+<div class="pad">
+  <div class="m s">Sort: Price, low to high</div>
+  <div class="card">
+    <div class="row"><span>Canvas sneakers</span><span class="b">₹299</span></div>
+    <div class="row"><span>Daily slip-ons</span><span class="b">₹499</span></div>
+    <div class="row" data-bug><span>Beach slides</span><span class="b">₹199</span></div>
+    <div class="row"><span>Running shoes</span><span class="b">₹799</span></div>
+    <div class="row"><span>Leather loafers</span><span class="b">₹1,499</span></div>
+  </div>
+</div>`,
+    rep: {
+      title: 'Price sort “low to high” puts ₹199 after ₹499',
+      steps: ['Search for shoes', 'Sort by Price, low to high'],
+      expected: '₹199, ₹299, ₹499, ₹799, ₹1,499',
+      actual: '₹299, ₹499, ₹199, ₹799, ₹1,499',
+      tip: 'Sorting bugs often come from text sorting of numbers or from mixing sale and list prices. Test with 2-, 3- and 4-digit values.',
+    },
+  },
+  {
+    id: 'char-limit', area: 'Compose', sev: 'P3', diff: 'Easy', ac: '#0ea5e9',
+    hint: 'A limit is only useful if it holds.',
+    html: SB + `
+<div class="ab"><span class="logo">T</span>Tweetly</div>
+<div class="pad">
+  <div class="fld" style="align-items:flex-start;min-height:90px"><span>Just shipped our new release after three weeks of testing. Huge thanks to the QA team for catching the last-minute payment bug before launch, you folks are the best ever!!</span></div>
+  <div class="row" style="border:0"><span class="m s">Max 140 characters</span><span data-bug class="b" style="color:#16a34a">171 / 140 ✓</span></div>
+  <div class="btn">Post</div>
+</div>`,
+    rep: {
+      title: 'Character counter shows 171 / 140 with a green tick',
+      steps: ['Type a post longer than 140 characters', 'Check the counter and the Post button'],
+      expected: 'Counter turns red and Post is disabled',
+      actual: 'Green tick, Post is enabled',
+      tip: 'Test limits at the boundary: 139, 140 and 141. The bug lives at the edge.',
+    },
+  },
+  {
+    id: 'email-val', area: 'Sign up', sev: 'P3', diff: 'Medium', ac: '#16a34a',
+    hint: 'The tick says it is valid. Is it?',
+    html: SB + `
+<div class="ab"><span class="logo">G</span>GreenLeaf</div>
+<div class="pad">
+  <div class="hi">Create account</div>
+  <div><div class="fl">Email</div><div class="fld" data-bug><span>riya@@mail..com</span><span style="color:#16a34a;font-weight:800">✓</span></div></div>
+  <div><div class="fl">Password</div><div class="fld">••••••••</div></div>
+  <div class="btn">Sign up</div>
+</div>`,
+    rep: {
+      title: 'Invalid email “riya@@mail..com” is accepted as valid',
+      steps: ['Open Sign up', 'Enter riya@@mail..com in the email field'],
+      expected: 'An error: enter a valid email address',
+      actual: 'A green tick, and the form can be submitted',
+      tip: 'Try double symbols, missing dots, spaces and very long addresses. Weak validation lets bad data in.',
+    },
+  },
+  {
+    id: 'cart-badge', area: 'Cart', sev: 'P3', diff: 'Easy', ac: '#ea580c',
+    hint: 'Compare the icon with the list.',
+    html: SB + `
+<div class="ab"><span class="logo">B</span>BazaarBox <span data-bug class="chip" style="margin-left:auto">🛒 0</span></div>
+<div class="pad">
+  <div class="hi" style="font-size:19px">Your cart</div>
+  <div class="card">
+    <div class="row"><span>Cotton kurta</span><span class="b">₹799</span></div>
+    <div class="row"><span>Scarf</span><span class="b">₹299</span></div>
+    <div class="row"><span>Sandals</span><span class="b">₹499</span></div>
+  </div>
+  <div class="btn">Checkout · ₹1,597</div>
+</div>`,
+    rep: {
+      title: 'Cart badge shows 0 while the cart has 3 items',
+      steps: ['Add 3 items to the cart', 'Open the cart and look at the top-right badge'],
+      expected: 'Badge shows 3',
+      actual: 'Badge shows 0',
+      tip: 'Check state after refresh, back navigation and adding from different screens.',
+    },
+  },
+  {
+    id: 'unit', area: 'Profile', sev: 'P4', diff: 'Easy', ac: '#9333ea',
+    hint: 'Read the units.',
+    html: SB + `
+<div class="ab"><span class="logo">F</span>FitTrack</div>
+<div class="pad">
+  <div class="hi" style="font-size:20px">Your body stats</div>
+  <div class="card">
+    <div class="row"><span class="m">Age</span><span>29 years</span></div>
+    <div class="row"><span class="m">Height</span><span data-bug>5.9 cm</span></div>
+    <div class="row"><span class="m">Weight</span><span>68 kg</span></div>
+    <div class="row"><span class="m">BMI</span><span>21.0</span></div>
+  </div>
+  <div class="btn">Edit stats</div>
+</div>`,
+    rep: {
+      title: 'Height is shown as “5.9 cm” instead of feet or 180 cm',
+      steps: ['Enter height as 5 ft 11 in', 'Open Your body stats'],
+      expected: '5 ft 11 in, or 180 cm',
+      actual: '5.9 cm',
+      tip: 'Unit conversion bugs hide in saved values. Test every unit option and switch between them.',
+    },
+  },
+  {
+    id: 'savings', area: 'Offers', sev: 'P2', diff: 'Hard', ac: '#e11d48',
+    hint: 'Read the money lines like a customer.',
+    html: SB + `
+<div class="ab"><span class="logo">R</span>RideNow</div>
+<div class="pad">
+  <div class="hi" style="font-size:20px">Trip summary</div>
+  <div class="card">
+    <div class="row"><span class="m">Fare</span><span>₹240</span></div>
+    <div class="row"><span class="m">Promo RIDE50</span><span>−₹50</span></div>
+    <div class="row"><span class="m">You saved</span><span data-bug class="b" style="color:#16a34a">₹-120</span></div>
+    <div class="row"><span class="b">Total</span><span class="b">₹190</span></div>
+  </div>
+  <div class="btn">Done</div>
+</div>`,
+    rep: {
+      title: '“You saved” shows ₹-120 instead of ₹50',
+      steps: ['Complete a ₹240 trip with promo RIDE50', 'Open the trip summary'],
+      expected: 'You saved ₹50',
+      actual: 'You saved ₹-120',
+      tip: 'Negative amounts, wrong signs and double-counted discounts are classic money bugs. Check each line against the total.',
+    },
+  }
+);
+
+'use strict';
+// Bugspot game layer. Uses PUZZLES declared above it.
+
+const $ = id => document.getElementById(id);
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const p2 = n => String(n).padStart(2, '0');
+const dayKey = d => d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate());
+const dayLabel = d => d.getDate() + ' ' + MONTHS[d.getMonth()];
+const dayNum = d => Math.floor(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 86400000);
+const dailyIdx = d => (dayNum(d) * 7 + 3) % PUZZLES.length;
+const fmtT = ms => { const s = Math.max(1, Math.round(ms / 1000)); return s < 60 ? s + 's' : Math.floor(s / 60) + 'm ' + p2(s % 60) + 's'; };
+const SEV = { P1: 'Critical', P2: 'Major', P3: 'Minor', P4: 'Cosmetic' };
+const BUG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 8.2c-2.6 0-4.4 1.9-4.4 4.6S9.4 19 12 19s4.4-3.6 4.4-6.2S14.6 8.2 12 8.2Z"/><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M12 8.2V19M9.3 6.4a2.7 2.7 0 0 1 5.4 0M7.6 12.3 4 10.6M16.4 12.3 20 10.6M8 16.4l-3.4 1.6M16 16.4l3.4 1.6"/></svg>';
+
+// ---------- saved progress (per browser, optional) ----------
+const KEY = 'bugspot.v1';
+const save = { stars: {}, daily: null, streak: 0, last: '', pending: null };
+try {
+  const raw = localStorage.getItem(KEY);
+  if (raw) {
+    const s = JSON.parse(raw);
+    if (s && typeof s === 'object') {
+      if (s.stars && typeof s.stars === 'object') save.stars = s.stars;
+      if (s.daily && typeof s.daily === 'object') save.daily = s.daily;
+      if (typeof s.streak === 'number') save.streak = s.streak;
+      if (typeof s.last === 'string') save.last = s.last;
+      if (s.pending && typeof s.pending === 'object') save.pending = s.pending;
+    }
+  }
+} catch (e) { /* storage unavailable */ }
+function persist() { try { localStorage.setItem(KEY, JSON.stringify(save)); } catch (e) { /* ignore */ } }
+
+// ---------- state ----------
+const S = { view: 'daily', idx: 0, from: 'daily', used: 0, hint: false, t0: 0, done: false, found: false, tickTimer: 0 };
+
+// Streak shown to the player: only counts if the last finished daily was today or yesterday.
+function liveStreak() {
+  const t = new Date(), y = new Date(t.getFullYear(), t.getMonth(), t.getDate() - 1);
+  return save.last === dayKey(t) || save.last === dayKey(y) ? save.streak : 0;
+}
+function say(t) { $('live').textContent = t; }
+function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+function setView(v) {
+  clearInterval(S.tickTimer);
+  S.view = v;
+  closeSheet();
+  const play = v === 'play';
+  $('tabDaily').setAttribute('aria-selected', String(S.from === 'daily' && (v === 'daily' || play)));
+  $('tabPractice').setAttribute('aria-selected', String(S.from === 'practice' && (v === 'practice' || play)));
+  if (v === 'daily') renderDaily();
+  else if (v === 'practice') renderPractice();
+  else renderPlay();
+  window.scrollTo(0, 0);
+}
+
+// ---------- daily ----------
+function nextBugIn() {
+  const n = new Date();
+  const next = new Date(n.getFullYear(), n.getMonth(), n.getDate() + 1);
+  const m = Math.max(1, Math.round((next - n) / 60000));
+  return Math.floor(m / 60) + 'h ' + p2(m % 60) + 'm';
+}
+
+function renderDaily() {
+  S.from = 'daily';
+  $('tabDaily').setAttribute('aria-selected', 'true');
+  $('tabPractice').setAttribute('aria-selected', 'false');
+  const today = new Date(), key = dayKey(today), d = save.daily;
+  const v = $('view');
+  if (!d || d.key !== key) {
+    v.innerHTML =
+      '<section class="card hero"><p class="eyebrow">Daily bug · ' + dayLabel(today) + '</p>' +
+      '<h1>One screen. One bug. Three tries.</h1>' +
+      '<p class="lede">A made-up app has a defect hiding in plain sight. Tap it before your tries run out, then read the bug report.</p>' +
+      '<div class="stack" style="margin-top:18px"><button id="go" class="btn-p" type="button">Start today’s hunt</button>' +
+      '<p class="meta">Streak <b>' + liveStreak() + '</b> ' + (liveStreak() === 1 ? 'day' : 'days') + '</p></div></section>' +
+      '<div class="how"><div><b>Tap</b>the one thing that is wrong</div><div><b>Read</b>a short QA bug report</div><div><b>Share</b>your result with your team</div></div>';
+    $('go').addEventListener('click', () => startPlay(dailyIdx(today), 'daily'));
+    return;
+  }
+  const p = PUZZLES[d.idx];
+  const sq = d.found ? '<i class="sq"></i>'.repeat(d.tries - 1) + '<i class="sq g"></i>' : '<i class="sq"></i><i class="sq"></i><i class="sq"></i>';
+  v.innerHTML =
+    '<section class="card hero"><p class="eyebrow">Daily bug · ' + dayLabel(today) + '</p>' +
+    '<div class="sqs" role="img" aria-label="Your tries">' + sq + '</div>' +
+    '<p class="res">' + (d.found ? 'Found it in ' + d.tries + (d.tries === 1 ? ' try' : ' tries') : 'Today’s bug got away') + '</p>' +
+    '<p class="rt">' + (d.found ? fmtT(d.time) + ' · ' : '') + '<span class="sevpill" data-sev="' + p.sev + '">' + p.sev + ' ' + SEV[p.sev] + '</span></p>' +
+    '<p style="margin-top:12px"><b>' + esc(p.rep.title) + '</b></p>' +
+    '<div class="stack" style="margin-top:16px"><button id="shareBtn" class="btn-p" type="button">Share result</button>' +
+    '<button id="repBtn" class="btn-s" type="button">Read the bug report</button></div>' +
+    '<p class="meta" style="margin-top:14px">Next bug in <b id="cd">' + nextBugIn() + '</b> · Streak <b>' + liveStreak() + '</b> ' + (liveStreak() === 1 ? 'day' : 'days') + '</p></section>' +
+    '<div class="stack" style="margin-top:12px"><button id="morePrac" class="btn-s" type="button">Practise with ' + (PUZZLES.length - 1) + ' more bugs</button></div>';
+  $('shareBtn').addEventListener('click', () => showShare());
+  $('repBtn').addEventListener('click', () => showReport(d.idx, d.found, d.tries, d.time, 'daily'));
+  $('morePrac').addEventListener('click', () => { S.from = 'practice'; setView('practice'); });
+  S.tickTimer = setInterval(() => { const c = $('cd'); if (c) c.textContent = nextBugIn(); }, 30000);
+}
+
+function shareText() {
+  const d = save.daily, p = PUZZLES[d.idx];
+  const sq = d.found ? '🟥'.repeat(d.tries - 1) + '🟩' : '🟥🟥🟥';
+  const pd = d.key.split('-').map(Number);
+  return 'Bugspot Daily · ' + dayLabel(new Date(pd[0], pd[1] - 1, pd[2])) + '\n' + sq + ' ' +
+    (d.found ? 'found in ' + d.tries + (d.tries === 1 ? ' try' : ' tries') + ' · ' + fmtT(d.time) : 'the bug got away') +
+    '\nSeverity ' + p.sev + ' (' + SEV[p.sev] + ')\nCan you spot it?';
+}
+
+function copyText(text, btn) {
+  const pre = $('shShare');
+  const fallback = () => {
+    try { const r = document.createRange(); r.selectNodeContents(pre); const s = window.getSelection(); s.removeAllRanges(); s.addRange(r); } catch (e) { /* ignore */ }
+    btn.textContent = 'Select the text above and copy';
+  };
+  try { navigator.clipboard.writeText(text).then(() => { btn.textContent = 'Copied'; }, fallback); } catch (e) { fallback(); }
+}
+
+function showShare() {
+  const text = shareText();
+  openSheet({
+    sev: null, id: 'Daily result', status: '', title: 'Share your result',
+    body: '', share: text,
+    buttons: [
+      { label: 'Copy result', primary: true, fn: btn => copyText(text, btn) },
+      { label: 'Close', fn: closeSheet },
+    ],
+  });
+}
+
+// ---------- practice ----------
+function stars(n) { return '★'.repeat(n) + '<i>' + '★'.repeat(3 - n) + '</i>'; }
+function renderPractice() {
+  S.from = 'practice';
+  $('tabDaily').setAttribute('aria-selected', 'false');
+  $('tabPractice').setAttribute('aria-selected', 'true');
+  let total = 0;
+  PUZZLES.forEach(p => { total += save.stars[p.id] || 0; });
+  const tiles = PUZZLES.map((p, i) => {
+    const s = save.stars[p.id];
+    return '<button class="tile' + (s !== undefined ? ' done' : '') + '" type="button" data-i="' + i + '" aria-label="Puzzle ' + (i + 1) + ', ' + p.area + ', ' + p.diff + (s !== undefined ? ', ' + s + ' stars' : '') + '">' +
+      '<span class="n">#' + p2(i + 1) + '</span><span class="a">' + p.area + '</span><span class="d">' + p.diff + '</span>' +
+      '<span class="st" aria-hidden="true">' + stars(s || 0) + '</span></button>';
+  }).join('');
+  $('view').innerHTML =
+    '<section class="card"><p class="eyebrow">Practice</p><h1 style="font:800 26px/1.1 var(--display);margin-top:8px">' + PUZZLES.length + ' bugs to hunt</h1>' +
+    '<p class="lede" style="margin-top:6px">Find each bug in three tries or fewer. Fewer tries and no hint earn more stars.</p></section>' +
+    '<div class="sumrow"><h2>All screens</h2><span class="meta"><b>' + total + '</b> / ' + PUZZLES.length * 3 + ' stars</span></div>' +
+    '<div class="grid">' + tiles + '</div>';
+  $('view').querySelectorAll('.tile').forEach(b => b.addEventListener('click', () => startPlay(+b.dataset.i, 'practice')));
+}
+
+// ---------- play ----------
+function startPlay(idx, from) {
+  S.idx = idx; S.from = from; S.used = 0; S.hint = false; S.done = false; S.found = false; S.t0 = performance.now();
+  if (from === 'daily') {
+    // Keep tries and hint across a refresh so the daily cannot be retried.
+    const key = dayKey(new Date());
+    if (save.pending && save.pending.key === key && save.pending.idx === idx) {
+      S.used = Math.min(2, save.pending.used | 0); S.hint = !!save.pending.hint;
+    } else { save.pending = { key, idx, used: 0, hint: false }; persist(); }
+  }
+  setView('play');
+}
+
+function triesHtml() {
+  let h = '';
+  for (let i = 0; i < 3; i++) h += BUG.replace('<svg ', '<svg class="' + (i < 3 - S.used ? 'on' : 'off') + '" ');
+  return h;
+}
+
+function renderPlay() {
+  const p = PUZZLES[S.idx];
+  $('view').innerHTML =
+    '<div class="playbar"><button id="back" class="link" type="button">‹ Back</button>' +
+    '<div class="ptitle">' + p.area + ' · ' + (S.from === 'daily' ? 'Daily' : '#' + p2(S.idx + 1)) + '</div>' +
+    '<div id="tries" class="tries" role="img" aria-label="3 tries left">' + triesHtml() + '</div></div>' +
+    '<div class="ticket"><span class="tid">QA-' + (104 + S.idx) + '</span><span id="note" class="grow">Something on this screen is wrong. Tap it.</span><button id="hintBtn" class="link" type="button">Hint</button></div>' +
+    '<div class="phone" id="phone"><div class="screen" id="screen" style="--ac:' + p.ac + '">' + p.html + '</div></div>' +
+    '<div id="after" class="after" hidden></div>';
+  $('back').addEventListener('click', () => setView(S.from === 'daily' ? 'daily' : 'practice'));
+  $('hintBtn').addEventListener('click', () => {
+    if (S.done || S.hint) return;
+    S.hint = true;
+    $('note').textContent = 'Hint: ' + p.hint;
+    $('hintBtn').hidden = true;
+    if (S.from === 'daily' && save.pending) { save.pending.hint = true; persist(); }
+  });
+  $('screen').addEventListener('click', onTap);
+  if (S.hint) { $('note').textContent = 'Hint: ' + p.hint; $('hintBtn').hidden = true; }
+  $('tries').setAttribute('aria-label', (3 - S.used) + ' tries left');
+}
+
+function onTap(e) {
+  if (S.done) return;
+  const hit = e.target.closest('[data-bug]');
+  if (hit) { finish(true); return; }
+  S.used++;
+  const sc = $('screen'), r = sc.getBoundingClientRect();
+  const m = document.createElement('div');
+  m.className = 'miss'; m.textContent = '×';
+  m.style.left = (e.clientX - r.left) + 'px'; m.style.top = (e.clientY - r.top) + 'px';
+  sc.appendChild(m);
+  setTimeout(() => m.remove(), 850);
+  const ph = $('phone');
+  ph.classList.remove('shake'); void ph.offsetWidth; ph.classList.add('shake');
+  try { if (navigator.vibrate) navigator.vibrate(25); } catch (err) { /* ignore */ }
+  $('tries').innerHTML = triesHtml();
+  $('tries').setAttribute('aria-label', (3 - S.used) + ' tries left');
+  say('Not it. ' + (3 - S.used) + ' tries left.');
+  if (S.from === 'daily' && save.pending && S.used < 3) { save.pending.used = S.used; persist(); }
+  if (S.used >= 3) finish(false);
+}
+
+function finish(found) {
+  S.done = true; S.found = found;
+  const time = performance.now() - S.t0;
+  const p = PUZZLES[S.idx];
+  const tries = found ? S.used + 1 : 3;
+  document.querySelectorAll('#screen [data-bug]').forEach(el => el.classList.add('found'));
+  let st = 0;
+  if (found) { st = 4 - tries; if (S.hint) st = Math.max(1, st - 1); }
+  if (found) save.stars[p.id] = Math.max(save.stars[p.id] || 0, st);
+  if (S.from === 'daily') {
+    const today = new Date(), key = dayKey(today);
+    if (!save.daily || save.daily.key !== key) {
+      const y = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1);
+      // A missed daily ends the streak; a found one extends it.
+      save.streak = found ? (save.last === dayKey(y) ? save.streak + 1 : 1) : 0;
+      save.last = key;
+      save.pending = null;
+      save.daily = { key, idx: S.idx, found, tries, time };
+    }
+  }
+  persist();
+  say(found ? 'Found it. Bug report open.' : 'Out of tries. The bug is highlighted.');
+  const after = $('after');
+  after.hidden = false;
+  const last = S.from === 'practice' && S.idx >= PUZZLES.length - 1;
+  after.innerHTML = '<button id="aRep" class="btn-s" type="button">Bug report</button>' +
+    (S.from === 'daily' ? '<button id="aNext" class="btn-p" type="button">Share result</button>' :
+      '<button id="aNext" class="btn-p" type="button">' + (last ? 'All puzzles' : 'Next puzzle') + '</button>');
+  $('aRep').addEventListener('click', () => showReport(S.idx, found, tries, time, S.from));
+  $('aNext').addEventListener('click', () => {
+    if (S.from === 'daily') showShare();
+    else if (last) setView('practice');
+    else startPlay(S.idx + 1, 'practice');
+  });
+  // On a miss, leave the highlighted bug visible; the player opens the report with the button.
+  if (found) setTimeout(() => { if (S.view === 'play' && S.done) showReport(S.idx, found, tries, time, S.from); }, 750);
+  else $('note').textContent = 'Out of tries. The bug is circled in red. Tap Bug report to read it.';
+}
+
+// ---------- bug report sheet ----------
+function showReport(idx, found, tries, time, from) {
+  const p = PUZZLES[idx], r = p.rep;
+  const body =
+    '<div><h3>Steps to reproduce</h3><ol>' + r.steps.map(s => '<li>' + esc(s) + '</li>').join('') + '</ol></div>' +
+    '<div class="ea"><div><h3>Expected</h3><p>' + esc(r.expected) + '</p></div><div><h3>Actual</h3><p>' + esc(r.actual) + '</p></div></div>' +
+    '<div class="tip"><b>Tester tip</b>' + esc(r.tip) + '</div>';
+  const buttons = [];
+  if (from === 'daily') buttons.push({ label: 'Share result', primary: true, fn: () => showShare() }, { label: 'Close', fn: closeSheet });
+  else {
+    const last = idx >= PUZZLES.length - 1;
+    buttons.push({ label: last ? 'All puzzles' : 'Next puzzle', primary: true, fn: () => (last ? setView('practice') : startPlay(idx + 1, 'practice')) }, { label: 'Close', fn: closeSheet });
+  }
+  openSheet({
+    sev: p.sev, id: 'BUG-' + (1000 + idx * 7),
+    status: found ? 'Found in ' + tries + (tries === 1 ? ' try' : ' tries') + ' · ' + fmtT(time) : 'Not found this time',
+    ok: found, title: r.title, body, buttons,
+  });
+}
+
+function openSheet(o) {
+  const sev = $('shSev');
+  sev.hidden = !o.sev;
+  if (o.sev) { sev.textContent = o.sev + ' ' + SEV[o.sev]; sev.setAttribute('data-sev', o.sev); }
+  $('shId').textContent = o.id;
+  const st = $('shStatus');
+  st.textContent = o.status || '';
+  st.hidden = !o.status;
+  st.className = 'status ' + (o.ok ? 'ok' : 'no');
+  $('shT').textContent = o.title;
+  $('shBody').innerHTML = o.body || '';
+  const pre = $('shShare');
+  pre.hidden = !o.share;
+  if (o.share) pre.textContent = o.share;
+  const box = $('shBtns');
+  box.textContent = '';
+  for (const b of o.buttons) {
+    const el = document.createElement('button');
+    el.type = 'button';
+    el.className = b.primary ? 'btn-p' : 'btn-s';
+    el.textContent = b.label;
+    el.addEventListener('click', () => b.fn(el));
+    box.appendChild(el);
+  }
+  const sh = $('sheet');
+  sh.hidden = false;
+  sh.scrollTop = 0;
+  requestAnimationFrame(() => sh.classList.add('show'));
+}
+function closeSheet() { const sh = $('sheet'); sh.classList.remove('show'); sh.hidden = true; }
+
+$('shClose').addEventListener('click', closeSheet);
+$('tabDaily').addEventListener('click', () => { S.from = 'daily'; setView('daily'); });
+$('tabPractice').addEventListener('click', () => { S.from = 'practice'; setView('practice'); });
+
+setView('daily');
+
+if (typeof __TEST__ !== 'undefined') __TEST__({ S, save, startPlay, setView, onTap, PUZZLES });
+
+</script>
+
+</body></html>
