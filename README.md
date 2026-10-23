@@ -16,3 +16,11 @@ A daily spot-the-bug game for QA testers. One file, `index.html`, hosted on GitH
 Supabase's built-in email sender allows only a few emails an hour. Add a custom SMTP sender before a public launch.
 
 The 3-bug limit for guests is enforced in the browser only. It is a gentle nudge, not security.
+
+## Usage stats and admin page
+
+The game sends anonymous events (visit, puzzle start/found/missed, sign-in, share) with a random per-browser id. No IP address, email or other personal data is stored.
+
+- Tables and functions: `supabase/analytics.sql` (already applied to the project).
+- Admin page: `admin.html` (private, signed-in owner only). Admins are the emails listed in the `admins` table.
+- To add another admin: `insert into public.admins (email) values ('name@example.com');`
