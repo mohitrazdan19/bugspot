@@ -1364,7 +1364,10 @@ const dayNum = d => Math.floor(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate
 const fmtT = ms => { const s = Math.max(1, Math.round(ms / 1000)); return s < 60 ? s + 's' : Math.floor(s / 60) + 'm ' + p2(s % 60) + 's'; };
 const SEV = { P1: 'Critical', P2: 'Major', P3: 'Minor', P4: 'Cosmetic' };
 const BUG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 8.2c-2.6 0-4.4 1.9-4.4 4.6S9.4 19 12 19s4.4-3.6 4.4-6.2S14.6 8.2 12 8.2Z"/><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M12 8.2V19M9.3 6.4a2.7 2.7 0 0 1 5.4 0M7.6 12.3 4 10.6M16.4 12.3 20 10.6M8 16.4l-3.4 1.6M16 16.4l3.4 1.6"/></svg>';
+// Puzzle data keeps Easy/Medium/Hard; players see the experience names.
 const LEVELS = [{ name: 'Level 1', diff: 'Easy' }, { name: 'Level 2', diff: 'Medium' }, { name: 'Level 3', diff: 'Hard' }];
+const DIFF_LABEL = { Easy: 'Beginner', Medium: 'Intermediate', Hard: 'Experienced' };
+const dl = d => DIFF_LABEL[d] || d;
 
 // ---------- the daily set ----------
 // Everyone gets the same 8 bugs on a given date: 3 easy, 3 medium, 2 hard, in that order.
@@ -1621,8 +1624,8 @@ function renderDaily() {
   const tiles = set.map((idx, i) => {
     const p = PUZZLES[idx], r = day.r[i], locked = i >= n;
     const status = r ? (r.f ? 'Found · ' + r.t + (r.t === 1 ? ' try' : ' tries') : 'Missed') : (locked ? '🔒 Sign in' : 'Play');
-    return '<button class="tile' + (r ? ' done' : '') + (locked ? ' lock' : '') + '" type="button" data-s="' + i + '" aria-label="Bug ' + (i + 1) + ', ' + p.diff + ', ' + status + '">' +
-      '<span class="n">#' + p2(i + 1) + '</span><span class="a">' + p.area + '</span><span class="d">' + p.diff + '</span><span class="d">' + status + '</span></button>';
+    return '<button class="tile' + (r ? ' done' : '') + (locked ? ' lock' : '') + '" type="button" data-s="' + i + '" aria-label="Bug ' + (i + 1) + ', ' + dl(p.diff) + ', ' + status + '">' +
+      '<span class="n">#' + p2(i + 1) + '</span><span class="a">' + p.area + '</span><span class="d">' + dl(p.diff) + '</span><span class="d">' + status + '</span></button>';
   }).join('');
   $('view').innerHTML =
     '<section class="card hero"><p class="eyebrow">Daily bugs · ' + dayLabel(today) + '</p>' +
@@ -1757,7 +1760,8 @@ function renderPractice() {
   $('tabDaily').setAttribute('aria-selected', 'false');
   $('tabPractice').setAttribute('aria-selected', 'true');
   if (!signedIn()) {
-    const rows = LEVELS.map(L => '<div class="row2"><span>🔒 ' + L.name + ' · ' + L.diff + '</span><span class="meta">' + levelIdx(L.diff).length + ' bugs</span></div>').join('');
+    const rows = LEVELS.map(L => '<div class="row2"><span>🔒 ' + dl(L.diff) + '</span><span class="meta">' + levelIdx(L.diff).length + ' bugs</span></div>').join('') +
+      '<div class="row2"><span>🔒 Expert</span><span class="meta">coming soon</span></div>';
     $('view').innerHTML =
       '<section class="card"><p class="eyebrow">Practice</p><h1 style="font:800 26px/1.1 var(--display);margin-top:8px">Levels are for signed-in players</h1>' +
       '<p class="lede" style="margin-top:6px">Sign in free to practise on every bug. Clear most of a level to open the next one.</p>' + rows +
@@ -1772,19 +1776,21 @@ function renderPractice() {
     '<div class="sumrow"><h2>Levels</h2><span class="meta"><b>' + total + '</b> / ' + PUZZLES.length * 3 + ' stars</span></div>';
   LEVELS.forEach((L, li) => {
     const idxs = levelIdx(L.diff), open = levelOpen(li);
-    html += '<div class="lvhead"><h2 style="font:700 17px/1.2 var(--display)">' + (open ? '' : '🔒 ') + L.name + ' · ' + L.diff + '</h2><span class="meta"><b>' + solvedIn(L.diff) + '</b> / ' + idxs.length + ' solved</span></div>';
+    html += '<div class="lvhead"><h2 style="font:700 17px/1.2 var(--display)">' + (open ? '' : '🔒 ') + dl(L.diff) + '</h2><span class="meta"><b>' + solvedIn(L.diff) + '</b> / ' + idxs.length + ' solved</span></div>';
     if (!open) {
       const prev = LEVELS[li - 1];
-      html += '<p class="note">Solve ' + needFor(prev.diff) + ' of ' + levelIdx(prev.diff).length + ' ' + prev.diff + ' bugs to unlock this level (' + solvedIn(prev.diff) + ' so far).</p>';
+      html += '<p class="note">Solve ' + needFor(prev.diff) + ' of ' + levelIdx(prev.diff).length + ' ' + dl(prev.diff) + ' bugs to unlock this level (' + solvedIn(prev.diff) + ' so far).</p>';
       return;
     }
     html += '<div class="grid">' + idxs.map(i => {
       const p = PUZZLES[i], s = save.stars[p.id];
-      return '<button class="tile' + (s !== undefined ? ' done' : '') + '" type="button" data-i="' + i + '" aria-label="Puzzle ' + (i + 1) + ', ' + p.area + ', ' + p.diff + (s !== undefined ? ', ' + s + ' stars' : '') + '">' +
-        '<span class="n">#' + p2(i + 1) + '</span><span class="a">' + p.area + '</span><span class="d">' + p.diff + '</span>' +
+      return '<button class="tile' + (s !== undefined ? ' done' : '') + '" type="button" data-i="' + i + '" aria-label="Puzzle ' + (i + 1) + ', ' + p.area + ', ' + dl(p.diff) + (s !== undefined ? ', ' + s + ' stars' : '') + '">' +
+        '<span class="n">#' + p2(i + 1) + '</span><span class="a">' + p.area + '</span><span class="d">' + dl(p.diff) + '</span>' +
         '<span class="st" aria-hidden="true">' + stars(s || 0) + '</span></button>';
     }).join('') + '</div>';
   });
+  html += '<div class="lvhead"><h2 style="font:700 17px/1.2 var(--display)">🔒 Expert</h2><span class="meta">coming soon</span></div>' +
+    '<p class="note">Tricky multi-clue bugs for testers with 6+ years of experience. New puzzles are on the way.</p>';
   $('view').innerHTML = html;
   $('view').querySelectorAll('.tile').forEach(b => b.addEventListener('click', () => startPlay(+b.dataset.i, 'practice')));
 }
