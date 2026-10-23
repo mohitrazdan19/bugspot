@@ -174,6 +174,21 @@
   .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
   @media (max-width: 380px) { .ea { grid-template-columns: 1fr; } .brand { font-size: 23px; } }
   @media (prefers-reduced-motion: reduce) { .sheet { transition: none; } .phone.shake, .screen [data-bug].found { animation: none; } }
+
+  .acct { display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin: -4px 0 10px; font: 500 13px/1.3 var(--mono); color: var(--dim); }
+  .acct span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+  .acct button { font: 600 13px/1 var(--mono); color: var(--ink); text-decoration: underline; text-underline-offset: 3px; padding: 10px 0; flex: none; }
+  .slots { display: flex; gap: 6px; margin: 8px 0 4px; flex-wrap: wrap; }
+  .sl { width: 30px; height: 30px; border-radius: 8px; background: var(--line); color: var(--dim); display: grid; place-items: center; font: 600 13px/1 var(--mono); font-style: normal; }
+  .sl.g { background: var(--ok); color: #fff; }
+  .sl.r { background: var(--bug); color: #fff; }
+  .sl.l { background: var(--raise); border: 1px dashed var(--line); font-size: 12px; }
+  .tile.lock { opacity: 0.75; }
+  .lvhead { display: flex; justify-content: space-between; align-items: baseline; margin: 20px 0 10px; }
+  .note { font-size: 14px; color: var(--dim); line-height: 1.4; }
+  .row2 { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); margin-top: 0; font-weight: 600; }
+  .inp { width: 100%; min-height: 48px; border: 1.5px solid var(--line); border-radius: 12px; padding: 0 14px; font: 500 16px var(--body); background: var(--surface); color: var(--ink); }
+  .inp:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 </style>
 
 <div id="app">
@@ -184,6 +199,7 @@
       <button id="tabPractice" type="button" aria-selected="false">Practice</button>
     </nav>
   </header>
+  <div id="acct" class="acct"></div>
   <main id="view"></main>
 
   <div id="sheet" class="sheet" role="dialog" aria-modal="false" aria-labelledby="shT" hidden>
@@ -876,43 +892,222 @@ PUZZLES.push(
 'use strict';
 // Bugspot game layer. Uses PUZZLES declared above it.
 
+// ---------- config ----------
+// Fill SUPABASE_URL and SUPABASE_KEY (the publishable key) to turn sign-in on.
+// Until then the game runs in guest mode and the Sign in button explains that sign-in is not open yet.
+const CONFIG = {
+  SUPABASE_URL: '',
+  SUPABASE_KEY: '',
+  GOOGLE: false,
+  SITE: 'https://mohitrazdan19.github.io/bugspot/',
+};
+const SLOTS = 8;      // bugs in the daily set
+const FREE = 3;       // bugs a guest can play each day
+const UNLOCK_AT = 0.75; // share of a level to solve before the next level opens
+
 const $ = id => document.getElementById(id);
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const p2 = n => String(n).padStart(2, '0');
 const dayKey = d => d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate());
 const dayLabel = d => d.getDate() + ' ' + MONTHS[d.getMonth()];
 const dayNum = d => Math.floor(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 86400000);
-const dailyIdx = d => (dayNum(d) * 7 + 3) % PUZZLES.length;
 const fmtT = ms => { const s = Math.max(1, Math.round(ms / 1000)); return s < 60 ? s + 's' : Math.floor(s / 60) + 'm ' + p2(s % 60) + 's'; };
 const SEV = { P1: 'Critical', P2: 'Major', P3: 'Minor', P4: 'Cosmetic' };
 const BUG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 8.2c-2.6 0-4.4 1.9-4.4 4.6S9.4 19 12 19s4.4-3.6 4.4-6.2S14.6 8.2 12 8.2Z"/><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M12 8.2V19M9.3 6.4a2.7 2.7 0 0 1 5.4 0M7.6 12.3 4 10.6M16.4 12.3 20 10.6M8 16.4l-3.4 1.6M16 16.4l3.4 1.6"/></svg>';
+const LEVELS = [{ name: 'Level 1', diff: 'Easy' }, { name: 'Level 2', diff: 'Medium' }, { name: 'Level 3', diff: 'Hard' }];
 
-// ---------- saved progress (per browser, optional) ----------
-const KEY = 'bugspot.v1';
-const save = { stars: {}, daily: null, streak: 0, last: '', pending: null };
+// ---------- the daily set ----------
+// Everyone gets the same 8 bugs on a given date: 3 easy, 3 medium, 2 hard, in that order.
+function rng(seed) {
+  let a = seed >>> 0;
+  return () => {
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+function dailySet(d) {
+  const r = rng(dayNum(d) * 2654435761);
+  const by = { Easy: [], Medium: [], Hard: [] };
+  PUZZLES.forEach((p, i) => { if (by[p.diff]) by[p.diff].push(i); });
+  const pick = (a, n) => {
+    const c = a.slice();
+    for (let i = c.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); const t = c[i]; c[i] = c[j]; c[j] = t; }
+    return c.slice(0, n);
+  };
+  return [].concat(pick(by.Easy, 3), pick(by.Medium, 3), pick(by.Hard, 2));
+}
+
+// ---------- saved progress ----------
+// Shape: { stars: {id: n}, streak, last, days: { 'YYYY-MM-DD': { r: {slot: {f, t, ms}}, p: {slot, used, hint}|null, sk: 0|1 } } }
+// Saved in this browser. Signed-in players also sync it to their account.
+const KEY = 'bugspot.v2';
+const save = { stars: {}, streak: 0, last: '', days: {} };
 try {
-  const raw = localStorage.getItem(KEY);
+  let raw = localStorage.getItem(KEY);
+  const old = !raw;
+  if (old) raw = localStorage.getItem('bugspot.v1'); // progress from the first version
   if (raw) {
     const s = JSON.parse(raw);
     if (s && typeof s === 'object') {
       if (s.stars && typeof s.stars === 'object') save.stars = s.stars;
-      if (s.daily && typeof s.daily === 'object') save.daily = s.daily;
       if (typeof s.streak === 'number') save.streak = s.streak;
       if (typeof s.last === 'string') save.last = s.last;
-      if (s.pending && typeof s.pending === 'object') save.pending = s.pending;
+      if (!old && s.days && typeof s.days === 'object') save.days = s.days;
     }
   }
 } catch (e) { /* storage unavailable */ }
-function persist() { try { localStorage.setItem(KEY, JSON.stringify(save)); } catch (e) { /* ignore */ } }
 
-// ---------- state ----------
-const S = { view: 'daily', idx: 0, from: 'daily', used: 0, hint: false, t0: 0, done: false, found: false, tickTimer: 0 };
+function snapshot() {
+  const keys = Object.keys(save.days).sort().slice(-14);
+  const days = {};
+  keys.forEach(k => { days[k] = save.days[k]; });
+  save.days = days;
+  return { stars: save.stars, streak: save.streak, last: save.last, days };
+}
+function persist(skipSync) {
+  const snap = snapshot();
+  try { localStorage.setItem(KEY, JSON.stringify(snap)); } catch (e) { /* ignore */ }
+  if (!skipSync) scheduleSync();
+}
+function getDay(key) {
+  if (!save.days[key]) save.days[key] = { r: {}, p: null, sk: 0 };
+  return save.days[key];
+}
+function mergeSave(o) {
+  if (!o || typeof o !== 'object') return;
+  if (o.stars && typeof o.stars === 'object') {
+    for (const id in o.stars) if ((o.stars[id] | 0) > (save.stars[id] | 0)) save.stars[id] = o.stars[id] | 0;
+  }
+  if (typeof o.last === 'string' && (o.last > save.last || (o.last === save.last && o.streak > save.streak))) {
+    save.streak = o.streak | 0; save.last = o.last;
+  }
+  if (o.days && typeof o.days === 'object') {
+    for (const k in o.days) {
+      const c = o.days[k], l = save.days[k];
+      if (!c || typeof c.r !== 'object') continue;
+      if (!l) { save.days[k] = { r: c.r, p: null, sk: c.sk | 0 }; continue; }
+      for (const s in c.r) if (!l.r[s] || (!l.r[s].f && c.r[s].f)) l.r[s] = c.r[s];
+      l.sk = Math.max(l.sk | 0, c.sk | 0);
+    }
+  }
+}
 
-// Streak shown to the player: only counts if the last finished daily was today or yesterday.
+// Streak shown to the player: only counts if the last day with a found bug was today or yesterday.
 function liveStreak() {
   const t = new Date(), y = new Date(t.getFullYear(), t.getMonth(), t.getDate() - 1);
   return save.last === dayKey(t) || save.last === dayKey(y) ? save.streak : 0;
 }
+
+// ---------- accounts (Supabase, loaded only when configured) ----------
+let sb = null, user = null, syncTimer = 0;
+function signedIn() { return !!user; }
+function avail() { return signedIn() ? SLOTS : FREE; }
+
+function initAuth() {
+  renderAcct();
+  if (!CONFIG.SUPABASE_URL || !CONFIG.SUPABASE_KEY) return;
+  const s = document.createElement('script');
+  s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js';
+  s.onload = () => {
+    try {
+      sb = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
+      sb.auth.onAuthStateChange((ev, sess) => {
+        const was = user;
+        user = sess && sess.user ? sess.user : null;
+        renderAcct();
+        if (user && (!was || was.id !== user.id)) setTimeout(pullAndMerge, 0);
+        else if (!user && was) rerender();
+      });
+    } catch (e) { sb = null; }
+  };
+  s.onerror = () => { sb = null; renderAcct(); };
+  document.head.appendChild(s);
+}
+async function pullAndMerge() {
+  try {
+    const { data, error } = await sb.from('progress').select('data').eq('user_id', user.id).maybeSingle();
+    if (error) throw error;
+    if (data && data.data) mergeSave(data.data);
+    persist(false);
+    rerender();
+  } catch (e) { /* keep local progress */ }
+}
+function scheduleSync() {
+  if (!sb || !user) return;
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(() => {
+    try {
+      Promise.resolve(sb.from('progress').upsert({ user_id: user.id, data: snapshot(), updated_at: new Date().toISOString() })).catch(() => {});
+    } catch (e) { /* ignore */ }
+  }, 1200);
+}
+function rerender() { if (S.view !== 'play') setView(S.view); }
+
+function renderAcct() {
+  const a = $('acct');
+  if (!a) return;
+  a.innerHTML = signedIn()
+    ? '<span>' + esc(user.email || 'Signed in') + '</span><button id="acBtn" type="button">Account</button>'
+    : '<span>Guest</span><button id="acBtn" type="button">Sign in</button>';
+  $('acBtn').addEventListener('click', () => (signedIn() ? showAccount() : showSignIn()));
+}
+
+function showSignIn(msg) {
+  if (!CONFIG.SUPABASE_URL || !CONFIG.SUPABASE_KEY) {
+    openSheet({
+      sev: null, id: 'Sign in', status: '', title: 'Sign-in opens soon',
+      body: '<p>Sign in will unlock all 8 daily bugs and the practice levels. It is not switched on yet, so for now you can play the free 3 bugs a day.</p>',
+      buttons: [{ label: 'Close', primary: true, fn: closeSheet }],
+    });
+    return;
+  }
+  const buttons = [{ label: 'Email me a sign-in link', primary: true, fn: btn => sendLink(btn) }];
+  if (CONFIG.GOOGLE) buttons.push({ label: 'Continue with Google', fn: () => signInGoogle() });
+  buttons.push({ label: 'Not now', fn: closeSheet });
+  openSheet({
+    sev: null, id: 'Sign in', status: '', title: 'Sign in to play all ' + SLOTS + ' bugs',
+    body: '<p>Free. No password: we email you a link. Your progress and streak are saved to your account.</p>' +
+      '<input id="siEmail" class="inp" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com" aria-label="Email address">' +
+      '<p id="siMsg" class="note" role="status">' + esc(msg || '') + '</p>',
+    buttons,
+  });
+  setTimeout(() => { const i = $('siEmail'); if (i) i.focus(); }, 380);
+}
+async function sendLink(btn) {
+  const email = ($('siEmail').value || '').trim(), msg = $('siMsg');
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { msg.textContent = 'Enter a valid email address.'; return; }
+  if (!sb) { msg.textContent = 'Still loading. Try again in a moment.'; return; }
+  btn.disabled = true; msg.textContent = 'Sending…';
+  try {
+    const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: CONFIG.SITE } });
+    if (error) throw error;
+    msg.textContent = 'Check your inbox for the link, then open it on this device.';
+    btn.textContent = 'Send again';
+  } catch (e) {
+    msg.textContent = 'Could not send the link. Wait a minute and try again.';
+  }
+  btn.disabled = false;
+}
+async function signInGoogle() {
+  if (!sb) return;
+  try { await sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: CONFIG.SITE } }); } catch (e) { /* ignore */ }
+}
+function showAccount() {
+  openSheet({
+    sev: null, id: 'Account', status: '', title: 'Signed in',
+    body: '<p>' + esc(user.email || '') + '</p><p class="note">Your progress is saved to this account.</p>',
+    buttons: [
+      { label: 'Sign out', fn: async () => { try { await sb.auth.signOut(); } catch (e) { /* ignore */ } user = null; renderAcct(); closeSheet(); rerender(); } },
+      { label: 'Close', primary: true, fn: closeSheet },
+    ],
+  });
+}
+
+// ---------- state ----------
+const S = { view: 'daily', idx: 0, from: 'daily', slot: 0, dayKey: '', used: 0, hint: false, t0: 0, done: false, found: false, tickTimer: 0 };
+
 function say(t) { $('live').textContent = t; }
 function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 
@@ -936,49 +1131,74 @@ function nextBugIn() {
   const m = Math.max(1, Math.round((next - n) / 60000));
   return Math.floor(m / 60) + 'h ' + p2(m % 60) + 'm';
 }
+function nextSlot(day) {
+  const n = avail();
+  for (let i = 0; i < n; i++) if (!day.r[i]) return i;
+  return -1;
+}
+function tally(day) {
+  let found = 0, done = 0;
+  for (const s in day.r) { done++; if (day.r[s].f) found++; }
+  return { found, done };
+}
 
 function renderDaily() {
   S.from = 'daily';
   $('tabDaily').setAttribute('aria-selected', 'true');
   $('tabPractice').setAttribute('aria-selected', 'false');
-  const today = new Date(), key = dayKey(today), d = save.daily;
-  const v = $('view');
-  if (!d || d.key !== key) {
-    v.innerHTML =
-      '<section class="card hero"><p class="eyebrow">Daily bug · ' + dayLabel(today) + '</p>' +
-      '<h1>One screen. One bug. Three tries.</h1>' +
-      '<p class="lede">A made-up app has a defect hiding in plain sight. Tap it before your tries run out, then read the bug report.</p>' +
-      '<div class="stack" style="margin-top:18px"><button id="go" class="btn-p" type="button">Start today’s hunt</button>' +
-      '<p class="meta">Streak <b>' + liveStreak() + '</b> ' + (liveStreak() === 1 ? 'day' : 'days') + '</p></div></section>' +
-      '<div class="how"><div><b>Tap</b>the one thing that is wrong</div><div><b>Read</b>a short QA bug report</div><div><b>Share</b>your result with your team</div></div>';
-    $('go').addEventListener('click', () => startPlay(dailyIdx(today), 'daily'));
-    return;
+  const today = new Date(), key = dayKey(today), set = dailySet(today), day = getDay(key);
+  const n = avail(), t = tally(day), next = nextSlot(day);
+  const sq = set.map((idx, i) => {
+    const r = day.r[i];
+    const cls = r ? (r.f ? 'sl g' : 'sl r') : (i >= n ? 'sl l' : 'sl');
+    return '<i class="' + cls + '">' + (r ? (r.f ? '✓' : '×') : (i >= n ? '🔒' : i + 1)) + '</i>';
+  }).join('');
+  const guestFull = !signedIn() && next < 0;
+  let head, lede = '';
+  if (t.done === 0) {
+    head = '<h1>' + n + ' screens. One bug each.</h1>';
+    lede = '<p class="lede">A made-up app has a defect hiding in plain sight. Tap it before your three tries run out, then read the bug report.' + (signedIn() ? '' : ' Guests play ' + FREE + ' a day; sign in free for all ' + SLOTS + '.') + '</p>';
+  } else {
+    head = '<p class="res">' + t.found + ' of ' + n + ' found</p>';
+    if (next >= 0) lede = '<p class="rt">' + (n - t.done) + ' to go today.</p>';
+    else lede = '<p class="rt">' + (signedIn() ? 'All ' + SLOTS + ' done for today.' : 'Your ' + FREE + ' free bugs are done.') + '</p>';
   }
-  const p = PUZZLES[d.idx];
-  const sq = d.found ? '<i class="sq"></i>'.repeat(d.tries - 1) + '<i class="sq g"></i>' : '<i class="sq"></i><i class="sq"></i><i class="sq"></i>';
-  v.innerHTML =
-    '<section class="card hero"><p class="eyebrow">Daily bug · ' + dayLabel(today) + '</p>' +
-    '<div class="sqs" role="img" aria-label="Your tries">' + sq + '</div>' +
-    '<p class="res">' + (d.found ? 'Found it in ' + d.tries + (d.tries === 1 ? ' try' : ' tries') : 'Today’s bug got away') + '</p>' +
-    '<p class="rt">' + (d.found ? fmtT(d.time) + ' · ' : '') + '<span class="sevpill" data-sev="' + p.sev + '">' + p.sev + ' ' + SEV[p.sev] + '</span></p>' +
-    '<p style="margin-top:12px"><b>' + esc(p.rep.title) + '</b></p>' +
-    '<div class="stack" style="margin-top:16px"><button id="shareBtn" class="btn-p" type="button">Share result</button>' +
-    '<button id="repBtn" class="btn-s" type="button">Read the bug report</button></div>' +
-    '<p class="meta" style="margin-top:14px">Next bug in <b id="cd">' + nextBugIn() + '</b> · Streak <b>' + liveStreak() + '</b> ' + (liveStreak() === 1 ? 'day' : 'days') + '</p></section>' +
-    '<div class="stack" style="margin-top:12px"><button id="morePrac" class="btn-s" type="button">Practise with ' + (PUZZLES.length - 1) + ' more bugs</button></div>';
-  $('shareBtn').addEventListener('click', () => showShare());
-  $('repBtn').addEventListener('click', () => showReport(d.idx, d.found, d.tries, d.time, 'daily'));
-  $('morePrac').addEventListener('click', () => { S.from = 'practice'; setView('practice'); });
+  let primary;
+  if (next >= 0) primary = '<button id="go" class="btn-p" type="button">' + (t.done ? 'Next bug' : 'Start today’s hunt') + '</button>';
+  else if (guestFull) primary = '<button id="goSign" class="btn-p" type="button">Sign in to unlock ' + (SLOTS - FREE) + ' more</button>';
+  else primary = '<button id="shareBtn" class="btn-p" type="button">Share result</button>';
+  const second = t.done && next >= 0 || guestFull ? '<button id="shareBtn" class="btn-s" type="button">Share result</button>' : '';
+  const tiles = set.map((idx, i) => {
+    const p = PUZZLES[idx], r = day.r[i], locked = i >= n;
+    const status = r ? (r.f ? 'Found · ' + r.t + (r.t === 1 ? ' try' : ' tries') : 'Missed') : (locked ? '🔒 Sign in' : 'Play');
+    return '<button class="tile' + (r ? ' done' : '') + (locked ? ' lock' : '') + '" type="button" data-s="' + i + '" aria-label="Bug ' + (i + 1) + ', ' + p.diff + ', ' + status + '">' +
+      '<span class="n">#' + p2(i + 1) + '</span><span class="a">' + p.area + '</span><span class="d">' + p.diff + '</span><span class="d">' + status + '</span></button>';
+  }).join('');
+  $('view').innerHTML =
+    '<section class="card hero"><p class="eyebrow">Daily bugs · ' + dayLabel(today) + '</p>' +
+    '<div class="slots" role="img" aria-label="' + t.found + ' of ' + n + ' found">' + sq + '</div>' + head + lede +
+    '<div class="stack" style="margin-top:16px">' + primary + second + '</div>' +
+    '<p class="meta" style="margin-top:14px">Next set in <b id="cd">' + nextBugIn() + '</b> · Streak <b>' + liveStreak() + '</b> ' + (liveStreak() === 1 ? 'day' : 'days') + '</p></section>' +
+    '<div class="sumrow"><h2>Today’s bugs</h2><span class="meta"><b>' + t.done + '</b> / ' + n + ' played</span></div>' +
+    '<div class="grid">' + tiles + '</div>' +
+    (signedIn() ? '' : '<p class="note" style="margin-top:12px">Guests play ' + FREE + ' bugs a day. Sign in free to play all ' + SLOTS + ' and unlock practice levels.</p>');
+  const go = $('go'); if (go) go.addEventListener('click', () => startPlay(set[next], 'daily', next));
+  const gs = $('goSign'); if (gs) gs.addEventListener('click', () => showSignIn());
+  const sh = $('shareBtn'); if (sh) sh.addEventListener('click', () => showShare());
+  $('view').querySelectorAll('.tile').forEach(b => b.addEventListener('click', () => {
+    const i = +b.dataset.s, r = day.r[i];
+    if (i >= n) showSignIn();
+    else if (r) showReport(set[i], r.f, r.t, r.ms, 'daily', i);
+    else startPlay(set[i], 'daily', i);
+  }));
   S.tickTimer = setInterval(() => { const c = $('cd'); if (c) c.textContent = nextBugIn(); }, 30000);
 }
 
 function shareText() {
-  const d = save.daily, p = PUZZLES[d.idx];
-  const sq = d.found ? '🟥'.repeat(d.tries - 1) + '🟩' : '🟥🟥🟥';
-  const pd = d.key.split('-').map(Number);
-  return 'Bugspot Daily · ' + dayLabel(new Date(pd[0], pd[1] - 1, pd[2])) + '\n' + sq + ' ' +
-    (d.found ? 'found in ' + d.tries + (d.tries === 1 ? ' try' : ' tries') + ' · ' + fmtT(d.time) : 'the bug got away') +
-    '\nSeverity ' + p.sev + ' (' + SEV[p.sev] + ')\nCan you spot it?';
+  const today = new Date(), day = getDay(dayKey(today)), set = dailySet(today), n = avail(), t = tally(day);
+  const sq = set.map((x, i) => { const r = day.r[i]; return r ? (r.f ? '🟩' : '🟥') : (i >= n ? '🔒' : '⬜'); }).join('');
+  return 'Bugspot Daily · ' + dayLabel(today) + '\n' + sq + '\n' + t.found + ' of ' + n + ' bugs found' +
+    '\nCan you spot them? ' + CONFIG.SITE;
 }
 
 function copyText(text, btn) {
@@ -1002,37 +1222,61 @@ function showShare() {
   });
 }
 
-// ---------- practice ----------
+// ---------- practice (signed-in players) ----------
 function stars(n) { return '★'.repeat(n) + '<i>' + '★'.repeat(3 - n) + '</i>'; }
+function levelIdx(diff) { const a = []; PUZZLES.forEach((p, i) => { if (p.diff === diff) a.push(i); }); return a; }
+function solvedIn(diff) { return levelIdx(diff).filter(i => (save.stars[PUZZLES[i].id] | 0) > 0).length; }
+function needFor(diff) { return Math.ceil(levelIdx(diff).length * UNLOCK_AT); }
+function levelOpen(li) { return li === 0 || solvedIn(LEVELS[li - 1].diff) >= needFor(LEVELS[li - 1].diff); }
+
 function renderPractice() {
   S.from = 'practice';
   $('tabDaily').setAttribute('aria-selected', 'false');
   $('tabPractice').setAttribute('aria-selected', 'true');
+  if (!signedIn()) {
+    const rows = LEVELS.map(L => '<div class="row2"><span>🔒 ' + L.name + ' · ' + L.diff + '</span><span class="meta">' + levelIdx(L.diff).length + ' bugs</span></div>').join('');
+    $('view').innerHTML =
+      '<section class="card"><p class="eyebrow">Practice</p><h1 style="font:800 26px/1.1 var(--display);margin-top:8px">Levels are for signed-in players</h1>' +
+      '<p class="lede" style="margin-top:6px">Sign in free to practise on every bug. Clear most of a level to open the next one.</p>' + rows +
+      '<div class="stack" style="margin-top:16px"><button id="goSign" class="btn-p" type="button">Sign in</button></div></section>';
+    $('goSign').addEventListener('click', () => showSignIn());
+    return;
+  }
   let total = 0;
   PUZZLES.forEach(p => { total += save.stars[p.id] || 0; });
-  const tiles = PUZZLES.map((p, i) => {
-    const s = save.stars[p.id];
-    return '<button class="tile' + (s !== undefined ? ' done' : '') + '" type="button" data-i="' + i + '" aria-label="Puzzle ' + (i + 1) + ', ' + p.area + ', ' + p.diff + (s !== undefined ? ', ' + s + ' stars' : '') + '">' +
-      '<span class="n">#' + p2(i + 1) + '</span><span class="a">' + p.area + '</span><span class="d">' + p.diff + '</span>' +
-      '<span class="st" aria-hidden="true">' + stars(s || 0) + '</span></button>';
-  }).join('');
-  $('view').innerHTML =
-    '<section class="card"><p class="eyebrow">Practice</p><h1 style="font:800 26px/1.1 var(--display);margin-top:8px">' + PUZZLES.length + ' bugs to hunt</h1>' +
-    '<p class="lede" style="margin-top:6px">Find each bug in three tries or fewer. Fewer tries and no hint earn more stars.</p></section>' +
-    '<div class="sumrow"><h2>All screens</h2><span class="meta"><b>' + total + '</b> / ' + PUZZLES.length * 3 + ' stars</span></div>' +
-    '<div class="grid">' + tiles + '</div>';
+  let html = '<section class="card"><p class="eyebrow">Practice</p><h1 style="font:800 26px/1.1 var(--display);margin-top:8px">' + PUZZLES.length + ' bugs to hunt</h1>' +
+    '<p class="lede" style="margin-top:6px">Find each bug in three tries or fewer. Solve ' + Math.round(UNLOCK_AT * 100) + '% of a level to open the next.</p></section>' +
+    '<div class="sumrow"><h2>Levels</h2><span class="meta"><b>' + total + '</b> / ' + PUZZLES.length * 3 + ' stars</span></div>';
+  LEVELS.forEach((L, li) => {
+    const idxs = levelIdx(L.diff), open = levelOpen(li);
+    html += '<div class="lvhead"><h2 style="font:700 17px/1.2 var(--display)">' + (open ? '' : '🔒 ') + L.name + ' · ' + L.diff + '</h2><span class="meta"><b>' + solvedIn(L.diff) + '</b> / ' + idxs.length + ' solved</span></div>';
+    if (!open) {
+      const prev = LEVELS[li - 1];
+      html += '<p class="note">Solve ' + needFor(prev.diff) + ' of ' + levelIdx(prev.diff).length + ' ' + prev.diff + ' bugs to unlock this level (' + solvedIn(prev.diff) + ' so far).</p>';
+      return;
+    }
+    html += '<div class="grid">' + idxs.map(i => {
+      const p = PUZZLES[i], s = save.stars[p.id];
+      return '<button class="tile' + (s !== undefined ? ' done' : '') + '" type="button" data-i="' + i + '" aria-label="Puzzle ' + (i + 1) + ', ' + p.area + ', ' + p.diff + (s !== undefined ? ', ' + s + ' stars' : '') + '">' +
+        '<span class="n">#' + p2(i + 1) + '</span><span class="a">' + p.area + '</span><span class="d">' + p.diff + '</span>' +
+        '<span class="st" aria-hidden="true">' + stars(s || 0) + '</span></button>';
+    }).join('') + '</div>';
+  });
+  $('view').innerHTML = html;
   $('view').querySelectorAll('.tile').forEach(b => b.addEventListener('click', () => startPlay(+b.dataset.i, 'practice')));
 }
 
 // ---------- play ----------
-function startPlay(idx, from) {
-  S.idx = idx; S.from = from; S.used = 0; S.hint = false; S.done = false; S.found = false; S.t0 = performance.now();
+function startPlay(idx, from, slot) {
+  if (from === 'practice' && !signedIn()) { showSignIn(); return; }
+  S.idx = idx; S.from = from; S.slot = slot | 0; S.used = 0; S.hint = false; S.done = false; S.found = false; S.t0 = performance.now();
   if (from === 'daily') {
-    // Keep tries and hint across a refresh so the daily cannot be retried.
-    const key = dayKey(new Date());
-    if (save.pending && save.pending.key === key && save.pending.idx === idx) {
-      S.used = Math.min(2, save.pending.used | 0); S.hint = !!save.pending.hint;
-    } else { save.pending = { key, idx, used: 0, hint: false }; persist(); }
+    if (S.slot >= avail()) { showSignIn(); return; }
+    // Keep tries and hint across a refresh so a puzzle cannot be retried that way.
+    S.dayKey = dayKey(new Date());
+    const day = getDay(S.dayKey);
+    if (day.p && day.p.slot === S.slot) { S.used = Math.min(2, day.p.used | 0); S.hint = !!day.p.hint; }
+    else { day.p = { slot: S.slot, used: 0, hint: false }; persist(); }
   }
   setView('play');
 }
@@ -1047,8 +1291,8 @@ function renderPlay() {
   const p = PUZZLES[S.idx];
   $('view').innerHTML =
     '<div class="playbar"><button id="back" class="link" type="button">‹ Back</button>' +
-    '<div class="ptitle">' + p.area + ' · ' + (S.from === 'daily' ? 'Daily' : '#' + p2(S.idx + 1)) + '</div>' +
-    '<div id="tries" class="tries" role="img" aria-label="3 tries left">' + triesHtml() + '</div></div>' +
+    '<div class="ptitle">' + p.area + ' · ' + (S.from === 'daily' ? (S.slot + 1) + ' of ' + SLOTS : '#' + p2(S.idx + 1)) + '</div>' +
+    '<div id="tries" class="tries" role="img" aria-label="' + (3 - S.used) + ' tries left">' + triesHtml() + '</div></div>' +
     '<div class="ticket"><span class="tid">QA-' + (104 + S.idx) + '</span><span id="note" class="grow">Something on this screen is wrong. Tap it.</span><button id="hintBtn" class="link" type="button">Hint</button></div>' +
     '<div class="phone" id="phone"><div class="screen" id="screen" style="--ac:' + p.ac + '">' + p.html + '</div></div>' +
     '<div id="after" class="after" hidden></div>';
@@ -1058,11 +1302,10 @@ function renderPlay() {
     S.hint = true;
     $('note').textContent = 'Hint: ' + p.hint;
     $('hintBtn').hidden = true;
-    if (S.from === 'daily' && save.pending) { save.pending.hint = true; persist(); }
+    if (S.from === 'daily') { const d = getDay(S.dayKey); if (d.p) { d.p.hint = true; persist(); } }
   });
   $('screen').addEventListener('click', onTap);
   if (S.hint) { $('note').textContent = 'Hint: ' + p.hint; $('hintBtn').hidden = true; }
-  $('tries').setAttribute('aria-label', (3 - S.used) + ' tries left');
 }
 
 function onTap(e) {
@@ -1082,8 +1325,21 @@ function onTap(e) {
   $('tries').innerHTML = triesHtml();
   $('tries').setAttribute('aria-label', (3 - S.used) + ' tries left');
   say('Not it. ' + (3 - S.used) + ' tries left.');
-  if (S.from === 'daily' && save.pending && S.used < 3) { save.pending.used = S.used; persist(); }
+  if (S.from === 'daily' && S.used < 3) { const d = getDay(S.dayKey); if (d.p) { d.p.used = S.used; persist(); } }
   if (S.used >= 3) finish(false);
+}
+
+// What the main button does after a bug is finished.
+function afterAction(from, idx, slot) {
+  if (from === 'daily') {
+    const today = new Date(), set = dailySet(today), day = getDay(S.dayKey || dayKey(today)), next = nextSlot(day);
+    if (next >= 0) return { label: 'Next bug', fn: () => startPlay(set[next], 'daily', next) };
+    if (!signedIn()) return { label: 'Sign in to unlock ' + (SLOTS - FREE) + ' more', fn: () => showSignIn() };
+    return { label: 'Share result', fn: () => showShare() };
+  }
+  const idxs = levelIdx(PUZZLES[idx].diff), pos = idxs.indexOf(idx);
+  if (pos >= 0 && pos < idxs.length - 1) return { label: 'Next puzzle', fn: () => startPlay(idxs[pos + 1], 'practice') };
+  return { label: 'All levels', fn: () => setView('practice') };
 }
 
 function finish(found) {
@@ -1096,52 +1352,43 @@ function finish(found) {
   if (found) { st = 4 - tries; if (S.hint) st = Math.max(1, st - 1); }
   if (found) save.stars[p.id] = Math.max(save.stars[p.id] || 0, st);
   if (S.from === 'daily') {
-    const today = new Date(), key = dayKey(today);
-    if (!save.daily || save.daily.key !== key) {
-      const y = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1);
-      // A missed daily ends the streak; a found one extends it.
-      save.streak = found ? (save.last === dayKey(y) ? save.streak + 1 : 1) : 0;
+    const key = S.dayKey, day = getDay(key);
+    day.r[S.slot] = { f: found, t: tries, ms: Math.round(time) };
+    day.p = null;
+    if (found && !day.sk) {
+      // The first bug found each day keeps the streak going.
+      day.sk = 1;
+      const t = new Date(), y = new Date(t.getFullYear(), t.getMonth(), t.getDate() - 1);
+      save.streak = save.last === key ? save.streak : (save.last === dayKey(y) ? save.streak + 1 : 1);
       save.last = key;
-      save.pending = null;
-      save.daily = { key, idx: S.idx, found, tries, time };
     }
   }
   persist();
-  say(found ? 'Found it. Bug report open.' : 'Out of tries. The bug is highlighted.');
+  say(found ? 'Found it. Bug report open.' : 'Out of tries. The bug is circled in red.');
   const after = $('after');
   after.hidden = false;
-  const last = S.from === 'practice' && S.idx >= PUZZLES.length - 1;
-  after.innerHTML = '<button id="aRep" class="btn-s" type="button">Bug report</button>' +
-    (S.from === 'daily' ? '<button id="aNext" class="btn-p" type="button">Share result</button>' :
-      '<button id="aNext" class="btn-p" type="button">' + (last ? 'All puzzles' : 'Next puzzle') + '</button>');
-  $('aRep').addEventListener('click', () => showReport(S.idx, found, tries, time, S.from));
-  $('aNext').addEventListener('click', () => {
-    if (S.from === 'daily') showShare();
-    else if (last) setView('practice');
-    else startPlay(S.idx + 1, 'practice');
-  });
-  // On a miss, leave the highlighted bug visible; the player opens the report with the button.
-  if (found) setTimeout(() => { if (S.view === 'play' && S.done) showReport(S.idx, found, tries, time, S.from); }, 750);
+  const act = afterAction(S.from, S.idx, S.slot);
+  after.innerHTML = '<button id="aRep" class="btn-s" type="button">Bug report</button><button id="aNext" class="btn-p" type="button">' + esc(act.label) + '</button>';
+  $('aRep').addEventListener('click', () => showReport(S.idx, found, tries, time, S.from, S.slot));
+  $('aNext').addEventListener('click', act.fn);
+  // On a miss, leave the circled bug visible; the player opens the report with the button.
+  if (found) setTimeout(() => { if (S.view === 'play' && S.done) showReport(S.idx, found, tries, time, S.from, S.slot); }, 750);
   else $('note').textContent = 'Out of tries. The bug is circled in red. Tap Bug report to read it.';
 }
 
 // ---------- bug report sheet ----------
-function showReport(idx, found, tries, time, from) {
+function showReport(idx, found, tries, time, from, slot) {
   const p = PUZZLES[idx], r = p.rep;
   const body =
     '<div><h3>Steps to reproduce</h3><ol>' + r.steps.map(s => '<li>' + esc(s) + '</li>').join('') + '</ol></div>' +
     '<div class="ea"><div><h3>Expected</h3><p>' + esc(r.expected) + '</p></div><div><h3>Actual</h3><p>' + esc(r.actual) + '</p></div></div>' +
     '<div class="tip"><b>Tester tip</b>' + esc(r.tip) + '</div>';
-  const buttons = [];
-  if (from === 'daily') buttons.push({ label: 'Share result', primary: true, fn: () => showShare() }, { label: 'Close', fn: closeSheet });
-  else {
-    const last = idx >= PUZZLES.length - 1;
-    buttons.push({ label: last ? 'All puzzles' : 'Next puzzle', primary: true, fn: () => (last ? setView('practice') : startPlay(idx + 1, 'practice')) }, { label: 'Close', fn: closeSheet });
-  }
+  const act = afterAction(from, idx, slot);
   openSheet({
     sev: p.sev, id: 'BUG-' + (1000 + idx * 7),
     status: found ? 'Found in ' + tries + (tries === 1 ? ' try' : ' tries') + ' · ' + fmtT(time) : 'Not found this time',
-    ok: found, title: r.title, body, buttons,
+    ok: found, title: r.title, body,
+    buttons: [{ label: act.label, primary: true, fn: act.fn }, { label: 'Close', fn: closeSheet }],
   });
 }
 
@@ -1180,6 +1427,7 @@ $('shClose').addEventListener('click', closeSheet);
 $('tabDaily').addEventListener('click', () => { S.from = 'daily'; setView('daily'); });
 $('tabPractice').addEventListener('click', () => { S.from = 'practice'; setView('practice'); });
 
+initAuth();
 setView('daily');
 
 if (typeof __TEST__ !== 'undefined') __TEST__({ S, save, startPlay, setView, onTap, PUZZLES });
