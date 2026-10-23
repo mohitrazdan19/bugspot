@@ -1670,6 +1670,12 @@ function drawShareCard() {
   g.fillStyle = '#ffffff'; g.beginPath(); g.roundRect(60, 60, 1080, 510, 36); g.fill();
   g.fillStyle = '#101729'; g.font = '800 54px ' + sans; g.textBaseline = 'alphabetic';
   g.fillText(BRAND + ' Daily', 110, 150);
+  // little bug icon, top right of the card
+  g.save(); g.translate(1020, 150); g.strokeStyle = '#d6283a'; g.lineWidth = 7; g.lineCap = 'round';
+  [-1, 1].forEach(d => [-22, 0, 22].forEach(y => { g.beginPath(); g.moveTo(d * 26, y); g.lineTo(d * 52, y + (y ? y / 2 : 0) - 4); g.stroke(); }));
+  g.fillStyle = '#d6283a'; g.beginPath(); g.ellipse(0, 6, 30, 40, 0, 0, Math.PI * 2); g.fill();
+  g.beginPath(); g.arc(0, -42, 17, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#ffffff'; g.fillRect(-2, -30, 4, 66); g.restore();
   g.fillStyle = '#566078'; g.font = '500 32px ' + sans;
   g.fillText(dayLabel(today) + ' ' + today.getFullYear(), 110, 198);
   // one square per bug in today's set
@@ -1685,9 +1691,14 @@ function drawShareCard() {
   g.fillStyle = '#101729'; g.font = '800 72px ' + sans;
   g.fillText(t.found + ' of ' + n + ' bugs found', 110, 430);
   g.fillStyle = '#566078'; g.font = '500 34px ' + sans;
-  g.fillText('Streak ' + liveStreak() + (liveStreak() === 1 ? ' day' : ' days') + '  ·  Can you spot them?', 110, 488);
+  g.fillText('Streak ' + liveStreak() + (liveStreak() === 1 ? ' day' : ' days'), 110, 488);
   g.fillStyle = '#d6283a'; g.font = '600 30px ' + sans;
   g.fillText(CONFIG.SITE.replace(/^https?:\/\//, '').replace(/\/$/, ''), 110, 540);
+  // call to action
+  const cta = 'Can you beat me?';
+  g.font = '700 30px ' + sans; const cw = g.measureText(cta).width + 64;
+  g.fillStyle = '#101729'; g.beginPath(); g.roundRect(1090 - cw, 478, cw, 62, 31); g.fill();
+  g.fillStyle = '#ffffff'; g.textAlign = 'center'; g.fillText(cta, 1090 - cw / 2, 519); g.textAlign = 'left';
   return c;
 }
 async function shareImage(btn) {
