@@ -189,6 +189,138 @@
   .row2 { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); margin-top: 0; font-weight: 600; }
   .inp { width: 100%; min-height: 48px; border: 1.5px solid var(--line); border-radius: 12px; padding: 0 14px; font: 500 16px var(--body); background: var(--surface); color: var(--ink); }
   .inp:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  /* ---------- visual refresh ----------
+     Brighter look on top of the base styles: soft glowing backdrop, a night-sky hero card,
+     one colour per level (tiles, badges, progress bars) and livelier buttons. */
+  :root {
+    --a1: #5b5bf7; --a2: #9b4dff;
+    --glow: rgba(124, 92, 255, 0.20); --glow2: rgba(255, 90, 140, 0.12); --dot: rgba(16, 23, 41, 0.07);
+    --shadow: 0 1px 2px rgba(16, 23, 41, 0.05), 0 6px 18px rgba(16, 23, 41, 0.06);
+    --shadow-up: 0 2px 4px rgba(16, 23, 41, 0.06), 0 14px 30px rgba(16, 23, 41, 0.12);
+    --hero: radial-gradient(420px 220px at 100% 0%, rgba(255, 90, 140, 0.38), transparent 62%), linear-gradient(140deg, #141a3e 0%, #2a2477 52%, #5a2bc2 100%);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --a1: #7c7cff; --a2: #b07bff; --glow: rgba(124, 92, 255, 0.28); --glow2: rgba(255, 90, 140, 0.10); --dot: rgba(255, 255, 255, 0.05);
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 6px 18px rgba(0, 0, 0, 0.25); --shadow-up: 0 2px 4px rgba(0, 0, 0, 0.35), 0 14px 30px rgba(0, 0, 0, 0.45); }
+  }
+  :root[data-theme="dark"] { --a1: #7c7cff; --a2: #b07bff; --glow: rgba(124, 92, 255, 0.28); --glow2: rgba(255, 90, 140, 0.10); --dot: rgba(255, 255, 255, 0.05);
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 6px 18px rgba(0, 0, 0, 0.25); --shadow-up: 0 2px 4px rgba(0, 0, 0, 0.35), 0 14px 30px rgba(0, 0, 0, 0.45); }
+
+  /* One colour per level. Puzzle data still says Easy / Medium / Hard. */
+  [data-lv] { --lv: var(--p4); }
+  [data-lv="Easy"] { --lv: #12a877; }
+  [data-lv="Medium"] { --lv: #e08a00; }
+  [data-lv="Hard"] { --lv: #e0457b; }
+  [data-lv="Expert"] { --lv: #8b5cf6; }
+
+  body {
+    background:
+      radial-gradient(900px 420px at 15% -120px, var(--glow), transparent 70%),
+      radial-gradient(700px 380px at 100% 0, var(--glow2), transparent 70%),
+      radial-gradient(circle at 1px 1px, var(--dot) 1px, transparent 0) 0 0 / 22px 22px,
+      var(--bg);
+    background-repeat: no-repeat, no-repeat, repeat, no-repeat;
+  }
+
+  /* header */
+  .brand { gap: 10px; }
+  .brand svg { width: 38px; height: 38px; padding: 6px; border-radius: 12px; color: #fff;
+    background: linear-gradient(140deg, #ff6b78, #d6283a); box-shadow: 0 6px 16px rgba(214, 40, 58, 0.35); transform: rotate(-8deg); }
+  .tabs { background: var(--surface); box-shadow: var(--shadow); }
+  .tabs button { transition: color 0.15s, background 0.15s; }
+  .tabs button:hover { color: var(--ink); }
+  .tabs button[aria-selected="true"] { background: linear-gradient(135deg, var(--a1), var(--a2)); color: #fff; box-shadow: 0 4px 12px rgba(91, 91, 247, 0.35); }
+  .acct button { text-decoration: none; padding: 7px 12px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); box-shadow: var(--shadow); }
+  .acct button:hover { border-color: var(--a1); }
+
+  /* cards and buttons */
+  .card { border-radius: 22px; box-shadow: var(--shadow); }
+  .btn-p { background: linear-gradient(135deg, var(--a1), var(--a2)); color: #fff; border-radius: 16px;
+    box-shadow: 0 8px 20px -6px rgba(91, 91, 247, 0.55); transition: transform 0.12s, box-shadow 0.15s, filter 0.15s; }
+  .btn-p:hover { filter: brightness(1.07); box-shadow: 0 12px 26px -6px rgba(91, 91, 247, 0.6); }
+  .btn-s { border-radius: 16px; transition: transform 0.12s, border-color 0.15s, background 0.15s; }
+  .btn-s:hover { border-color: var(--a1); }
+  .btn-p:active, .btn-s:active, .tile:active { transform: scale(0.98); }
+  .btn-p:disabled { opacity: 0.6; }
+
+  /* hero: night-sky card with a big faint bug */
+  .hero { position: relative; overflow: hidden; isolation: isolate; border: 0; color: #fff; background: var(--hero); padding: 22px;
+    box-shadow: 0 22px 44px -18px rgba(60, 40, 170, 0.6); }
+  .hero::after { content: ""; position: absolute; right: -18px; bottom: -22px; width: 130px; height: 130px; z-index: -1; opacity: 0.08; transform: rotate(-18deg);
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='white' d='M12 8.2c-2.6 0-4.4 1.9-4.4 4.6S9.4 19 12 19s4.4-3.6 4.4-6.2S14.6 8.2 12 8.2Z'/%3E%3Cpath fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round' d='M12 8.2V19M9.3 6.4a2.7 2.7 0 0 1 5.4 0M7.6 12.3 4 10.6M16.4 12.3 20 10.6M8 16.4l-3.4 1.6M16 16.4l3.4 1.6'/%3E%3C/svg%3E") center / contain no-repeat; }
+  .hero .eyebrow { color: rgba(255, 255, 255, 0.72); }
+  .hero .lede, .hero .rt, .hero .note { color: rgba(255, 255, 255, 0.8); }
+  .hero .meta { color: rgba(255, 255, 255, 0.7); }
+  .hero .meta b { color: #fff; }
+  .hero .btn-p { background: #fff; color: #2a2477; box-shadow: 0 10px 24px -8px rgba(0, 0, 0, 0.45); }
+  .hero .btn-s { background: rgba(255, 255, 255, 0.10); border-color: rgba(255, 255, 255, 0.28); color: #fff; }
+  .hero .btn-s:hover { background: rgba(255, 255, 255, 0.16); border-color: rgba(255, 255, 255, 0.5); }
+  .hero .row2 { border-top-color: rgba(255, 255, 255, 0.16); }
+  .hero .sl { background: rgba(255, 255, 255, 0.14); color: #fff; }
+  .hero .sl.g { background: #19b67f; box-shadow: 0 4px 12px rgba(25, 182, 127, 0.45); }
+  .hero .sl.r { background: #ff5263; box-shadow: 0 4px 12px rgba(255, 82, 99, 0.4); }
+  .hero .sl.l { background: transparent; border-color: rgba(255, 255, 255, 0.3); }
+  .hchips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+  .hchip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 11px; border-radius: 999px; font: 600 13px/1 var(--body);
+    background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.18); }
+  .hchip b { font: 700 14px/1 var(--display); }
+
+  /* puzzle tiles */
+  .tile { position: relative; overflow: hidden; border-radius: 18px; padding: 16px 12px 12px; gap: 5px; box-shadow: var(--shadow);
+    transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s; }
+  .tile::before { content: ""; position: absolute; inset: 0 0 auto; height: 4px; background: var(--lv, var(--line)); }
+  .tile:hover { transform: translateY(-3px); box-shadow: var(--shadow-up); border-color: color-mix(in srgb, var(--lv, var(--a1)) 45%, var(--line)); }
+  .tile .a { font-size: 16px; }
+  .tile .d { justify-self: start; padding: 3px 8px; border-radius: 999px; font-weight: 600; font-size: 11px;
+    background: color-mix(in srgb, var(--lv, var(--p4)) 14%, transparent); color: color-mix(in srgb, var(--lv, var(--p4)) 78%, var(--ink)); }
+  .tile .st { font-size: 17px; letter-spacing: 1px; color: #f5a524; text-shadow: 0 1px 6px rgba(245, 165, 36, 0.35); }
+  .tile .st i { text-shadow: none; }
+  .tile.done { background: color-mix(in srgb, var(--lv, var(--p4)) 6%, var(--surface)); }
+  .tile.lock { opacity: 0.6; }
+  .tile.lock:hover { transform: none; }
+  .tile .stt { font: 600 12px/1.2 var(--body); color: var(--dim); margin-top: 2px; }
+  .tile .stt.ok { color: var(--ok); }
+  .tile .stt.no { color: var(--bug); }
+  .tile .stt.go { color: var(--a1); }
+  .tile.got::after, .tile.lost::after { content: "✓"; position: absolute; top: 12px; right: 10px; width: 22px; height: 22px; border-radius: 50%;
+    display: grid; place-items: center; font: 700 12px/1 var(--body); color: #fff; background: var(--ok); }
+  .tile.lost::after { content: "×"; background: var(--bug); font-size: 15px; }
+
+  /* practice level headers */
+  .lv { display: flex; align-items: center; gap: 12px; margin: 22px 0 10px; }
+  .lvbadge { width: 40px; height: 40px; border-radius: 13px; flex: none; display: grid; place-items: center; color: #fff; font: 800 18px/1 var(--display);
+    background: linear-gradient(140deg, color-mix(in srgb, var(--lv) 70%, #fff), var(--lv)); box-shadow: 0 6px 14px -4px color-mix(in srgb, var(--lv) 60%, transparent); }
+  .lvtxt { flex: 1; min-width: 0; display: grid; gap: 7px; }
+  .lvtxt h2 { font: 700 18px/1.1 var(--display); }
+  .prog { height: 7px; border-radius: 4px; background: var(--line); overflow: hidden; }
+  .prog i { display: block; height: 100%; border-radius: 4px; background: var(--lv); transition: width 0.4s; }
+  .lv.lock .lvbadge { background: var(--raise); color: var(--dim); border: 1px solid var(--line); box-shadow: none; font-size: 16px; }
+  .lv.lock .lvtxt h2 { color: var(--dim); }
+  .soon { font: 600 11px/1 var(--mono); letter-spacing: 0.6px; text-transform: uppercase; padding: 5px 8px; border-radius: 999px;
+    color: var(--lv); background: color-mix(in srgb, var(--lv) 14%, transparent); }
+  .lvnote { padding: 12px 14px; border-radius: 14px; background: var(--surface); border: 1px dashed var(--line); }
+
+  .note.callout { padding: 12px 14px; border-radius: 14px; background: color-mix(in srgb, var(--a1) 9%, var(--surface)); border: 1px solid color-mix(in srgb, var(--a1) 22%, var(--line)); color: var(--ink); }
+
+  /* play screen */
+  .ticket { border: 1px solid var(--line); border-left: 4px solid var(--bug); box-shadow: var(--shadow); border-radius: 14px; }
+  .tid { background: color-mix(in srgb, var(--bug) 12%, transparent); color: var(--bug); }
+  .phone { box-shadow: 0 18px 40px rgba(10, 16, 40, 0.28), 0 0 0 1px rgba(255, 255, 255, 0.06), 0 30px 80px -10px rgba(91, 91, 247, 0.38); }
+
+  /* bug report sheet */
+  .sheet::before { content: ""; display: block; width: 44px; height: 5px; border-radius: 3px; background: var(--line); margin: -6px auto 12px; }
+  .status { justify-self: start; padding: 6px 10px; border-radius: 999px; }
+  .status.ok { background: var(--ok-soft); }
+  .status.no { background: color-mix(in srgb, var(--bug) 12%, transparent); }
+  .ea > div:first-child { background: color-mix(in srgb, var(--ok) 10%, var(--surface)); }
+  .ea > div:last-child { background: color-mix(in srgb, var(--bug) 9%, var(--surface)); }
+  .tip { border-left: 4px solid var(--ok); }
+
+  /* each new screen rises in */
+  #view > * { animation: rise 0.35s ease-out both; }
+  #view > :nth-child(2) { animation-delay: 0.04s; } #view > :nth-child(3) { animation-delay: 0.08s; } #view > :nth-child(n+4) { animation-delay: 0.12s; }
+  @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) { #view > * { animation: none; } .tile, .btn-p, .btn-s { transition: none; } .tile:hover { transform: none; } }
 </style>
 
 <div id="app">
@@ -1624,8 +1756,9 @@ function renderDaily() {
   const tiles = set.map((idx, i) => {
     const p = PUZZLES[idx], r = day.r[i], locked = i >= n;
     const status = r ? (r.f ? 'Found · ' + r.t + (r.t === 1 ? ' try' : ' tries') : 'Missed') : (locked ? '🔒 Sign in' : 'Play');
-    return '<button class="tile' + (r ? ' done' : '') + (locked ? ' lock' : '') + '" type="button" data-s="' + i + '" aria-label="Bug ' + (i + 1) + ', ' + dl(p.diff) + ', ' + status + '">' +
-      '<span class="n">#' + p2(i + 1) + '</span><span class="a">' + (r ? p.area : 'Bug') + '</span><span class="d">' + dl(p.diff) + '</span><span class="d">' + status + '</span></button>';
+    const stc = r ? (r.f ? 'ok' : 'no') : (locked ? '' : 'go');
+    return '<button class="tile' + (r ? ' done ' + (r.f ? 'got' : 'lost') : '') + (locked ? ' lock' : '') + '" type="button" data-lv="' + p.diff + '" data-s="' + i + '" aria-label="Bug ' + (i + 1) + ', ' + dl(p.diff) + ', ' + status + '">' +
+      '<span class="n">#' + p2(i + 1) + '</span><span class="a">' + (r ? p.area : 'Bug') + '</span><span class="d">' + dl(p.diff) + '</span><span class="stt ' + stc + '">' + (r || locked ? status : 'Play ›') + '</span></button>';
   }).join('');
   $('view').innerHTML =
     '<section class="card hero"><p class="eyebrow">Daily bugs · ' + dayLabel(today) + '</p>' +
@@ -1634,7 +1767,7 @@ function renderDaily() {
     '<p class="meta" style="margin-top:14px">Next set in <b id="cd">' + nextBugIn() + '</b> · Streak <b>' + liveStreak() + '</b> ' + (liveStreak() === 1 ? 'day' : 'days') + '</p></section>' +
     '<div class="sumrow"><h2>Today’s bugs</h2><span class="meta"><b>' + t.done + '</b> / ' + n + ' played</span></div>' +
     '<div class="grid">' + tiles + '</div>' +
-    (signedIn() ? '' : '<p class="note" style="margin-top:12px">Guests play ' + FREE + ' bugs a day. Sign in free to play all ' + SLOTS + ' and unlock practice levels.</p>');
+    (signedIn() ? '' : '<p class="note callout" style="margin-top:12px">Guests play ' + FREE + ' bugs a day. Sign in free to play all ' + SLOTS + ' and unlock practice levels.</p>');
   const go = $('go'); if (go) go.addEventListener('click', () => startPlay(set[next], 'daily', next));
   const gs = $('goSign'); if (gs) gs.addEventListener('click', () => showSignIn());
   const sh = $('shareBtn'); if (sh) sh.addEventListener('click', () => showShare());
@@ -1763,7 +1896,7 @@ function renderPractice() {
     const rows = LEVELS.map(L => '<div class="row2"><span>🔒 ' + dl(L.diff) + '</span><span class="meta">' + levelIdx(L.diff).length + ' bugs</span></div>').join('') +
       '<div class="row2"><span>🔒 Expert</span><span class="meta">coming soon</span></div>';
     $('view').innerHTML =
-      '<section class="card"><p class="eyebrow">Practice</p><h1 style="font:800 26px/1.1 var(--display);margin-top:8px">Levels are for signed-in players</h1>' +
+      '<section class="card hero"><p class="eyebrow">Practice</p><h1 style="font:800 26px/1.1 var(--display);margin-top:8px">Levels are for signed-in players</h1>' +
       '<p class="lede" style="margin-top:6px">Sign in free to practise on every bug. Clear most of a level to open the next one.</p>' + rows +
       '<div class="stack" style="margin-top:16px"><button id="goSign" class="btn-p" type="button">Sign in</button></div></section>';
     $('goSign').addEventListener('click', () => showSignIn());
@@ -1771,26 +1904,32 @@ function renderPractice() {
   }
   let total = 0;
   PUZZLES.forEach(p => { total += save.stars[p.id] || 0; });
-  let html = '<section class="card"><p class="eyebrow">Practice</p><h1 style="font:800 26px/1.1 var(--display);margin-top:8px">' + PUZZLES.length + ' bugs to hunt</h1>' +
-    '<p class="lede" style="margin-top:6px">Find each bug in three tries or fewer. Solve ' + Math.round(UNLOCK_AT * 100) + '% of a level to open the next.</p></section>' +
+  const solved = PUZZLES.filter(p => (save.stars[p.id] | 0) > 0).length;
+  let html = '<section class="card hero"><p class="eyebrow">Practice</p><h1 style="font:800 26px/1.1 var(--display);margin-top:8px">' + PUZZLES.length + ' bugs to hunt</h1>' +
+    '<p class="lede" style="margin-top:6px">Find each bug in three tries or fewer. Solve ' + Math.round(UNLOCK_AT * 100) + '% of a level to open the next.</p>' +
+    '<div class="hchips"><span class="hchip">★ <b>' + total + '</b> stars</span><span class="hchip">✓ <b>' + solved + '</b> solved</span>' +
+    '<span class="hchip">🔥 <b>' + liveStreak() + '</b> day streak</span></div></section>' +
     '<div class="sumrow"><h2>Levels</h2><span class="meta"><b>' + total + '</b> / ' + PUZZLES.length * 3 + ' stars</span></div>';
   LEVELS.forEach((L, li) => {
     const idxs = levelIdx(L.diff), open = levelOpen(li);
-    html += '<div class="lvhead"><h2 style="font:700 17px/1.2 var(--display)">' + (open ? '' : '🔒 ') + dl(L.diff) + '</h2><span class="meta"><b>' + solvedIn(L.diff) + '</b> / ' + idxs.length + ' solved</span></div>';
+    const pct = idxs.length ? Math.round(solvedIn(L.diff) / idxs.length * 100) : 0;
+    html += '<div class="lv' + (open ? '' : ' lock') + '" data-lv="' + L.diff + '"><span class="lvbadge" aria-hidden="true">' + (open ? li + 1 : '🔒') + '</span>' +
+      '<div class="lvtxt"><h2>' + dl(L.diff) + '</h2><div class="prog" aria-hidden="true"><i style="width:' + pct + '%"></i></div></div>' +
+      '<span class="meta"><b>' + solvedIn(L.diff) + '</b> / ' + idxs.length + ' solved</span></div>';
     if (!open) {
       const prev = LEVELS[li - 1];
-      html += '<p class="note">Solve ' + needFor(prev.diff) + ' of ' + levelIdx(prev.diff).length + ' ' + dl(prev.diff) + ' bugs to unlock this level (' + solvedIn(prev.diff) + ' so far).</p>';
+      html += '<p class="note lvnote">Solve ' + needFor(prev.diff) + ' of ' + levelIdx(prev.diff).length + ' ' + dl(prev.diff) + ' bugs to unlock this level (' + solvedIn(prev.diff) + ' so far).</p>';
       return;
     }
     html += '<div class="grid">' + idxs.map(i => {
       const p = PUZZLES[i], s = save.stars[p.id];
-      return '<button class="tile' + (s !== undefined ? ' done' : '') + '" type="button" data-i="' + i + '" aria-label="Puzzle ' + (i + 1) + ', ' + (s !== undefined ? p.area + ', ' : '') + dl(p.diff) + (s !== undefined ? ', ' + s + ' stars' : '') + '">' +
+      return '<button class="tile' + (s !== undefined ? ' done' : '') + '" type="button" data-lv="' + p.diff + '" data-i="' + i + '" aria-label="Puzzle ' + (i + 1) + ', ' + (s !== undefined ? p.area + ', ' : '') + dl(p.diff) + (s !== undefined ? ', ' + s + ' stars' : '') + '">' +
         '<span class="n">#' + p2(i + 1) + '</span><span class="a">' + (s !== undefined ? p.area : 'Bug') + '</span><span class="d">' + dl(p.diff) + '</span>' +
         '<span class="st" aria-hidden="true">' + stars(s || 0) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '<div class="lvhead"><h2 style="font:700 17px/1.2 var(--display)">🔒 Expert</h2><span class="meta">coming soon</span></div>' +
-    '<p class="note">Tricky multi-clue bugs for testers with 6+ years of experience. New puzzles are on the way.</p>';
+  html += '<div class="lv lock" data-lv="Expert"><span class="lvbadge" aria-hidden="true">🔒</span><div class="lvtxt"><h2>Expert</h2></div><span class="soon">Coming soon</span></div>' +
+    '<p class="note lvnote">Tricky multi-clue bugs for testers with 6+ years of experience. New puzzles are on the way.</p>';
   $('view').innerHTML = html;
   $('view').querySelectorAll('.tile').forEach(b => b.addEventListener('click', () => startPlay(+b.dataset.i, 'practice')));
 }
