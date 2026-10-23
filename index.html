@@ -1626,6 +1626,8 @@ function initAuth() {
         if (user && !was && ev === 'SIGNED_IN') track('signin');
         if (user && (!was || was.id !== user.id)) setTimeout(pullAndMerge, 0);
         else if (!user && was) rerender();
+        if (user && getJoin()) setTimeout(offerJoin, 400);
+        else if (!user && ev === 'INITIAL_SESSION' && getJoin()) setTimeout(() => showSignIn('Sign in to join your team.'), 400);
       });
     } catch (e) { sb = null; }
   };
@@ -1707,9 +1709,133 @@ function showAccount() {
     sev: null, id: 'Account', status: '', title: 'Signed in',
     body: '<p>' + esc(user.email || '') + '</p><p class="note">Your progress is saved to this account.</p>',
     buttons: [
+      { label: 'Team', fn: showTeams },
       { label: 'Sign out', fn: async () => { try { await sb.auth.signOut(); } catch (e) { /* ignore */ } user = null; renderAcct(); closeSheet(); rerender(); } },
       { label: 'Close', primary: true, fn: closeSheet },
     ],
+  });
+}
+
+// ---------- teams (for corporate QA groups) ----------
+// A manager creates a team and shares an invite link (?join=CODE). Members who join let the manager see their progress.
+const JOIN_KEY = 'bugspot.join';
+function getJoin() { try { return localStorage.getItem(JOIN_KEY) || ''; } catch (e) { return ''; } }
+function setJoin(c) { try { if (c) localStorage.setItem(JOIN_KEY, c); else localStorage.removeItem(JOIN_KEY); } catch (e) { /* ignore */ } }
+(function readInvite() {
+  try {
+    const c = new URLSearchParams(location.search).get('join');
+    if (c && /^[a-z0-9]{6,20}$/i.test(c)) { setJoin(c); history.replaceState(null, '', location.pathname); }
+  } catch (e) { /* ignore */ }
+})();
+
+function offerJoin() {
+  const code = getJoin();
+  if (!code || !sb || !user) return;
+  openSheet({
+    sev: null, id: 'Team invite', status: '', title: 'Join your team?',
+    body: '<p>Your manager invited you to a Bugspot team.</p><p class="note">If you join, your manager can see your email, bugs solved, stars, streak and last played day. They cannot see anything else. You can leave the team any time from Account.</p><p id="tmMsg" class="note" role="status"></p>',
+    buttons: [
+      { label: 'Join team', primary: true, fn: async btn => {
+        btn.disabled = true;
+        try {
+          const { data, error } = await sb.rpc('join_team', { p_code: code });
+          if (error) throw error;
+          setJoin('');
+          openSheet({ sev: null, id: 'Team', status: '', title: 'You joined ' + data.name, body: '<p>Keep playing. Your manager can now follow your progress.</p>', buttons: [{ label: 'Done', primary: true, fn: closeSheet }] });
+        } catch (e) {
+          btn.disabled = false;
+          $('tmMsg').textContent = 'This invite link is not valid any more. Ask your manager for a new one.';
+        }
+      } },
+      { label: 'Not now', fn: () => { setJoin(''); closeSheet(); } },
+    ],
+  });
+}
+
+async function showTeams() {
+  if (!sb) return;
+  openSheet({ sev: null, id: 'Team', status: '', title: 'Your teams', body: '<p class="note">Loading…</p>', buttons: [{ label: 'Close', primary: true, fn: closeSheet }] });
+  let teams;
+  try {
+    const { data, error } = await sb.rpc('my_teams');
+    if (error) throw error;
+    teams = data || [];
+  } catch (e) { $('shBody').innerHTML = '<p class="note">Teams are not available right now. Try again later.</p>'; return; }
+  let html = '';
+  teams.forEach(t => {
+    html += '<div class="card" style="padding:14px;display:grid;gap:8px"><b>' + esc(t.name) + '</b>' +
+      '<span class="note">' + (t.role === 'manager' ? 'You manage this team' : 'You are a member') + ' · ' + t.members + (t.members === 1 ? ' person' : ' people') + '</span>';
+    if (t.role === 'manager') {
+      const link = CONFIG.SITE + '?join=' + t.code;
+      html += '<input class="inp" readonly value="' + esc(link) + '" aria-label="Invite link" onfocus="this.select()">' +
+        '<div class="stack"><button class="btn-s" type="button" data-act="copy" data-link="' + esc(link) + '">Copy invite link</button>' +
+        '<button class="btn-p" type="button" data-act="dash" data-id="' + esc(t.id) + '" data-name="' + esc(t.name) + '">View progress</button></div>';
+    } else {
+      html += '<button class="btn-s" type="button" data-act="leave" data-id="' + esc(t.id) + '">Leave team</button>';
+    }
+    html += '</div>';
+  });
+  html += '<div class="card" style="padding:14px;display:grid;gap:8px"><b>Create a team</b>' +
+    '<span class="note">For managers who want to follow their testers. You get an invite link to send to your team.</span>' +
+    '<input id="tmName" class="inp" maxlength="60" placeholder="Team name, e.g. QA Guild" aria-label="Team name">' +
+    '<button class="btn-p" type="button" data-act="create">Create team</button><p id="tmMsg" class="note" role="status"></p></div>';
+  const body = $('shBody');
+  body.innerHTML = html;
+  body.onclick = async e => {
+    const b = e.target.closest('button[data-act]');
+    if (!b) return;
+    const act = b.dataset.act;
+    if (act === 'copy') copyText(b.dataset.link, b);
+    else if (act === 'dash') showDashboard(b.dataset.id, b.dataset.name);
+    else if (act === 'leave') { b.disabled = true; try { await sb.rpc('leave_team', { p_team: b.dataset.id }); } catch (err) { /* ignore */ } showTeams(); }
+    else if (act === 'create') {
+      const name = ($('tmName').value || '').trim();
+      if (name.length < 2) { $('tmMsg').textContent = 'Enter a team name.'; return; }
+      b.disabled = true;
+      try { const { error } = await sb.rpc('create_team', { p_name: name }); if (error) throw error; showTeams(); }
+      catch (err) { b.disabled = false; $('tmMsg').textContent = 'Could not create the team. Try again.'; }
+    }
+  };
+}
+
+function csvCell(v) {
+  let s = String(v == null ? '' : v);
+  if (/^[=+\-@\t\r]/.test(s)) s = "'" + s; // stop spreadsheet formulas in emails
+  return '"' + s.replace(/"/g, '""') + '"';
+}
+async function showDashboard(id, name) {
+  openSheet({ sev: null, id: 'Team', status: '', title: name, body: '<p class="note">Loading…</p>', buttons: [{ label: 'Back', fn: showTeams }, { label: 'Close', primary: true, fn: closeSheet }] });
+  let rows;
+  try {
+    const { data, error } = await sb.rpc('team_dashboard', { p_team: id });
+    if (error) throw error;
+    rows = data || [];
+  } catch (e) { $('shBody').innerHTML = '<p class="note">Could not load the team.</p>'; return; }
+  const today = new Date(), y = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1);
+  const list = rows.map(r => {
+    const st = r.stars || {}, per = {};
+    let solved = 0, stars = 0;
+    ['Easy', 'Medium', 'Hard'].forEach(d => { per[d] = PUZZLES.filter(p => p.diff === d && (st[p.id] | 0) > 0).length; solved += per[d]; });
+    PUZZLES.forEach(p => { stars += st[p.id] | 0; });
+    const live = r.last === dayKey(today) || r.last === dayKey(y) ? r.streak : 0;
+    return { email: r.email, role: r.role, per, solved, stars, streak: live, last: r.last || '' };
+  }).sort((a, b) => b.stars - a.stars || b.solved - a.solved || a.email.localeCompare(b.email));
+  const totals = { Easy: levelIdx('Easy').length, Medium: levelIdx('Medium').length, Hard: levelIdx('Hard').length };
+  const active = list.filter(r => r.last && (dayNum(today) - dayNum(new Date(r.last + 'T00:00:00'))) <= 7).length;
+  const tr = list.map((r, i) => '<tr><td>' + (i + 1) + '</td><td>' + esc(r.email) + (r.role === 'manager' ? ' <span class="note">(manager)</span>' : '') + '</td><td>' +
+    r.solved + '/' + PUZZLES.length + '</td><td>' + r.stars + '</td><td>' + r.streak + '</td><td>' + esc(r.last || '–') + '</td></tr>').join('');
+  $('shBody').onclick = null;
+  $('shBody').innerHTML = '<p class="note">' + list.length + (list.length === 1 ? ' person' : ' people') + ' · ' + active + ' played in the last 7 days. Ranked by stars.</p>' +
+    '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:14px;text-align:left"><tr><th>#</th><th>Member</th><th>Solved</th><th>★</th><th>Streak</th><th>Last played</th></tr>' + tr + '</table></div>' +
+    '<button id="tmCsv" class="btn-s" type="button">Download CSV</button>';
+  $('tmCsv').addEventListener('click', () => {
+    const head = ['Rank', 'Email', 'Role', 'Beginner solved', 'Beginner total', 'Intermediate solved', 'Intermediate total', 'Experienced solved', 'Experienced total', 'Stars', 'Streak', 'Last played'];
+    const lines = [head.map(csvCell).join(',')].concat(list.map((r, i) =>
+      [i + 1, r.email, r.role, r.per.Easy, totals.Easy, r.per.Medium, totals.Medium, r.per.Hard, totals.Hard, r.stars, r.streak, r.last].map(csvCell).join(',')));
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([lines.join('\r\n')], { type: 'text/csv' }));
+    a.download = 'bugspot-team-' + dayKey(today) + '.csv';
+    document.body.appendChild(a); a.click(); a.remove();
   });
 }
 

@@ -24,3 +24,11 @@ The game sends anonymous events (visit, puzzle start/found/missed, sign-in, shar
 - Tables and functions: `supabase/analytics.sql` (already applied to the project).
 - Admin page: `admin.html` (private, signed-in owner only). Admins are the emails listed in the `admins` table.
 - To add another admin: `insert into public.admins (email) values ('name@example.com');`
+
+## Teams (for corporate QA groups)
+
+- A signed-in manager opens Account, Team, and creates a team. They get an invite link like `https://.../bugspot/?join=CODE`.
+- Anyone who opens the link signs in, sees what the manager can view (email, bugs solved, stars, streak, last played day), and joins. They can leave any time.
+- The manager's View progress screen ranks members by stars and has a Download CSV button.
+- Tables and functions: `supabase/teams.sql` (already applied to the project). All access goes through the functions; the tables have no direct policies.
+- Still to build: certificates, per-level leaderboard, removing members from the screen.
