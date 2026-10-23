@@ -1625,7 +1625,7 @@ function renderDaily() {
     const p = PUZZLES[idx], r = day.r[i], locked = i >= n;
     const status = r ? (r.f ? 'Found · ' + r.t + (r.t === 1 ? ' try' : ' tries') : 'Missed') : (locked ? '🔒 Sign in' : 'Play');
     return '<button class="tile' + (r ? ' done' : '') + (locked ? ' lock' : '') + '" type="button" data-s="' + i + '" aria-label="Bug ' + (i + 1) + ', ' + dl(p.diff) + ', ' + status + '">' +
-      '<span class="n">#' + p2(i + 1) + '</span><span class="a">' + p.area + '</span><span class="d">' + dl(p.diff) + '</span><span class="d">' + status + '</span></button>';
+      '<span class="n">#' + p2(i + 1) + '</span><span class="a">' + (r ? p.area : 'Bug') + '</span><span class="d">' + dl(p.diff) + '</span><span class="d">' + status + '</span></button>';
   }).join('');
   $('view').innerHTML =
     '<section class="card hero"><p class="eyebrow">Daily bugs · ' + dayLabel(today) + '</p>' +
@@ -1784,8 +1784,8 @@ function renderPractice() {
     }
     html += '<div class="grid">' + idxs.map(i => {
       const p = PUZZLES[i], s = save.stars[p.id];
-      return '<button class="tile' + (s !== undefined ? ' done' : '') + '" type="button" data-i="' + i + '" aria-label="Puzzle ' + (i + 1) + ', ' + p.area + ', ' + dl(p.diff) + (s !== undefined ? ', ' + s + ' stars' : '') + '">' +
-        '<span class="n">#' + p2(i + 1) + '</span><span class="a">' + p.area + '</span><span class="d">' + dl(p.diff) + '</span>' +
+      return '<button class="tile' + (s !== undefined ? ' done' : '') + '" type="button" data-i="' + i + '" aria-label="Puzzle ' + (i + 1) + ', ' + (s !== undefined ? p.area + ', ' : '') + dl(p.diff) + (s !== undefined ? ', ' + s + ' stars' : '') + '">' +
+        '<span class="n">#' + p2(i + 1) + '</span><span class="a">' + (s !== undefined ? p.area : 'Bug') + '</span><span class="d">' + dl(p.diff) + '</span>' +
         '<span class="st" aria-hidden="true">' + stars(s || 0) + '</span></button>';
     }).join('') + '</div>';
   });
@@ -1820,7 +1820,7 @@ function renderPlay() {
   const p = PUZZLES[S.idx];
   $('view').innerHTML =
     '<div class="playbar"><button id="back" class="link" type="button">‹ Back</button>' +
-    '<div class="ptitle">' + p.area + ' · ' + (S.from === 'daily' ? (S.slot + 1) + ' of ' + SLOTS : '#' + p2(S.idx + 1)) + '</div>' +
+    '<div class="ptitle">Bug ' + (S.from === 'daily' ? (S.slot + 1) + ' of ' + SLOTS : '#' + p2(S.idx + 1)) + '</div>' +
     '<div id="tries" class="tries" role="img" aria-label="' + (3 - S.used) + ' tries left">' + triesHtml() + '</div></div>' +
     '<div class="ticket"><span class="tid">QA-' + (104 + S.idx) + '</span><span id="note" class="grow">Something on this screen is wrong. Tap it.</span><button id="hintBtn" class="link" type="button">Hint</button></div>' +
     '<div class="phone" id="phone"><div class="screen" id="screen" style="--ac:' + p.ac + '">' + p.html + '</div></div>' +
