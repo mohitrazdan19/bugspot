@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Bugspot Admin</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">
+<style>
+:root{--bg:#eceff6;--card:#fff;--ink:#101729;--mute:#566078;--line:#d7dce8;--acc:#d6283a;color-scheme:light}
+@media(prefers-color-scheme:dark){:root{--bg:#0e1322;--card:#171e33;--ink:#eef1fa;--mute:#9aa5c2;--line:#2a3452;color-scheme:dark}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.4 -apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:920px;margin:0 auto;padding:20px 16px 48px}
+h1{font-size:24px;margin:0 0 4px}h2{font-size:17px;margin:28px 0 10px}.mute{color:var(--mute)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.kpi b{display:block;font-size:28px;line-height:1.1}.kpi span{color:var(--mute);font-size:13px}
+button,select,input{font:inherit;border-radius:12px;border:1px solid var(--line);padding:10px 14px;background:var(--card);color:var(--ink)}
+button.p{background:var(--ink);color:var(--bg);border-color:var(--ink);cursor:pointer}
+.bars{display:flex;align-items:flex-end;gap:3px;height:140px;margin-top:8px}
+.bars i{flex:1;max-width:28px;background:var(--acc);border-radius:3px 3px 0 0;min-height:2px}
+table{width:100%;border-collapse:collapse}td,th{padding:8px 6px;border-bottom:1px solid var(--line);text-align:left}th{color:var(--mute);font-weight:600;font-size:13px}
+td.n,th.n{text-align:right}.row{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+#msg{margin-top:10px;color:var(--mute)}[hidden]{display:none!important}
+</style></head><body><main>
+<div class="row"><div><h1>Bugspot admin</h1><div class="mute" id="who">Private page for the site owner</div></div>
+<div><select id="range" hidden><option value="7">Last 7 days</option><option value="30" selected>Last 30 days</option><option value="90">Last 90 days</option></select>
+<button id="out" hidden type="button">Sign out</button></div></div>
+<section id="login" class="card" style="margin-top:16px" hidden>
+<p>Sign in with the owner email to see the numbers.</p>
+<div class="row" style="justify-content:flex-start"><input id="em" type="email" placeholder="you@example.com" autocomplete="email" style="flex:1;min-width:220px"><button id="go" class="p" type="button">Send sign-in link</button></div>
+<div id="msg"></div></section>
+<section id="dash" hidden></section><div id="err" class="mute" style="margin-top:16px"></div>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script>
+const URL_ = "https://otfuymjeqoghridciiqm.supabase.co", KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im90ZnV5bWplcW9naHJpZGNpaXFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI3NDYxNTIsImV4cCI6MjEwODMyMjE1Mn0.uK3WhRMTTQ8rGB1PXM3Umd6ruNjs0RLbuWkMu5PoS5Q", HERE = location.origin + location.pathname;
+const $ = id => document.getElementById(id), esc = t => String(t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let sb;
+function show(which) { $('login').hidden = which !== 'login'; $('dash').hidden = which !== 'dash'; $('range').hidden = $('out').hidden = which !== 'dash'; }
+async function load() {
+  $('err').textContent = '';
+  const { data: sess } = await sb.auth.getSession();
+  if (!sess.session) { show('login'); return; }
+  const ok = await sb.rpc('is_admin');
+  if (ok.error || ok.data !== true) {
+    show('login'); $('msg').textContent = 'This account is not an admin: ' + (sess.session.user.email || '') + '.';
+    return;
+  }
+  $('who').textContent = 'Signed in as ' + sess.session.user.email;
+  const r = await sb.rpc('admin_stats', { days: +$('range').value });
+  if (r.error) { show('login'); $('err').textContent = 'Could not load stats.'; return; }
+  draw(r.data); show('dash');
+}
+function pct(a, b) { return b ? Math.round(a * 100 / b) + '%' : '–'; }
+function draw(d) {
+  const e = d.events || {}, max = Math.max(1, ...d.daily.map(x => x.visitors));
+  const kpi = (n, l) => '<div class="card kpi"><b>' + n + '</b><span>' + l + '</span></div>';
+  const bars = d.daily.map(x => '<i title="' + esc(x.day) + ': ' + x.visitors + ' visitors" style="height:' + Math.max(2, Math.round(x.visitors * 100 / max)) + '%"></i>').join('');
+  const refs = d.referrers.map(x => '<tr><td>' + esc(x.ref) + '</td><td class="n">' + x.n + '</td></tr>').join('') || '<tr><td class="mute" colspan="2">No visits yet</td></tr>';
+  const pz = d.puzzles.map(x => '<tr><td>#' + esc(x.id) + '</td><td class="n">' + x.started + '</td><td class="n">' + x.found + '</td><td class="n">' + x.failed + '</td><td class="n">' + pct(x.found, x.found + x.failed) + '</td></tr>').join('') || '<tr><td class="mute" colspan="5">No plays yet</td></tr>';
+  $('dash').innerHTML =
+    '<div class="grid" style="margin-top:16px">' + kpi(d.visitors, 'Visitors (' + d.days + ' days)') + kpi(d.visitors_today, 'Visitors today') + kpi(d.visits, 'Visits') + kpi(d.accounts, 'Accounts created') + '</div>' +
+    '<h2>Visitors per day</h2><div class="card"><div class="bars">' + (bars || '<span class="mute">No data yet</span>') + '</div></div>' +
+    '<h2>Gameplay</h2><div class="grid">' + kpi(e.puzzle_start || 0, 'Puzzles started') + kpi(e.puzzle_found || 0, 'Bugs found') + kpi(e.puzzle_fail || 0, 'Missed') +
+    kpi(pct(e.puzzle_found || 0, (e.puzzle_found || 0) + (e.puzzle_fail || 0)), 'Success rate') + kpi(e.signin_sent || 0, 'Sign-in links sent') + kpi(e.signin || 0, 'Sign-ins') + kpi(e.share || 0, 'Share clicks') + '</div>' +
+    '<h2>Where visitors come from</h2><div class="card"><table><tr><th>Source</th><th class="n">Visits</th></tr>' + refs + '</table></div>' +
+    '<h2>Most missed puzzles</h2><div class="card"><table><tr><th>Puzzle</th><th class="n">Started</th><th class="n">Found</th><th class="n">Missed</th><th class="n">Rate</th></tr>' + pz + '</table></div>';
+}
+$('go').addEventListener('click', async () => {
+  const email = $('em').value.trim(); if (!email) return;
+  $('msg').textContent = 'Sending…';
+  const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: HERE } });
+  $('msg').textContent = error ? 'Could not send the link. Wait a minute and try again.' : 'Check your inbox and open the link on this device.';
+});
+$('out').addEventListener('click', async () => { await sb.auth.signOut(); show('login'); $('who').textContent = 'Private page for the site owner'; });
+$('range').addEventListener('change', load);
+try { sb = window.supabase.createClient(URL_, KEY); sb.auth.onAuthStateChange(() => setTimeout(load, 0)); load(); }
+catch (err) { show('login'); $('err').textContent = 'Could not load. Check your connection and refresh.'; }
+</script></body></html>
