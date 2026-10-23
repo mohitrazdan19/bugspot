@@ -886,6 +886,454 @@ PUZZLES.push(
       actual: 'You saved ₹-120',
       tip: 'Negative amounts, wrong signs and double-counted discounts are classic money bugs. Check each line against the total.',
     },
+  },
+  // Batch 3: 20 more puzzles (7 easy, 7 medium, 6 hard).
+  {
+    id: 'plural-msg', area: 'Inbox', sev: 'P4', diff: 'Easy', ac: '#2563eb',
+    hint: 'Read the heading out loud.',
+    html: SB + `
+<div class="ab"><span class="logo">C</span>ChatNest</div>
+<div class="pad">
+  <div class="hi" data-bug>You have 1 new messages</div>
+  <div class="card">
+    <div class="row"><div><div class="b">Riya</div><div class="m s">Are we still on for 6?</div></div><span class="m s">9:12</span></div>
+    <div class="row"><div><div class="m">Aman</div><div class="m s">Thanks, got it.</div></div><span class="m s">Mon</span></div>
+    <div class="row"><div><div class="m">Neha</div><div class="m s">See you tomorrow</div></div><span class="m s">Sun</span></div>
+  </div>
+  <div class="btn">New message</div>
+</div>`,
+    rep: {
+      title: 'Heading says “1 new messages” instead of “1 new message”',
+      steps: ['Receive exactly one new message', 'Open the inbox and read the heading'],
+      expected: 'You have 1 new message',
+      actual: 'You have 1 new messages',
+      tip: 'Plurals break at 0 and 1. Test counts of 0, 1, 2 and many for every “N items” label.',
+    },
+  },
+  {
+    id: 'signout-label', area: 'Account', sev: 'P3', diff: 'Easy', ac: '#0f766e',
+    hint: 'You are already signed in. Read the last button.',
+    html: SB + `
+<div class="ab"><span class="logo">A</span>AppoPay</div>
+<div class="pad">
+  <div class="hi">My account</div>
+  <div class="card">
+    <div class="row"><span class="m">Name</span><span>Riya Sharma</span></div>
+    <div class="row"><span class="m">Email</span><span>riya@mail.com</span></div>
+    <div class="row"><span class="m">Status</span><span class="chip">Signed in</span></div>
+  </div>
+  <div class="btn o">Edit profile</div>
+  <div class="btn" data-bug>Sign in</div>
+</div>`,
+    rep: {
+      title: 'Signed-in user sees a “Sign in” button instead of “Sign out”',
+      steps: ['Sign in', 'Open My account and read the last button'],
+      expected: 'Sign out',
+      actual: 'Sign in',
+      tip: 'Buttons that depend on state (signed in or out, on or off) need a check in each state.',
+    },
+  },
+  {
+    id: 'lorem', area: 'Product', sev: 'P4', diff: 'Easy', ac: '#b45309',
+    hint: 'Read the description under the name.',
+    html: SB + `
+<div class="ab"><span class="logo">B</span>BottleBay</div>
+<div class="pad">
+  <div class="img" style="height:110px"></div>
+  <div class="b" style="font-size:17px">Steel water bottle, 750 ml</div>
+  <div data-bug class="m s">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor.</div>
+  <div class="card">
+    <div class="row"><span class="m">Price</span><span class="b">₹549</span></div>
+    <div class="row"><span class="m">Delivery</span><span>Free · 3 days</span></div>
+  </div>
+  <div class="btn">Add to cart</div>
+</div>`,
+    rep: {
+      title: 'Placeholder text (“Lorem ipsum”) shown as the product description',
+      steps: ['Open the steel water bottle product page', 'Read the description'],
+      expected: 'A real product description',
+      actual: 'Lorem ipsum placeholder text',
+      tip: 'Search the build for placeholder words such as Lorem ipsum, TODO and test before release.',
+    },
+  },
+  {
+    id: 'bad-date', area: 'Orders', sev: 'P3', diff: 'Easy', ac: '#7c3aed',
+    hint: 'Check each date is a real date.',
+    html: SB + `
+<div class="ab"><span class="logo">P</span>ParcelPal</div>
+<div class="pad">
+  <div class="hi" style="font-size:20px">Order #2210</div>
+  <div class="card">
+    <div class="row"><span class="m">Ordered</span><span>20 Oct 2026</span></div>
+    <div class="row"><span class="m">Shipped</span><span>21 Oct 2026</span></div>
+    <div class="row" data-bug><span class="m">Delivered</span><span>32 Oct 2026</span></div>
+  </div>
+  <div class="btn o">Download invoice</div>
+</div>`,
+    rep: {
+      title: 'Delivery date shows “32 Oct 2026”, which is not a real date',
+      steps: ['Open an order that has been delivered', 'Read the Delivered date'],
+      expected: 'A real date such as 23 Oct 2026',
+      actual: '32 Oct 2026',
+      tip: 'Dates fail at month ends, leap days and year changes. Test the 28th to the 1st.',
+    },
+  },
+  {
+    id: 'rating-5-7', area: 'Reviews', sev: 'P3', diff: 'Easy', ac: '#d97706',
+    hint: 'Look at the star rating.',
+    html: SB + `
+<div class="ab"><span class="logo">S</span>ShopNest</div>
+<div class="pad">
+  <div class="b" style="font-size:17px">Wireless earbuds Pro</div>
+  <div data-bug class="b" style="color:#c2410c">★ 5.7 <span class="m s" style="font-weight:400">(212 ratings, out of 5)</span></div>
+  <div class="card">
+    <div class="row"><span class="m">5 star</span><div class="bar" style="width:55%"><i style="width:80%"></i></div></div>
+    <div class="row"><span class="m">4 star</span><div class="bar" style="width:55%"><i style="width:30%"></i></div></div>
+    <div class="row"><span class="m">3 star</span><div class="bar" style="width:55%"><i style="width:10%"></i></div></div>
+  </div>
+  <div class="btn">Write a review</div>
+</div>`,
+    rep: {
+      title: 'Average rating is 5.7 on a 5-star scale',
+      steps: ['Open a product with reviews', 'Read the average rating'],
+      expected: 'A value from 1.0 to 5.0',
+      actual: '5.7 out of 5',
+      tip: 'Any value outside its allowed range is a bug. Check upper and lower limits of every score and percentage.',
+    },
+  },
+  {
+    id: 'percent-120', area: 'Download', sev: 'P3', diff: 'Easy', ac: '#0891b2',
+    hint: 'How far can a download go?',
+    html: SB + `
+<div class="ab"><span class="logo">V</span>VidGo</div>
+<div class="pad">
+  <div class="hi" style="font-size:20px">Downloading</div>
+  <div class="card">
+    <div class="row"><div><div class="b">Episode 4</div><div class="m s">412 MB</div></div><span class="chip">Done</span></div>
+    <div class="row"><div style="flex:1"><div class="b">Episode 5</div><div data-bug class="s b" style="margin:6px 0">120% complete</div><div class="bar"><i style="width:100%"></i></div></div></div>
+  </div>
+  <div class="btn o">Pause all</div>
+</div>`,
+    rep: {
+      title: 'Download progress shows 120% complete',
+      steps: ['Start downloading an episode', 'Watch the progress label near the end'],
+      expected: 'Progress stops at 100%',
+      actual: '120% complete',
+      tip: 'Progress and percentage values should be clamped between 0 and 100. Test the very end of a process.',
+    },
+  },
+  {
+    id: 'price-nan', area: 'Wishlist', sev: 'P2', diff: 'Easy', ac: '#be185d',
+    hint: 'Read every price.',
+    html: SB + `
+<div class="ab"><span class="logo">W</span>WishList</div>
+<div class="pad">
+  <div class="hi" style="font-size:20px">Saved for later</div>
+  <div class="card">
+    <div class="row"><span>Cotton towel set</span><span class="b">₹899</span></div>
+    <div class="row"><span>Desk lamp</span><span class="b">₹1,249</span></div>
+    <div class="row" data-bug><span>Steel bottle</span><span class="b">₹NaN</span></div>
+    <div class="row"><span>Yoga mat</span><span class="b">₹699</span></div>
+  </div>
+  <div class="btn">Move all to cart</div>
+</div>`,
+    rep: {
+      title: 'One item shows its price as “₹NaN”',
+      steps: ['Save a steel bottle to the wishlist', 'Open Saved for later'],
+      expected: 'The real price, for example ₹549',
+      actual: '₹NaN',
+      tip: 'NaN, null and undefined on screen mean a calculation or lookup failed. Test items with missing prices.',
+    },
+  },
+  {
+    id: 'gst-wrong', area: 'Invoice', sev: 'P1', diff: 'Medium', ac: '#15803d',
+    hint: 'Work out 18% of the subtotal.',
+    html: SB + `
+<div class="ab"><span class="logo">T</span>TaxEase · Invoice</div>
+<div class="pad">
+  <div class="card">
+    <div class="row"><span>Design work</span><span>₹1,000</span></div>
+    <div class="row"><span>Hosting</span><span>₹500</span></div>
+  </div>
+  <div class="card">
+    <div class="row"><span class="m">Subtotal</span><span>₹1,500</span></div>
+    <div class="row" data-bug><span class="m">GST (18%)</span><span>₹207</span></div>
+    <div class="row"><span class="b">Total</span><span class="b">₹1,707</span></div>
+  </div>
+  <div class="btn">Send invoice</div>
+</div>`,
+    rep: {
+      title: 'GST at 18% on ₹1,500 is shown as ₹207 instead of ₹270',
+      steps: ['Create an invoice for ₹1,000 plus ₹500', 'Compare the GST line with 18% of the subtotal'],
+      expected: 'GST ₹270 and total ₹1,770',
+      actual: 'GST ₹207 and total ₹1,707',
+      tip: 'Check tax by hand on at least two amounts. Swapped digits are an easy bug to miss.',
+    },
+  },
+  {
+    id: 'timer-negative', area: 'Verify', sev: 'P3', diff: 'Medium', ac: '#6d28d9',
+    hint: 'Look at the countdown under the button.',
+    html: SB + `
+<div class="ab"><span class="logo">L</span>LoginLite</div>
+<div class="pad">
+  <div class="hi">Enter your code</div>
+  <div class="m s">We sent a 6-digit code to +91 98•••••210</div>
+  <div class="fld"><span>• • • • • •</span><span class="m s">Paste</span></div>
+  <div class="btn">Verify</div>
+  <div data-bug class="s m" style="text-align:center">Resend code in 00:-3</div>
+</div>`,
+    rep: {
+      title: 'Resend countdown goes below zero (“00:-3”)',
+      steps: ['Request a code', 'Wait until the countdown reaches zero'],
+      expected: 'The countdown stops at 00:00 and Resend turns on',
+      actual: 'It shows 00:-3 and keeps counting down',
+      tip: 'Timers need a stop condition. Wait out the full countdown, then check the state that follows.',
+    },
+  },
+  {
+    id: 'filter-ignored', area: 'Search', sev: 'P3', diff: 'Medium', ac: '#c2410c',
+    hint: 'Does every result match the filter?',
+    html: SB + `
+<div class="ab"><span class="logo">S</span>ShoeBox</div>
+<div class="pad">
+  <div class="fld"><span>sneakers</span><span class="m s">Clear</span></div>
+  <div><span class="chip">Under ₹500 ×</span></div>
+  <div class="card">
+    <div class="row"><span>Canvas sneakers</span><span class="b">₹299</span></div>
+    <div class="row"><span>Kids sneakers</span><span class="b">₹449</span></div>
+    <div class="row" data-bug><span>Running sneakers</span><span class="b">₹799</span></div>
+    <div class="row"><span>Slip-on sneakers</span><span class="b">₹399</span></div>
+  </div>
+  <div class="m s" style="text-align:center">4 results</div>
+</div>`,
+    rep: {
+      title: 'Filter “Under ₹500” still shows a ₹799 product',
+      steps: ['Search for sneakers', 'Apply the filter Under ₹500'],
+      expected: 'Only products under ₹500',
+      actual: 'A ₹799 product is listed',
+      tip: 'Test filters at the boundary (₹499, ₹500, ₹501) and in combination with sorting and search.',
+    },
+  },
+  {
+    id: 'select-count', area: 'Selection', sev: 'P3', diff: 'Medium', ac: '#0284c7',
+    hint: 'Count the ticked boxes.',
+    html: SB + `
+<div class="ab"><span class="logo">F</span>FileFox</div>
+<div class="pad">
+  <div data-bug class="b">2 selected</div>
+  <div class="card">
+    <div class="row"><span>☑ Holiday photos.zip</span><span class="m s">12 MB</span></div>
+    <div class="row"><span>☑ Invoice May.pdf</span><span class="m s">240 KB</span></div>
+    <div class="row"><span>☑ Notes.txt</span><span class="m s">4 KB</span></div>
+    <div class="row"><span>☑ Resume.docx</span><span class="m s">96 KB</span></div>
+    <div class="row"><span>☐ Budget.xlsx</span><span class="m s">58 KB</span></div>
+  </div>
+  <div class="btn">Delete selected</div>
+</div>`,
+    rep: {
+      title: 'Counter says “2 selected” while 4 files are ticked',
+      steps: ['Open the file list', 'Tick four files and read the counter'],
+      expected: '4 selected',
+      actual: '2 selected',
+      tip: 'When a counter sits next to a destructive button, a wrong number can cause data loss. Check it after select all and deselect.',
+    },
+  },
+  {
+    id: 'strength-strong', area: 'Sign up', sev: 'P2', diff: 'Medium', ac: '#4f46e5',
+    hint: 'How long is that password?',
+    html: SB + `
+<div class="ab"><span class="logo">V</span>VaultBox</div>
+<div class="pad">
+  <div class="hi">Set a password</div>
+  <div><div class="fl">Password</div><div class="fld"><span>••••</span><span class="m s">Show</span></div></div>
+  <div class="s" style="color:#c62828;margin-left:2px">✗ At least 8 characters</div>
+  <div data-bug class="chip" style="align-self:start;width:max-content">Password strength: Strong</div>
+  <div class="btn">Create account</div>
+</div>`,
+    rep: {
+      title: 'A 4-character password is rated “Strong”',
+      steps: ['Open Set a password', 'Type a 4-character password'],
+      expected: 'Weak, and the rule “At least 8 characters” fails',
+      actual: 'Strength shows Strong next to a failing rule',
+      tip: 'Check that every indicator agrees. Try short, long, all-numbers and common passwords.',
+    },
+  },
+  {
+    id: 'refund-more', area: 'Refunds', sev: 'P1', diff: 'Medium', ac: '#dc2626',
+    hint: 'Compare what was paid with what is returned.',
+    html: SB + `
+<div class="ab"><span class="logo">R</span>RefundMe</div>
+<div class="pad">
+  <div class="hi" style="font-size:20px">Return approved</div>
+  <div class="card">
+    <div class="row"><span class="m">Order #5521</span><span>Cotton kurta</span></div>
+    <div class="row"><span class="m">You paid</span><span>₹899</span></div>
+    <div class="row" data-bug><span class="b">Refund amount</span><span class="b">₹1,099</span></div>
+  </div>
+  <div class="btn">Confirm return</div>
+</div>`,
+    rep: {
+      title: 'Refund (₹1,099) is higher than the amount paid (₹899)',
+      steps: ['Return a ₹899 order', 'Open the return approval screen'],
+      expected: 'Refund of ₹899 or less',
+      actual: 'Refund of ₹1,099',
+      tip: 'A refund must never exceed the payment. Test partial returns, coupons, delivery fees and repeated refunds.',
+    },
+  },
+  {
+    id: 'mixed-language', area: 'Localisation', sev: 'P4', diff: 'Medium', ac: '#be123c',
+    hint: 'One label was not translated.',
+    html: SB + `
+<div class="ab"><span class="logo">K</span>KisanSathi</div>
+<div class="pad">
+  <div class="hi">खाता बनाएं</div>
+  <div><div class="fl">नाम</div><div class="fld">रिया शर्मा</div></div>
+  <div><div class="fl">ईमेल</div><div class="fld">riya@mail.com</div></div>
+  <div><div class="fl" data-bug>Password</div><div class="fld">••••••••</div></div>
+  <div class="btn">खाता बनाएं</div>
+</div>`,
+    rep: {
+      title: 'One field label is still in English on the Hindi screen',
+      steps: ['Switch the app language to Hindi', 'Open Create account'],
+      expected: 'All labels in Hindi (for example पासवर्ड)',
+      actual: 'The label says Password',
+      tip: 'Switch language and read the whole screen, including errors, buttons and empty states.',
+    },
+  },
+  {
+    id: 'flight-duration', area: 'Travel', sev: 'P2', diff: 'Hard', ac: '#0369a1',
+    hint: 'Count the hours from take-off to landing.',
+    html: SB + `
+<div class="ab"><span class="logo">F</span>FlyNow</div>
+<div class="pad">
+  <div class="hi" style="font-size:20px">Delhi → Mumbai</div>
+  <div class="card">
+    <div class="row"><span class="m">Departs</span><span>22:10 · 23 Oct</span></div>
+    <div class="row"><span class="m">Arrives</span><span>01:40 · 24 Oct</span></div>
+    <div class="row" data-bug><span class="m">Duration</span><span class="b">2h 30m</span></div>
+  </div>
+  <div class="btn">Select flight</div>
+</div>`,
+    rep: {
+      title: 'Flight duration says 2h 30m but the times give 3h 30m',
+      steps: ['Search a flight that leaves at 22:10 and lands at 01:40 the next day', 'Compare the duration with the times'],
+      expected: 'Duration 3h 30m',
+      actual: 'Duration 2h 30m',
+      tip: 'Flights that cross midnight, time zones or daylight-saving changes often break duration maths.',
+    },
+  },
+  {
+    id: 'split-bill', area: 'Payments', sev: 'P3', diff: 'Hard', ac: '#0d9488',
+    hint: 'Add up what was collected.',
+    html: SB + `
+<div class="ab"><span class="logo">S</span>SplitIt</div>
+<div class="pad">
+  <div class="hi" style="font-size:20px">Dinner · ₹1,000</div>
+  <div class="card">
+    <div class="row"><span>Riya</span><span>₹333 <span class="tick">✓</span></span></div>
+    <div class="row"><span>Aman</span><span>₹333 <span class="tick">✓</span></span></div>
+    <div class="row"><span>Neha</span><span>₹333 <span class="tick">✓</span></span></div>
+  </div>
+  <div class="row"><span class="m">Collected</span><span class="b">₹999 of ₹1,000</span></div>
+  <div data-bug class="chip" style="width:max-content">✓ Fully settled</div>
+  <div class="btn">Done</div>
+</div>`,
+    rep: {
+      title: 'Bill marked “Fully settled” while ₹1 is still uncollected',
+      steps: ['Split a ₹1,000 bill equally between 3 people', 'Mark all three as paid'],
+      expected: 'The remaining ₹1 is assigned to someone, or the bill stays open',
+      actual: 'Collected ₹999 of ₹1,000, shown as fully settled',
+      tip: 'Divide amounts that do not split evenly (1000 by 3, 100 by 7) and check where the rounding goes.',
+    },
+  },
+  {
+    id: 'leap-dob', area: 'Profile', sev: 'P3', diff: 'Hard', ac: '#9333ea',
+    hint: 'Was that a leap year?',
+    html: SB + `
+<div class="ab"><span class="logo">H</span>HealthHub</div>
+<div class="pad">
+  <div class="hi">Date of birth</div>
+  <div><div class="fl">Name</div><div class="fld"><span>Riya Sharma</span><span class="tick">✓</span></div></div>
+  <div><div class="fl">Date of birth</div><div class="fld" data-bug><span>29 Feb 2001</span><span class="tick">✓ Valid date</span></div></div>
+  <div class="m s" style="margin-left:2px">Age: 25 years</div>
+  <div class="btn">Save</div>
+</div>`,
+    rep: {
+      title: 'Date of birth “29 Feb 2001” is accepted, but 2001 was not a leap year',
+      steps: ['Open Date of birth', 'Enter 29 Feb 2001'],
+      expected: 'An error: that date does not exist',
+      actual: 'A green tick and “Valid date”',
+      tip: 'Test 29 February in leap years (2000, 2024) and non-leap years (1900, 2001), and the 31st of 30-day months.',
+    },
+  },
+  {
+    id: 'other-user-data', area: 'Orders', sev: 'P1', diff: 'Hard', ac: '#b91c1c',
+    hint: 'Whose details are these?',
+    html: SB + `
+<div class="ab"><span class="logo">K</span>KiranaKart</div>
+<div class="pad">
+  <div class="hi" style="font-size:20px">Hi Riya, your orders</div>
+  <div class="card">
+    <div class="row"><div><div class="b">ORD-7731</div><div class="m s">22 Oct · ₹640</div></div><span class="chip">On the way</span></div>
+    <div class="row" data-bug><div><div class="b">Deliver to</div><div class="m s">Aman Verma, 12 MG Road, Pune</div></div></div>
+  </div>
+  <div class="btn o">Track order</div>
+</div>`,
+    rep: {
+      title: 'Another customer’s name and address appear on Riya’s order',
+      steps: ['Sign in as Riya and open Orders', 'Read the delivery details of ORD-7731'],
+      expected: 'Riya’s own name and address',
+      actual: 'Aman Verma’s name and address',
+      tip: 'Showing one user’s data to another is a privacy breach. Test with two accounts and watch for cached or shared data.',
+    },
+  },
+  {
+    id: 'stale-price', area: 'Checkout', sev: 'P2', diff: 'Hard', ac: '#0f766e',
+    hint: 'Compare the cart with the checkout summary.',
+    html: SB + `
+<div class="ab"><span class="logo">G</span>GadgetGo</div>
+<div class="pad">
+  <div class="card">
+    <div class="m s" style="padding:8px 0">Cart</div>
+    <div class="row"><span>Phone case</span><span class="b">₹799</span></div>
+  </div>
+  <div class="card">
+    <div class="m s" style="padding:8px 0">Checkout summary</div>
+    <div class="row" data-bug><span>Phone case</span><span class="b">₹899</span></div>
+    <div class="row"><span class="m">Delivery</span><span>Free</span></div>
+    <div class="row"><span class="b">You pay</span><span class="b">₹899</span></div>
+  </div>
+  <div class="btn">Pay ₹899</div>
+</div>`,
+    rep: {
+      title: 'Checkout charges ₹899 for an item the cart shows at ₹799',
+      steps: ['Add the phone case to the cart (₹799)', 'Go to checkout and read the item price'],
+      expected: 'The same price in the cart and at checkout',
+      actual: 'The cart shows ₹799; checkout shows and charges ₹899',
+      tip: 'Compare the price on every step of the journey. Cached prices and old offers cause this kind of mismatch.',
+    },
+  },
+  {
+    id: 'failed-but-charged', area: 'Payment', sev: 'P1', diff: 'Hard', ac: '#be123c',
+    hint: 'Do the banner and the receipt agree?',
+    html: SB + `
+<div class="ab"><span class="logo">P</span>PayWise</div>
+<div class="pad">
+  <div data-bug class="row" style="background:#fdecea;border-radius:10px;padding:10px 12px"><span class="b" style="color:#b4232f">Payment failed. Please try again.</span></div>
+  <div class="card">
+    <div class="row"><span class="m">Order</span><span class="b">#8841 confirmed</span></div>
+    <div class="row"><span class="m">Amount</span><span>₹899 charged</span></div>
+    <div class="row"><span class="m">Method</span><span>Card ••4242</span></div>
+  </div>
+  <div class="btn">Retry payment</div>
+</div>`,
+    rep: {
+      title: 'Screen says “Payment failed” while the order is confirmed and charged',
+      steps: ['Pay for an order with a card', 'Read the result screen after the payment'],
+      expected: 'One clear result: success or failure',
+      actual: '“Payment failed” together with “Order #8841 confirmed, ₹899 charged”',
+      tip: 'Contradictory payment messages lead customers to pay twice. Test slow networks, timeouts and retries.',
+    },
   }
 );
 
