@@ -1720,6 +1720,18 @@ async function shareImage(btn) {
   }
 }
 
+// Share links for the networks testers use. The picture card (drawShareCard) is kept for later.
+function shareTargets(text) {
+  const u = encodeURIComponent(CONFIG.SITE), t = encodeURIComponent(text);
+  return [
+    ['Share on LinkedIn', 'https://www.linkedin.com/sharing/share-offsite/?url=' + u],
+    ['Share on X', 'https://twitter.com/intent/tweet?text=' + t],
+    ['Share on WhatsApp', 'https://wa.me/?text=' + t],
+    ['Share on Telegram', 'https://t.me/share/url?url=' + u + '&text=' + encodeURIComponent(text.replace(CONFIG.SITE, '').trim())],
+    ['Share on Reddit', 'https://www.reddit.com/submit?url=' + u + '&title=' + encodeURIComponent(BRAND + ' Daily result')],
+  ];
+}
+
 function showShare() {
   const text = shareText();
   openSheet({
@@ -1727,9 +1739,7 @@ function showShare() {
     body: '', share: text,
     buttons: [
       { label: 'Copy result', primary: true, fn: btn => copyText(text, btn) },
-      signedIn()
-        ? { label: 'Share as picture', fn: btn => shareImage(btn) }
-        : { label: '🔒 Sign in to share as a picture', fn: () => { closeSheet(); showSignIn(); } },
+      ...shareTargets(text).map(([label, url]) => ({ label, fn: () => { window.open(url, '_blank', 'noopener'); } })),
       { label: 'Close', fn: closeSheet },
     ],
   });
