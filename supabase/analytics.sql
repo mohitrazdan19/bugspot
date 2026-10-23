@@ -46,11 +46,11 @@ begin
     'referrers', coalesce((select jsonb_agg(jsonb_build_object('ref', ref, 'n', n)) from (
         select coalesce(nullif(ref, ''), 'Direct') as ref, count(*) n from analytics_events
         where event = 'visit' and created_at >= now() - make_interval(days => d) group by 1 order by 2 desc limit 10) r), '[]'::jsonb),
-    'puzzles', coalesce((select jsonb_agg(jsonb_build_object('id', pid, 'started', started, 'found', found, 'failed', failed)) from (
+    'puzzles', coalesce((select jsonb_agg(jsonb_build_object('id', pid, 'started', n_start, 'found', n_found, 'failed', n_fail)) from (
         select props ->> 'id' as pid,
-          count(*) filter (where event = 'puzzle_start') started,
-          count(*) filter (where event = 'puzzle_found') found,
-          count(*) filter (where event = 'puzzle_fail') failed
+          count(*) filter (where event = 'puzzle_start') n_start,
+          count(*) filter (where event = 'puzzle_found') n_found,
+          count(*) filter (where event = 'puzzle_fail') n_fail
         from analytics_events where event in ('puzzle_start','puzzle_found','puzzle_fail') and props ? 'id'
           and created_at >= now() - make_interval(days => d)
         group by 1 order by 4 desc, 2 desc limit 10) p), '[]'::jsonb)

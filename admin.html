@@ -53,7 +53,7 @@ function draw(d) {
   const kpi = (n, l) => '<div class="card kpi"><b>' + n + '</b><span>' + l + '</span></div>';
   const bars = d.daily.map(x => '<i title="' + esc(x.day) + ': ' + x.visitors + ' visitors" style="height:' + Math.max(2, Math.round(x.visitors * 100 / max)) + '%"></i>').join('');
   const refs = d.referrers.map(x => '<tr><td>' + esc(x.ref) + '</td><td class="n">' + x.n + '</td></tr>').join('') || '<tr><td class="mute" colspan="2">No visits yet</td></tr>';
-  const pz = d.puzzles.map(x => '<tr><td>#' + esc(x.id) + '</td><td class="n">' + x.started + '</td><td class="n">' + x.found + '</td><td class="n">' + x.failed + '</td><td class="n">' + pct(x.found, x.found + x.failed) + '</td></tr>').join('') || '<tr><td class="mute" colspan="5">No plays yet</td></tr>';
+  const pz = d.puzzles.map(x => '<tr><td>' + esc(x.id) + '</td><td class="n">' + x.started + '</td><td class="n">' + x.found + '</td><td class="n">' + x.failed + '</td><td class="n">' + pct(x.found, x.found + x.failed) + '</td></tr>').join('') || '<tr><td class="mute" colspan="5">No plays yet</td></tr>';
   $('dash').innerHTML =
     '<div class="grid" style="margin-top:16px">' + kpi(d.visitors, 'Visitors (' + d.days + ' days)') + kpi(d.visitors_today, 'Visitors today') + kpi(d.visits, 'Visits') + kpi(d.accounts, 'Accounts created') + '</div>' +
     '<h2>Visitors per day</h2><div class="card"><div class="bars">' + (bars || '<span class="mute">No data yet</span>') + '</div></div>' +
