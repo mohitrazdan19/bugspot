@@ -901,6 +901,7 @@ const CONFIG = {
   GOOGLE: false,
   SITE: 'https://mohitrazdan19.github.io/bugspot/',
 };
+const BRAND = 'Bugspot'; // game name shown in the share text and share image
 const SLOTS = 8;      // bugs in the daily set
 const FREE = 3;       // bugs a guest can play each day
 const UNLOCK_AT = 0.75; // share of a level to solve before the next level opens
@@ -1197,7 +1198,7 @@ function renderDaily() {
 function shareText() {
   const today = new Date(), day = getDay(dayKey(today)), set = dailySet(today), n = avail(), t = tally(day);
   const sq = set.map((x, i) => { const r = day.r[i]; return r ? (r.f ? '🟩' : '🟥') : (i >= n ? '🔒' : '⬜'); }).join('');
-  return 'Bugspot Daily · ' + dayLabel(today) + '\n' + sq + '\n' + t.found + ' of ' + n + ' bugs found' +
+  return BRAND + ' Daily · ' + dayLabel(today) + '\n' + sq + '\n' + t.found + ' of ' + n + ' bugs found' +
     '\nCan you spot them? ' + CONFIG.SITE;
 }
 
@@ -1210,6 +1211,55 @@ function copyText(text, btn) {
   try { navigator.clipboard.writeText(text).then(() => { btn.textContent = 'Copied'; }, fallback); } catch (e) { fallback(); }
 }
 
+// Result picture for sharing (1200 x 630, the size social sites preview best).
+function drawShareCard() {
+  const today = new Date(), day = getDay(dayKey(today)), set = dailySet(today), n = avail(), t = tally(day);
+  const c = document.createElement('canvas'); c.width = 1200; c.height = 630;
+  const g = c.getContext('2d');
+  const sans = '-apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
+  g.fillStyle = '#eceff6'; g.fillRect(0, 0, 1200, 630);
+  g.fillStyle = '#ffffff'; g.beginPath(); g.roundRect(60, 60, 1080, 510, 36); g.fill();
+  g.fillStyle = '#101729'; g.font = '800 54px ' + sans; g.textBaseline = 'alphabetic';
+  g.fillText(BRAND + ' Daily', 110, 150);
+  g.fillStyle = '#566078'; g.font = '500 32px ' + sans;
+  g.fillText(dayLabel(today) + ' ' + today.getFullYear(), 110, 198);
+  // one square per bug in today's set
+  const size = 96, gap = 18, x0 = 110, y0 = 240;
+  set.forEach((idx, i) => {
+    const r = day.r[i], x = x0 + i * (size + gap);
+    g.fillStyle = r ? (r.f ? '#0f7d58' : '#d6283a') : (i >= n ? '#f4f6fb' : '#d7dce8');
+    g.beginPath(); g.roundRect(x, y0, size, size, 20); g.fill();
+    g.fillStyle = r ? '#ffffff' : '#566078'; g.font = '700 44px ' + sans; g.textAlign = 'center';
+    g.fillText(r ? (r.f ? '✓' : '×') : (i >= n ? '🔒' : String(i + 1)), x + size / 2, y0 + 64);
+  });
+  g.textAlign = 'left';
+  g.fillStyle = '#101729'; g.font = '800 72px ' + sans;
+  g.fillText(t.found + ' of ' + n + ' bugs found', 110, 430);
+  g.fillStyle = '#566078'; g.font = '500 34px ' + sans;
+  g.fillText('Streak ' + liveStreak() + (liveStreak() === 1 ? ' day' : ' days') + '  ·  Can you spot them?', 110, 488);
+  g.fillStyle = '#d6283a'; g.font = '600 30px ' + sans;
+  g.fillText(CONFIG.SITE.replace(/^https?:\/\//, '').replace(/\/$/, ''), 110, 540);
+  return c;
+}
+async function shareImage(btn) {
+  try {
+    const blob = await new Promise(res => drawShareCard().toBlob(res, 'image/png'));
+    if (!blob) throw new Error('no image');
+    const file = new File([blob], 'result.png', { type: 'image/png' });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({ files: [file], text: shareText() });
+      return;
+    }
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = 'result.png';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    btn.textContent = 'Image saved';
+  } catch (e) {
+    if (!e || e.name !== 'AbortError') btn.textContent = 'Could not make the image';
+  }
+}
+
 function showShare() {
   const text = shareText();
   openSheet({
@@ -1217,6 +1267,7 @@ function showShare() {
     body: '', share: text,
     buttons: [
       { label: 'Copy result', primary: true, fn: btn => copyText(text, btn) },
+      { label: 'Share as picture', fn: btn => shareImage(btn) },
       { label: 'Close', fn: closeSheet },
     ],
   });
