@@ -316,6 +316,21 @@
   .ea > div:last-child { background: color-mix(in srgb, var(--bug) 9%, var(--surface)); }
   .tip { border-left: 4px solid var(--ok); }
 
+
+  /* share sheet: score card + branded buttons */
+  .scard { padding: 22px 20px 20px; text-align: center; }
+  .scard .big { font: 800 72px/1 var(--display); letter-spacing: -2px; margin-top: 6px; }
+  .scard .big small { font-size: 32px; letter-spacing: 0; opacity: 0.6; }
+  .scard .verdict { font: 700 18px/1.2 var(--display); margin-top: 6px; }
+  .scard .sqs { display: flex; justify-content: center; flex-wrap: wrap; gap: 6px; margin-top: 16px; }
+  .scard .hchips { justify-content: center; }
+  .btns.share { grid-template-columns: 1fr 1fr; }
+  .btns.share > :first-child, .btns.share > :nth-last-child(2), .btns.share > :last-child { grid-column: 1 / -1; }
+  .pbtn { display: flex; align-items: center; justify-content: center; gap: 10px; }
+  .pbtn .pi { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; flex: none; color: #fff; background: var(--bc);
+    font: 800 11px/1 var(--body); letter-spacing: -0.2px; }
+  .pbtn:hover { border-color: var(--bc); }
+
   /* each new screen rises in */
   #view > * { animation: rise 0.35s ease-out both; }
   #view > :nth-child(2) { animation-delay: 0.04s; } #view > :nth-child(3) { animation-delay: 0.08s; } #view > :nth-child(n+4) { animation-delay: 0.12s; }
@@ -1940,6 +1955,7 @@ function shareText() {
 function copyText(text, btn) {
   const pre = $('shShare');
   const fallback = () => {
+    pre.textContent = text; pre.hidden = false;
     try { const r = document.createRange(); r.selectNodeContents(pre); const s = window.getSelection(); s.removeAllRanges(); s.addRange(r); } catch (e) { /* ignore */ }
     btn.textContent = 'Select the text above and copy';
   };
@@ -2018,15 +2034,29 @@ function shareTargets(text) {
   ];
 }
 
+const PLATFORM = { LinkedIn: ['in', '#0a66c2'], X: ['X', '#111111'], WhatsApp: ['WA', '#1fa855'], Telegram: ['TG', '#229ed9'], Reddit: ['r/', '#ff4500'] };
+function scoreCard() {
+  const today = new Date(), day = getDay(dayKey(today)), set = dailySet(today), n = avail(), t = tally(day);
+  const sq = set.map((x, i) => { const r = day.r[i]; return '<i class="sl ' + (r ? (r.f ? 'g' : 'r') : 'l') + '">' + (i >= n && !r ? '🔒' : '') + '</i>'; }).join('');
+  const verdict = t.found >= n ? 'Flawless hunt!' : t.found >= n * 0.75 ? 'Sharp eyes' : t.found >= n * 0.4 ? 'Not bad' : 'Bugs everywhere';
+  const streak = liveStreak();
+  return '<section class="card hero scard"><p class="eyebrow">' + esc(BRAND) + ' Daily · ' + dayLabel(today) + '</p>' +
+    '<div class="big">' + t.found + '<small>/' + n + '</small></div><div class="verdict">' + verdict + '</div>' +
+    '<div class="sqs" aria-hidden="true">' + sq + '</div>' +
+    (streak ? '<div class="hchips"><span class="hchip">🔥 <b>' + streak + '</b> day streak</span></div>' : '') + '</section>';
+}
 function showShare() {
   track('share');
   const text = shareText();
   openSheet({
     sev: null, id: 'Daily result', status: '', title: 'Share your result',
-    body: '', share: text,
+    body: scoreCard(), cls: 'share',
     buttons: [
       { label: 'Copy result', primary: true, fn: btn => copyText(text, btn) },
-      ...shareTargets(text).map(([label, url]) => ({ label, fn: () => { window.open(url, '_blank', 'noopener'); } })),
+      ...shareTargets(text).map(([label, url]) => {
+        const name = label.replace('Share on ', ''), pl = PLATFORM[name] || [name[0], '#566078'];
+        return { label: name, aria: label, icon: pl[0], color: pl[1], fn: () => { window.open(url, '_blank', 'noopener'); } };
+      }),
       { label: 'Close', fn: closeSheet },
     ],
   });
@@ -2229,11 +2259,17 @@ function openSheet(o) {
   if (o.share) pre.textContent = o.share;
   const box = $('shBtns');
   box.textContent = '';
+  box.className = 'btns' + (o.cls ? ' ' + o.cls : '');
   for (const b of o.buttons) {
     const el = document.createElement('button');
     el.type = 'button';
-    el.className = b.primary ? 'btn-p' : 'btn-s';
-    el.textContent = b.label;
+    el.className = (b.primary ? 'btn-p' : 'btn-s') + (b.icon ? ' pbtn' : '');
+    if (b.icon) {
+      el.style.setProperty('--bc', b.color);
+      el.setAttribute('aria-label', b.aria || b.label);
+      const i = document.createElement('span'); i.className = 'pi'; i.setAttribute('aria-hidden', 'true'); i.textContent = b.icon;
+      el.append(i, b.label);
+    } else el.textContent = b.label;
     el.addEventListener('click', () => b.fn(el));
     box.appendChild(el);
   }
