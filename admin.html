@@ -19,7 +19,7 @@ td.n,th.n{text-align:right}.row{display:flex;gap:10px;align-items:center;justify
 #msg{margin-top:10px;color:var(--mute)}[hidden]{display:none!important}
 </style></head><body><main>
 <div class="row"><div><h1>Bugspot admin</h1><div class="mute" id="who">Private page for the site owner</div></div>
-<div><select id="range" hidden><option value="7">Last 7 days</option><option value="30" selected>Last 30 days</option><option value="90">Last 90 days</option></select>
+<div><select id="range" hidden><option value="0">Today</option><option value="7">Last 7 days</option><option value="30" selected>Last 30 days</option><option value="90">Last 90 days</option></select>
 <button id="out" hidden type="button">Sign out</button></div></div>
 <section id="login" class="card" style="margin-top:16px" hidden>
 <p>Sign in with the owner email to see the numbers.</p>
@@ -55,7 +55,7 @@ function draw(d) {
   const refs = d.referrers.map(x => '<tr><td>' + esc(x.ref) + '</td><td class="n">' + x.n + '</td></tr>').join('') || '<tr><td class="mute" colspan="2">No visits yet</td></tr>';
   const pz = d.puzzles.map(x => '<tr><td>' + esc(x.id) + '</td><td class="n">' + x.started + '</td><td class="n">' + x.found + '</td><td class="n">' + x.failed + '</td><td class="n">' + pct(x.found, x.found + x.failed) + '</td></tr>').join('') || '<tr><td class="mute" colspan="5">No plays yet</td></tr>';
   $('dash').innerHTML =
-    '<div class="grid" style="margin-top:16px">' + kpi(d.visitors, 'Visitors (' + d.days + ' days)') + kpi(d.visitors_today, 'Visitors today') + kpi(d.visits, 'Visits') + kpi(d.accounts, 'Accounts created') + '</div>' +
+    '<div class="grid" style="margin-top:16px">' + kpi(d.visitors, d.days === 0 ? 'Visitors today' : 'Visitors (' + d.days + ' days)') + kpi(d.visitors_today, 'Visitors today') + kpi(d.visits, 'Visits') + kpi(d.accounts, 'Accounts created') + '</div>' +
     '<h2>Visitors per day</h2><div class="card"><div class="bars">' + (bars || '<span class="mute">No data yet</span>') + '</div></div>' +
     '<h2>Gameplay</h2><div class="grid">' + kpi(e.puzzle_start || 0, 'Puzzles started') + kpi(e.puzzle_found || 0, 'Bugs found') + kpi(e.puzzle_fail || 0, 'Missed') +
     kpi(pct(e.puzzle_found || 0, (e.puzzle_found || 0) + (e.puzzle_fail || 0)), 'Success rate') + kpi(e.signin_sent || 0, 'Sign-in links sent') + kpi(e.signin || 0, 'Sign-ins') + kpi(e.share || 0, 'Share clicks') + '</div>' +
