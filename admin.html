@@ -45,7 +45,15 @@ async function load() {
   $('who').textContent = 'Signed in as ' + sess.session.user.email;
   const r = await sb.rpc('admin_stats', { days: +$('range').value });
   if (r.error) { show('login'); $('err').textContent = 'Could not load stats.'; return; }
-  draw(r.data); show('dash');
+  draw(r.data); show('dash'); loadUsers();
+}
+async function loadUsers() {
+  const r = await sb.rpc('admin_users');
+  if (r.error || !Array.isArray(r.data)) return; // not set up yet: leave the section out
+  const day = t => t ? new Date(t).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '–';
+  const rows = r.data.map(u => '<tr><td>' + esc(u.email || '–') + '</td><td>' + (esc(u.name) || '<span class="mute">–</span>') + '</td><td>' + day(u.joined) + '</td><td>' + day(u.last_seen) + '</td></tr>').join('') || '<tr><td class="mute" colspan="4">Nobody has signed up yet</td></tr>';
+  const old = $('usersBox'); if (old) old.remove();
+  $('dash').insertAdjacentHTML('beforeend', '<div id="usersBox"><h2>Signed-up users (' + r.data.length + ')</h2><div class="card" style="overflow-x:auto"><table><tr><th>Email</th><th>Name</th><th>Joined</th><th>Last sign-in</th></tr>' + rows + '</table></div></div>');
 }
 function pct(a, b) { return b ? Math.round(a * 100 / b) + '%' : '–'; }
 function draw(d) {
