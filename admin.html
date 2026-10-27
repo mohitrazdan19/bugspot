@@ -45,15 +45,23 @@ async function load() {
   $('who').textContent = 'Signed in as ' + sess.session.user.email;
   const r = await sb.rpc('admin_stats', { days: +$('range').value });
   if (r.error) { show('login'); $('err').textContent = 'Could not load stats.'; return; }
-  draw(r.data); show('dash'); loadUsers();
+  draw(r.data); show('dash'); loadUsers(r.data.days);
 }
-async function loadUsers() {
+async function loadUsers(days) {
   const r = await sb.rpc('admin_users');
   if (r.error || !Array.isArray(r.data)) return; // not set up yet: leave the section out
-  const day = t => t ? new Date(t).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '–';
-  const rows = r.data.map(u => '<tr><td>' + esc(u.email || '–') + '</td><td>' + (esc(u.name) || '<span class="mute">–</span>') + '</td><td>' + day(u.joined) + '</td><td>' + day(u.last_seen) + '</td></tr>').join('') || '<tr><td class="mute" colspan="4">Nobody has signed up yet</td></tr>';
+  // Same window as the stats above: "Today" = since midnight India time, otherwise the last N days.
+  let from;
+  if (days === 0) from = new Date(new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }) + 'T00:00:00+05:30');
+  else from = new Date(Date.now() - days * 86400000);
+  const list = r.data.filter(u => u.joined && new Date(u.joined) >= from);
+  const label = days === 0 ? 'today' : 'in the last ' + days + ' days';
+  const k = $('kSignups');
+  if (k) { k.querySelector('b').textContent = list.length; k.querySelector('span').textContent = 'Signed up ' + label; }
+  const day = t => t ? new Date(t).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' }) : '–';
+  const rows = list.map(u => '<tr><td>' + esc(u.email || '–') + '</td><td>' + (esc(u.name) || '<span class="mute">–</span>') + '</td><td>' + day(u.joined) + '</td><td>' + day(u.last_seen) + '</td></tr>').join('') || '<tr><td class="mute" colspan="4">Nobody signed up ' + label + '</td></tr>';
   const old = $('usersBox'); if (old) old.remove();
-  $('dash').insertAdjacentHTML('beforeend', '<div id="usersBox"><h2>Signed-up users (' + r.data.length + ')</h2><div class="card" style="overflow-x:auto"><table><tr><th>Email</th><th>Name</th><th>Joined</th><th>Last sign-in</th></tr>' + rows + '</table></div></div>');
+  $('dash').insertAdjacentHTML('beforeend', '<div id="usersBox"><h2>Signed up ' + label + ' (' + list.length + ')</h2><div class="card" style="overflow-x:auto"><table><tr><th>Email</th><th>Name</th><th>Joined</th><th>Last sign-in</th></tr>' + rows + '</table></div><p class="mute" style="margin-top:8px">' + r.data.length + ' accounts in total</p></div>');
 }
 function pct(a, b) { return b ? Math.round(a * 100 / b) + '%' : '–'; }
 function draw(d) {
@@ -63,7 +71,7 @@ function draw(d) {
   const refs = d.referrers.map(x => '<tr><td>' + esc(x.ref) + '</td><td class="n">' + x.n + '</td></tr>').join('') || '<tr><td class="mute" colspan="2">No visits yet</td></tr>';
   const pz = d.puzzles.map(x => '<tr><td>' + esc(x.id) + '</td><td class="n">' + x.started + '</td><td class="n">' + x.found + '</td><td class="n">' + x.failed + '</td><td class="n">' + pct(x.found, x.found + x.failed) + '</td></tr>').join('') || '<tr><td class="mute" colspan="5">No plays yet</td></tr>';
   $('dash').innerHTML =
-    '<div class="grid" style="margin-top:16px">' + kpi(d.visitors, d.days === 0 ? 'Visitors today' : 'Visitors (' + d.days + ' days)') + (d.days === 0 ? '' : kpi(d.visitors_today, 'Visitors today')) + kpi(d.visits, 'Visits') + kpi(d.accounts, 'Accounts created') + '</div>' +
+    '<div class="grid" style="margin-top:16px">' + kpi(d.visitors, d.days === 0 ? 'Visitors today' : 'Visitors (' + d.days + ' days)') + (d.days === 0 ? '' : kpi(d.visitors_today, 'Visitors today')) + kpi(d.visits, 'Visits') + '<div class="card kpi" id="kSignups"><b>' + d.accounts + '</b><span>Accounts created</span></div>' + '</div>' +
     '<h2>Visitors per day</h2><div class="card"><div class="bars">' + (bars || '<span class="mute">No data yet</span>') + '</div></div>' +
     '<h2>Gameplay</h2><div class="grid">' + kpi(e.puzzle_start || 0, 'Puzzles started') + kpi(e.puzzle_found || 0, 'Bugs found') + kpi(e.puzzle_fail || 0, 'Missed') +
     kpi(pct(e.puzzle_found || 0, (e.puzzle_found || 0) + (e.puzzle_fail || 0)), 'Success rate') + kpi(e.signin_sent || 0, 'Sign-in links sent') + kpi(e.signin || 0, 'Sign-ins') + kpi(e.share || 0, 'Share clicks') + '</div>' +
