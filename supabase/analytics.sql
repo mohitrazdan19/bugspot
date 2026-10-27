@@ -64,3 +64,18 @@ revoke all on function public.is_admin() from public, anon;
 revoke all on function public.admin_stats(int) from public, anon;
 grant execute on function public.is_admin() to authenticated;
 grant execute on function public.admin_stats(int) to authenticated;
+
+-- Owner-only list of people who signed up (email, name if the sign-in provides one).
+create or replace function public.admin_users() returns jsonb
+language plpgsql stable security definer set search_path = public as $$
+begin
+  if not public.is_admin() then raise exception 'not allowed'; end if;
+  return coalesce((select jsonb_agg(jsonb_build_object(
+      'email', u.email,
+      'name', coalesce(nullif(u.raw_user_meta_data ->> 'full_name', ''), nullif(u.raw_user_meta_data ->> 'name', ''), ''),
+      'joined', u.created_at,
+      'last_seen', u.last_sign_in_at) order by u.created_at desc)
+    from auth.users u), '[]'::jsonb);
+end $$;
+revoke all on function public.admin_users() from public, anon;
+grant execute on function public.admin_users() to authenticated;
