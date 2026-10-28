@@ -1530,16 +1530,58 @@ function rng(seed) {
     return ((t ^ t >>> 14) >>> 0) / 4294967296;
   };
 }
-function dailySet(d) {
-  const r = rng(dayNum(d) * 2654435761);
-  const by = { Easy: [], Medium: [], Hard: [] };
-  PUZZLES.forEach((p, i) => { if (by[p.diff]) by[p.diff].push(i); });
-  const pick = (a, n) => {
+// Until NEW_ROTATION_FROM the set is picked at random each day (kept so saved progress for past days still lines up).
+const NEW_ROTATION_FROM = Date.UTC(2026, 9, 29) / 86400000; // 29 Oct 2026
+const ROTATION_SHIFT = 4; // chosen so the first rotation day shares nothing with the last random day
+function shuffleIdx(a, r) {
+  const c = a.slice();
+  for (let i = c.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); const t = c[i]; c[i] = c[j]; c[j] = t; }
+  return c;
+}
+// From NEW_ROTATION_FROM: each level walks through its puzzles in a shuffled order and only starts a new
+// shuffle once every puzzle has been used, so a puzzle does not come back until the rest of its level has been seen.
+function rotationOrder(idxs, e, k, salt) {
+  const N = idxs.length, perm = shuffleIdx(idxs, rng((e + 1) * 2654435761 + salt));
+  if (e > 0 && N >= 4 * k) {
+    // Keep the last puzzles of the previous round out of the first days of this one.
+    const tail = shuffleIdx(idxs, rng(e * 2654435761 + salt)).slice(-2 * k);
+    let j = 2 * k;
+    for (let i = 0; i < 2 * k; i++) {
+      if (!tail.includes(perm[i])) continue;
+      while (tail.includes(perm[j])) j++;
+      const t = perm[i]; perm[i] = perm[j]; perm[j] = t; j++;
+    }
+  }
+  return perm;
+}
+function rotatePick(idxs, k, n, salt) {
+  const N = idxs.length;
+  if (N <= k) return idxs.slice();
+  const picks = [];
+  for (let j = 0; j < k; j++) {
+    const q = (n + ROTATION_SHIFT) * k + j, e = Math.floor(q / N), pos = q % N;
+    const perm = rotationOrder(idxs, e, k, salt);
+    let c = perm[pos];
+    for (let t = 1; picks.includes(c) && t < N; t++) c = perm[(pos + t) % N]; // a day can straddle two rounds
+    picks.push(c);
+  }
+  return picks;
+}
+function legacySet(n, by) {
+  const r = rng(n * 2654435761);
+  const pick = (a, k) => {
     const c = a.slice();
     for (let i = c.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); const t = c[i]; c[i] = c[j]; c[j] = t; }
-    return c.slice(0, n);
+    return c.slice(0, k);
   };
   return [].concat(pick(by.Easy, 3), pick(by.Medium, 3), pick(by.Hard, 2));
+}
+function dailySet(d) {
+  const by = { Easy: [], Medium: [], Hard: [] };
+  PUZZLES.forEach((p, i) => { if (by[p.diff]) by[p.diff].push(i); });
+  const n = dayNum(d);
+  if (n < NEW_ROTATION_FROM) return legacySet(n, by);
+  return [].concat(rotatePick(by.Easy, 3, n, 1), rotatePick(by.Medium, 3, n, 2), rotatePick(by.Hard, 2, n, 3));
 }
 
 // ---------- saved progress ----------
