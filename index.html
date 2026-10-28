@@ -1495,6 +1495,9 @@ const CONFIG = {
   // Uses the legacy anon key because the pinned supabase-js version predates the newer sb_publishable_ keys.
   SUPABASE_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im90ZnV5bWplcW9naHJpZGNpaXFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI3NDYxNTIsImV4cCI6MjEwODMyMjE1Mn0.uK3WhRMTTQ8rGB1PXM3Umd6ruNjs0RLbuWkMu5PoS5Q',
   GOOGLE: false,
+  // Everything is free for now: all daily bugs and practice levels without signing in.
+  // Set to false to bring back the guest limit and the sign-in prompts.
+  OPEN_ACCESS: true,
   SITE: 'https://mohitrazdan19.github.io/bugspot/',
 };
 const BRAND = 'Bugspot'; // game name shown in the share text and share image
@@ -1624,7 +1627,9 @@ function track(event, props) {
 // ---------- accounts (Supabase, loaded only when configured) ----------
 let sb = null, user = null, syncTimer = 0;
 function signedIn() { return !!user; }
-function avail() { return signedIn() ? SLOTS : FREE; }
+// gated(): this visitor is held back by the sign-in wall (guests, when OPEN_ACCESS is off).
+function gated() { return !signedIn() && !CONFIG.OPEN_ACCESS; }
+function avail() { return gated() ? FREE : SLOTS; }
 
 function initAuth() {
   renderAcct();
@@ -1672,6 +1677,8 @@ function rerender() { if (S.view !== 'play') setView(S.view); }
 function renderAcct() {
   const a = $('acct');
   if (!a) return;
+  const pending = !!getJoin() || /[?&]signin\b/.test(location.search); // ?signin shows the button for managers
+  if (!signedIn() && CONFIG.OPEN_ACCESS && !pending) { a.innerHTML = ''; return; }
   a.innerHTML = signedIn()
     ? '<span>' + esc(user.email || 'Signed in') + '</span><button id="acBtn" type="button">Account</button>'
     : '<span>Guest</span><button id="acBtn" type="button">Sign in</button>';
@@ -1902,15 +1909,15 @@ function renderDaily() {
     const cls = r ? (r.f ? 'sl g' : 'sl r') : (i >= n ? 'sl l' : 'sl');
     return '<i class="' + cls + '">' + (r ? (r.f ? '✓' : '×') : (i >= n ? '🔒' : i + 1)) + '</i>';
   }).join('');
-  const guestFull = !signedIn() && next < 0;
+  const guestFull = gated() && next < 0;
   let head, lede = '';
   if (t.done === 0) {
     head = '<h1>' + n + ' screens. One bug each.</h1>';
-    lede = '<p class="lede">A made-up app has a defect hiding in plain sight. Tap it before your three tries run out, then read the bug report.' + (signedIn() ? '' : ' Guests play ' + FREE + ' a day; sign in free for all ' + SLOTS + '.') + '</p>';
+    lede = '<p class="lede">A made-up app has a defect hiding in plain sight. Tap it before your three tries run out, then read the bug report.' + (gated() ? ' Guests play ' + FREE + ' a day; sign in free for all ' + SLOTS + '.' : '') + '</p>';
   } else {
     head = '<p class="res">' + t.found + ' of ' + n + ' found</p>';
     if (next >= 0) lede = '<p class="rt">' + (n - t.done) + ' to go today.</p>';
-    else lede = '<p class="rt">' + (signedIn() ? 'All ' + SLOTS + ' done for today.' : 'Your ' + FREE + ' free bugs are done.') + '</p>';
+    else lede = '<p class="rt">' + (gated() ? 'Your ' + FREE + ' free bugs are done.' : 'All ' + SLOTS + ' done for today.') + '</p>';
   }
   let primary;
   if (next >= 0) primary = '<button id="go" class="btn-p" type="button">' + (t.done ? 'Next bug' : 'Start today’s hunt') + '</button>';
@@ -1932,7 +1939,7 @@ function renderDaily() {
     '<p class="meta" style="margin-top:14px">Next set in <b id="cd">' + nextBugIn() + '</b> · Streak <b>' + liveStreak() + '</b> ' + (liveStreak() === 1 ? 'day' : 'days') + '</p></section>' +
     '<div class="sumrow"><h2>Today’s bugs</h2><span class="meta"><b>' + t.done + '</b> / ' + n + ' played</span></div>' +
     '<div class="grid">' + tiles + '</div>' +
-    (signedIn() ? '' : '<p class="note callout" style="margin-top:12px">Guests play ' + FREE + ' bugs a day. Sign in free to play all ' + SLOTS + ' and unlock practice levels.</p>');
+    (gated() ? '<p class="note callout" style="margin-top:12px">Guests play ' + FREE + ' bugs a day. Sign in free to play all ' + SLOTS + ' and unlock practice levels.</p>' : '');
   const go = $('go'); if (go) go.addEventListener('click', () => startPlay(set[next], 'daily', next));
   const gs = $('goSign'); if (gs) gs.addEventListener('click', () => showSignIn());
   const sh = $('shareBtn'); if (sh) sh.addEventListener('click', () => showShare());
@@ -2073,7 +2080,7 @@ function renderPractice() {
   S.from = 'practice';
   $('tabDaily').setAttribute('aria-selected', 'false');
   $('tabPractice').setAttribute('aria-selected', 'true');
-  if (!signedIn()) {
+  if (gated()) {
     const rows = LEVELS.map(L => '<div class="row2"><span>🔒 ' + dl(L.diff) + '</span><span class="meta">' + levelIdx(L.diff).length + ' bugs</span></div>').join('') +
       '<div class="row2"><span>🔒 Expert</span><span class="meta">coming soon</span></div>';
     $('view').innerHTML =
@@ -2117,7 +2124,7 @@ function renderPractice() {
 
 // ---------- play ----------
 function startPlay(idx, from, slot) {
-  if (from === 'practice' && !signedIn()) { showSignIn(); return; }
+  if (from === 'practice' && gated()) { showSignIn(); return; }
   track('puzzle_start', { id: (PUZZLES[idx] || {}).id, mode: from });
   S.idx = idx; S.from = from; S.slot = slot | 0; S.used = 0; S.hint = false; S.done = false; S.found = false; S.t0 = performance.now();
   if (from === 'daily') {
@@ -2184,7 +2191,7 @@ function afterAction(from, idx, slot) {
   if (from === 'daily') {
     const today = new Date(), set = dailySet(today), day = getDay(S.dayKey || dayKey(today)), next = nextSlot(day);
     if (next >= 0) return { label: 'Next bug', fn: () => startPlay(set[next], 'daily', next) };
-    if (!signedIn()) return { label: 'Sign in to unlock ' + (SLOTS - FREE) + ' more', fn: () => showSignIn() };
+    if (gated()) return { label: 'Sign in to unlock ' + (SLOTS - FREE) + ' more', fn: () => showSignIn() };
     return { label: 'Share result', fn: () => showShare() };
   }
   const idxs = levelIdx(PUZZLES[idx].diff), pos = idxs.indexOf(idx);
