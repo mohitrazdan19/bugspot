@@ -6,7 +6,7 @@ create table if not exists public.analytics_events (
   created_at timestamptz not null default now(),
   visitor text not null check (char_length(visitor) between 8 and 64),
   event text not null check (event in
-    ('visit','puzzle_start','puzzle_found','puzzle_fail','signin_sent','signin','share')),
+    ('visit','puzzle_start','puzzle_found','puzzle_fail','signin_sent','signin','share','signin_prompt','signin_click')),
   props jsonb check (props is null or pg_column_size(props) < 512),
   ref text check (ref is null or char_length(ref) <= 200)
 );
@@ -79,3 +79,8 @@ begin
 end $$;
 revoke all on function public.admin_users() from public, anon;
 grant execute on function public.admin_users() to authenticated;
+
+-- Sign-up funnel events (added after the first version). Safe to run once on an existing table.
+alter table public.analytics_events drop constraint if exists analytics_events_event_check;
+alter table public.analytics_events add constraint analytics_events_event_check check (event in
+  ('visit','puzzle_start','puzzle_found','puzzle_fail','signin_sent','signin','share','signin_prompt','signin_click'));
