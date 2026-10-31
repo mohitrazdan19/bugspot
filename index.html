@@ -2074,7 +2074,7 @@ function stars(n) { return '★'.repeat(n) + '<i>' + '★'.repeat(3 - n) + '</i>
 function levelIdx(diff) { const a = []; PUZZLES.forEach((p, i) => { if (p.diff === diff) a.push(i); }); return a; }
 function solvedIn(diff) { return levelIdx(diff).filter(i => (save.stars[PUZZLES[i].id] | 0) > 0).length; }
 function needFor(diff) { return Math.ceil(levelIdx(diff).length * UNLOCK_AT); }
-function levelOpen(li) { return li === 0 || solvedIn(LEVELS[li - 1].diff) >= needFor(LEVELS[li - 1].diff); }
+function levelOpen(li) { return CONFIG.OPEN_ACCESS || li === 0 || solvedIn(LEVELS[li - 1].diff) >= needFor(LEVELS[li - 1].diff); }
 
 function renderPractice() {
   S.from = 'practice';
@@ -2094,7 +2094,7 @@ function renderPractice() {
   PUZZLES.forEach(p => { total += save.stars[p.id] || 0; });
   const solved = PUZZLES.filter(p => (save.stars[p.id] | 0) > 0).length;
   let html = '<section class="card hero"><p class="eyebrow">Practice</p><h1 style="font:800 26px/1.1 var(--display);margin-top:8px">' + PUZZLES.length + ' bugs to hunt</h1>' +
-    '<p class="lede" style="margin-top:6px">Find each bug in three tries or fewer. Solve ' + Math.round(UNLOCK_AT * 100) + '% of a level to open the next.</p>' +
+    '<p class="lede" style="margin-top:6px">Find each bug in three tries or fewer.' + (CONFIG.OPEN_ACCESS ? ' Pick any level.' : ' Solve ' + Math.round(UNLOCK_AT * 100) + '% of a level to open the next.') + '</p>' +
     '<div class="hchips"><span class="hchip">★ <b>' + total + '</b> stars</span><span class="hchip">✓ <b>' + solved + '</b> solved</span>' +
     '<span class="hchip">🔥 <b>' + liveStreak() + '</b> day streak</span></div></section>' +
     '<div class="sumrow"><h2>Levels</h2><span class="meta"><b>' + total + '</b> / ' + PUZZLES.length * 3 + ' stars</span></div>';
