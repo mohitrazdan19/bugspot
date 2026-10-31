@@ -1531,8 +1531,8 @@ function rng(seed) {
   };
 }
 // Until NEW_ROTATION_FROM the set is picked at random each day (kept so saved progress for past days still lines up).
-const NEW_ROTATION_FROM = Date.UTC(2026, 9, 29) / 86400000; // 29 Oct 2026
-const ROTATION_SHIFT = 4; // chosen so the first rotation day shares nothing with the last random day
+const NEW_ROTATION_FROM = Date.UTC(2026, 10, 2) / 86400000; // 2 Nov 2026
+const ROTATION_SHIFT = 2; // chosen so the first rotation day shares nothing with the last random day
 function shuffleIdx(a, r) {
   const c = a.slice();
   for (let i = c.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); const t = c[i]; c[i] = c[j]; c[j] = t; }
