@@ -317,6 +317,10 @@
   .tip { border-left: 4px solid var(--ok); }
 
 
+  .perks { margin: 0 0 10px; padding: 0; list-style: none; display: grid; gap: 8px; font-weight: 500; }
+  .perks li { display: flex; gap: 10px; align-items: center; }
+  .perks li::before { content: "✓"; flex: none; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font: 700 12px/1 var(--body); color: #fff; background: var(--ok); }
+
   /* share sheet: score card + branded buttons */
   .scard { padding: 22px 20px 20px; text-align: center; }
   .scard .big { font: 800 72px/1 var(--display); letter-spacing: -2px; margin-top: 6px; }
@@ -1689,7 +1693,7 @@ function initAuth() {
         if (user && (!was || was.id !== user.id)) setTimeout(pullAndMerge, 0);
         else if (!user && was) rerender();
         if (user && getJoin()) setTimeout(offerJoin, 400);
-        else if (!user && ev === 'INITIAL_SESSION' && getJoin()) setTimeout(() => showSignIn('Sign in to join your team.'), 400);
+        else if (!user && ev === 'INITIAL_SESSION' && getJoin()) setTimeout(() => showSignIn('Sign in to join your team.', 'invite'), 400);
       });
     } catch (e) { sb = null; }
   };
@@ -1724,10 +1728,10 @@ function renderAcct() {
   a.innerHTML = signedIn()
     ? '<span>' + esc(user.email || 'Signed in') + '</span><button id="acBtn" type="button">Account</button>'
     : '<span>Guest</span><button id="acBtn" type="button">Sign in</button>';
-  $('acBtn').addEventListener('click', () => (signedIn() ? showAccount() : showSignIn()));
+  $('acBtn').addEventListener('click', () => (signedIn() ? showAccount() : showSignIn('', 'account')));
 }
 
-function showSignIn(msg) {
+function showSignIn(msg, src) {
   if (!CONFIG.SUPABASE_URL || !CONFIG.SUPABASE_KEY) {
     openSheet({
       sev: null, id: 'Sign in', status: '', title: 'Sign-in opens soon',
@@ -1736,12 +1740,15 @@ function showSignIn(msg) {
     });
     return;
   }
-  const buttons = [{ label: 'Email me a sign-in link', primary: true, fn: btn => sendLink(btn) }];
-  if (CONFIG.GOOGLE) buttons.push({ label: 'Continue with Google', fn: () => signInGoogle() });
+  track('signin_prompt', { src: src || 'other' });
+  const buttons = [];
+  if (CONFIG.GOOGLE) buttons.push({ label: 'Continue with Google', primary: true, fn: () => signInGoogle() });
+  buttons.push({ label: 'Email me a sign-in link', primary: !CONFIG.GOOGLE, fn: btn => sendLink(btn) });
   buttons.push({ label: 'Not now', fn: closeSheet });
   openSheet({
-    sev: null, id: 'Sign in', status: '', title: 'Sign in to play all ' + SLOTS + ' bugs',
-    body: '<p>Free. No password: we email you a link. Your progress and streak are saved to your account.</p>' +
+    sev: null, id: 'Sign in', status: '', title: src === 'invite' ? 'Sign in to join your team' : 'Unlock ' + (SLOTS - FREE) + ' more bugs today',
+    body: '<ul class="perks"><li>All ' + SLOTS + ' daily bugs, not just ' + FREE + '</li><li>Keep your streak on every device</li><li>Practice levels: Beginner to Experienced</li></ul>' +
+      '<p class="note">Free, no password.' + (CONFIG.GOOGLE ? '' : ' We email you a one-tap link.') + ' It takes under a minute.</p>' +
       '<input id="siEmail" class="inp" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com" aria-label="Email address">' +
       '<p id="siMsg" class="note" role="status">' + esc(msg || '') + '</p>',
     buttons,
@@ -1757,6 +1764,7 @@ async function sendLink(btn) {
     const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: CONFIG.SITE } });
     if (error) throw error;
     track('signin_sent');
+    track('signin_click', { m: 'email' });
     msg.textContent = 'Check your inbox for the link, then open it on this device.';
     btn.textContent = 'Send again';
   } catch (e) {
@@ -1766,6 +1774,7 @@ async function sendLink(btn) {
 }
 async function signInGoogle() {
   if (!sb) return;
+  track('signin_click', { m: 'google' });
   try { await sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: CONFIG.SITE } }); } catch (e) { /* ignore */ }
 }
 function showAccount() {
@@ -1983,11 +1992,11 @@ function renderDaily() {
     '<div class="grid">' + tiles + '</div>' +
     (gated() ? '<p class="note callout" style="margin-top:12px">Guests play ' + FREE + ' bugs a day. Sign in free to play all ' + SLOTS + ' and unlock practice levels.</p>' : '');
   const go = $('go'); if (go) go.addEventListener('click', () => startPlay(set[next], 'daily', next));
-  const gs = $('goSign'); if (gs) gs.addEventListener('click', () => showSignIn());
+  const gs = $('goSign'); if (gs) gs.addEventListener('click', () => showSignIn('', 'hero'));
   const sh = $('shareBtn'); if (sh) sh.addEventListener('click', () => showShare());
   $('view').querySelectorAll('.tile').forEach(b => b.addEventListener('click', () => {
     const i = +b.dataset.s, r = day.r[i];
-    if (i >= n) showSignIn();
+    if (i >= n) showSignIn('', 'tile');
     else if (r) showReport(set[i], r.f, r.t, r.ms, 'daily', i);
     else startPlay(set[i], 'daily', i);
   }));
@@ -2129,7 +2138,7 @@ function renderPractice() {
       '<section class="card hero"><p class="eyebrow">Practice</p><h1 style="font:800 26px/1.1 var(--display);margin-top:8px">Levels are for signed-in players</h1>' +
       '<p class="lede" style="margin-top:6px">Sign in free to practise on every bug. Clear most of a level to open the next one.</p>' + rows +
       '<div class="stack" style="margin-top:16px"><button id="goSign" class="btn-p" type="button">Sign in</button></div></section>';
-    $('goSign').addEventListener('click', () => showSignIn());
+    $('goSign').addEventListener('click', () => showSignIn('', 'practice'));
     return;
   }
   let total = 0;
@@ -2166,11 +2175,11 @@ function renderPractice() {
 
 // ---------- play ----------
 function startPlay(idx, from, slot) {
-  if (from === 'practice' && gated()) { showSignIn(); return; }
+  if (from === 'practice' && gated()) { showSignIn('', 'practice'); return; }
   track('puzzle_start', { id: (PUZZLES[idx] || {}).id, mode: from });
   S.idx = idx; S.from = from; S.slot = slot | 0; S.used = 0; S.hint = false; S.done = false; S.found = false; S.t0 = performance.now();
   if (from === 'daily') {
-    if (S.slot >= avail()) { showSignIn(); return; }
+    if (S.slot >= avail()) { showSignIn('', 'daily'); return; }
     // Keep tries and hint across a refresh so a puzzle cannot be retried that way.
     S.dayKey = dayKey(new Date());
     const day = getDay(S.dayKey);
@@ -2233,7 +2242,7 @@ function afterAction(from, idx, slot) {
   if (from === 'daily') {
     const today = new Date(), set = dailySet(today), day = getDay(S.dayKey || dayKey(today)), next = nextSlot(day);
     if (next >= 0) return { label: 'Next bug', fn: () => startPlay(set[next], 'daily', next) };
-    if (gated()) return { label: 'Sign in to unlock ' + (SLOTS - FREE) + ' more', fn: () => showSignIn() };
+    if (gated()) return { label: 'Sign in to unlock ' + (SLOTS - FREE) + ' more', fn: () => showSignIn('', 'after3') };
     return { label: 'Share result', fn: () => showShare() };
   }
   const idxs = levelIdx(PUZZLES[idx].diff), pos = idxs.indexOf(idx);

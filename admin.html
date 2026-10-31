@@ -74,7 +74,7 @@ function draw(d) {
     '<div class="grid" style="margin-top:16px">' + kpi(d.visitors, d.days === 0 ? 'Visitors today' : 'Visitors (' + d.days + ' days)') + (d.days === 0 ? '' : kpi(d.visitors_today, 'Visitors today')) + kpi(d.visits, 'Visits') + '<div class="card kpi" id="kSignups"><b>' + d.accounts + '</b><span>Accounts created</span></div>' + '</div>' +
     '<h2>Visitors per day</h2><div class="card"><div class="bars">' + (bars || '<span class="mute">No data yet</span>') + '</div></div>' +
     '<h2>Gameplay</h2><div class="grid">' + kpi(e.puzzle_start || 0, 'Puzzles started') + kpi(e.puzzle_found || 0, 'Bugs found') + kpi(e.puzzle_fail || 0, 'Missed') +
-    kpi(pct(e.puzzle_found || 0, (e.puzzle_found || 0) + (e.puzzle_fail || 0)), 'Success rate') + kpi(e.signin_sent || 0, 'Sign-in links sent') + kpi(e.signin || 0, 'Sign-ins') + kpi(e.share || 0, 'Share clicks') + '</div>' +
+    kpi(pct(e.puzzle_found || 0, (e.puzzle_found || 0) + (e.puzzle_fail || 0)), 'Success rate') + kpi(e.signin_prompt || 0, 'Sign-in prompts seen') + kpi(e.signin_click || 0, 'Sign-in clicks') + kpi(e.signin_sent || 0, 'Sign-in links sent') + kpi(e.signin || 0, 'Sign-ins') + kpi(e.share || 0, 'Share clicks') + '</div>' +
     '<h2>Where visitors come from</h2><div class="card"><table><tr><th>Source</th><th class="n">Visits</th></tr>' + refs + '</table></div>' +
     '<h2>Most missed puzzles</h2><div class="card"><table><tr><th>Puzzle</th><th class="n">Started</th><th class="n">Found</th><th class="n">Missed</th><th class="n">Rate</th></tr>' + pz + '</table></div>';
 }
