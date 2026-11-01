@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset=utf8><title>Bugspot: Daily Spot the Bug Game for QA Testers</title><meta name="description" content="A free daily bug puzzle for QA testers. Spot the bug on a fake app screen in three tries, then read the bug report."><meta property="og:title" content="Bugspot: Daily Spot the Bug Game for QA Testers"><meta property="og:description" content="One screen. One bug. Three tries. Can you spot it?"><meta property="og:type" content="website"><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html><html><head><meta charset=utf8><title>Bugspot: Daily Spot the Bug Game for QA Testers</title><meta name="description" content="A free daily bug puzzle for QA testers. Spot the bug on a fake app screen in three tries, then read the bug report."><meta property="og:title" content="Bugspot: Daily Spot the Bug Game for QA Testers"><meta property="og:description" content="One screen. One bug. Three tries. Can you spot it?"><meta property="og:type" content="website"><meta property="og:url" content="https://mohitrazdan19.github.io/bugspot/"><meta property="og:site_name" content="Bugspot"><meta property="og:image" content="https://mohitrazdan19.github.io/bugspot/og.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:alt" content="Bugspot: Can you spot the bug? A free daily puzzle for QA testers."><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Bugspot: Daily Spot the Bug Game for QA Testers"><meta name="twitter:description" content="One screen. One bug. Three tries. Can you spot it?"><meta name="twitter:image" content="https://mohitrazdan19.github.io/bugspot/og.png"><link rel="canonical" href="https://mohitrazdan19.github.io/bugspot/"><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27%3E%3Crect width=%2724%27 height=%2724%27 rx=%276%27 fill=%27%23d6283a%27/%3E%3Cpath fill=%27%23fff%27 d=%27M12 8.2c-2.6 0-4.4 1.9-4.4 4.6S9.4 19 12 19s4.4-3.6 4.4-6.2S14.6 8.2 12 8.2Z%27/%3E%3C/svg%3E"><script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Bugspot","url":"https://mohitrazdan19.github.io/bugspot/","applicationCategory":"GameApplication","operatingSystem":"Any","description":"A free daily spot-the-bug puzzle game for QA testers and software testers. Find the defect on a fake app screen in three tries, then read the bug report.","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -340,6 +340,11 @@
   #view > :nth-child(2) { animation-delay: 0.04s; } #view > :nth-child(3) { animation-delay: 0.08s; } #view > :nth-child(n+4) { animation-delay: 0.12s; }
   @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
   @media (prefers-reduced-motion: reduce) { #view > * { animation: none; } .tile, .btn-p, .btn-s { transition: none; } .tile:hover { transform: none; } }
+  .about { margin: 28px 0 8px; padding: 20px; border-radius: 16px; background: var(--surface); border: 1px solid var(--line); color: var(--dim); font: 400 14px/1.6 var(--body); }
+  .about h2 { margin: 0 0 8px; font: 700 20px/1.2 var(--display); color: var(--ink); }
+  .about h3 { margin: 16px 0 6px; font: 600 15px/1.3 var(--body); color: var(--ink); }
+  .about p { margin: 0; }
+  .about ul { margin: 0; padding-left: 20px; }
 </style>
 
 <div id="app">
@@ -352,6 +357,20 @@
   </header>
   <div id="acct" class="acct"></div>
   <main id="view"></main>
+
+  <section id="about" class="about" aria-labelledby="abT">
+    <h2 id="abT">What is Bugspot?</h2>
+    <p>Bugspot is a free daily spot-the-bug game for QA testers, software testers and developers. Each puzzle shows a screen from a made-up app with one defect hiding in plain sight: a wrong total, a broken label, a date that cannot be right. Tap the bug before your three tries run out, then read a short bug report that explains what was wrong and why it matters.</p>
+    <h3>How to play</h3>
+    <ul>
+      <li>Every day there are 8 new bugs, from easy to hard. Everyone gets the same set.</li>
+      <li>Tap the part of the screen you think is wrong. You have three tries, and a hint if you need it.</li>
+      <li>Share your result and keep your streak going. A new set arrives at midnight.</li>
+      <li>Want more? Practice mode has every bug, sorted into Beginner, Intermediate and Experienced levels.</li>
+    </ul>
+    <h3>Who is it for?</h3>
+    <p>Manual and automation testers who want to sharpen their eye for detail, people preparing for QA interviews, and teams who want a quick daily warm-up. It is free and needs no sign-up.</p>
+  </section>
 
   <div id="sheet" class="sheet" role="dialog" aria-modal="false" aria-labelledby="shT" hidden>
     <div class="sheet-in">
@@ -1593,8 +1612,10 @@ function dailySet(d) {
 // Saved in this browser. Signed-in players also sync it to their account.
 const KEY = 'bugspot.v2';
 const save = { stars: {}, streak: 0, last: '', days: {} };
+let firstVisit = false; // nothing saved in this browser yet
 try {
   let raw = localStorage.getItem(KEY);
+  firstVisit = !raw && !localStorage.getItem('bugspot.v1');
   const old = !raw;
   if (old) raw = localStorage.getItem('bugspot.v1'); // progress from the first version
   if (raw) {
@@ -1925,6 +1946,7 @@ function setView(v) {
   const play = v === 'play';
   $('tabDaily').setAttribute('aria-selected', String(S.from === 'daily' && (v === 'daily' || play)));
   $('tabPractice').setAttribute('aria-selected', String(S.from === 'practice' && (v === 'practice' || play)));
+  $('about').hidden = v !== 'daily';
   if (v === 'daily') renderDaily();
   else if (v === 'practice') renderPractice();
   else renderPlay();
@@ -2343,8 +2365,14 @@ $('tabDaily').addEventListener('click', () => { S.from = 'daily'; setView('daily
 $('tabPractice').addEventListener('click', () => { S.from = 'practice'; setView('practice'); });
 
 initAuth();
-track('visit');
+track('visit', firstVisit ? { first: 1 } : undefined);
 setView('daily');
+// New players go straight into puzzle 1 so the game itself is the first thing they see.
+// Back returns to the daily list. Invite and sign-in links keep the normal start.
+if (firstVisit && !getJoin() && !/[?&]signin\b/.test(location.search)) {
+  const set = dailySet(new Date());
+  if (set.length && avail() > 0) startPlay(set[0], 'daily', 0);
+}
 
 if (typeof __TEST__ !== 'undefined') __TEST__({ S, save, startPlay, setView, onTap, PUZZLES });
 
