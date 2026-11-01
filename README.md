@@ -35,3 +35,9 @@ The game sends anonymous events (visit, puzzle start/found/missed, sign-in, shar
 - The manager's View progress screen ranks members by stars and has a Download CSV button.
 - Tables and functions: `supabase/teams.sql` (already applied to the project). All access goes through the functions; the tables have no direct policies.
 - Still to build: certificates, per-level leaderboard, removing members from the screen.
+
+## Search and link previews
+
+- `og.png` is the preview image shown when the link is shared on LinkedIn, WhatsApp, X and others. If the site moves to a new domain, update the URLs in the `og:` and `twitter:` tags, `canonical`, and `sitemap.xml`.
+- `sitemap.xml` lists the game page. Submit it in Google Search Console (add the site as a URL-prefix property). A `robots.txt` only works at the root of a domain, so add one after moving to a custom domain.
+- New visitors (nothing saved in the browser) start straight on puzzle 1. Their `visit` event carries `{ "first": 1 }`.
