@@ -2341,8 +2341,9 @@ function showShare() {
         const name = label.replace('Share on ', ''), pl = PLATFORM[name] || [name[0], '#566078'];
         return { label: name, aria: label, icon: pl[0], color: pl[1], fn: () => { window.open(url, '_blank', 'noopener'); } };
       }),
-      { label: 'Close', fn: closeSheet },
+      { label: 'Close', fn: goHome },
     ],
+    onClose: goHome,
   });
 }
 
@@ -2519,15 +2520,18 @@ function showReport(idx, found, tries, time, from, slot) {
     '<div class="ea"><div><h3>Expected</h3><p>' + esc(r.expected) + '</p></div><div><h3>Actual</h3><p>' + esc(r.actual) + '</p></div></div>' +
     '<div class="tip"><b>Tester tip</b>' + esc(r.tip) + '</div>';
   const act = afterAction(from, idx, slot);
+  const dayDone = from === 'daily' && nextSlot(getDay(dayKey(new Date()))) < 0;
   openSheet({
     sev: p.sev, id: 'BUG-' + (1000 + idx * 7),
     status: found ? 'Found in ' + tries + (tries === 1 ? ' try' : ' tries') + ' · ' + fmtT(time) : 'Not found this time',
     ok: found, title: r.title, body,
-    buttons: [{ label: act.label, primary: true, fn: act.fn }, { label: 'Close', fn: closeSheet }],
+    buttons: [{ label: act.label, primary: true, fn: act.fn }, { label: 'Close', fn: dayDone ? goHome : closeSheet }],
+    onClose: dayDone ? goHome : null,
   });
 }
 
 function openSheet(o) {
+  S.onClose = o.onClose || null;
   const sev = $('shSev');
   sev.hidden = !o.sev;
   if (o.sev) { sev.textContent = o.sev + ' ' + SEV[o.sev]; sev.setAttribute('data-sev', o.sev); }
@@ -2563,8 +2567,11 @@ function openSheet(o) {
   requestAnimationFrame(() => sh.classList.add('show'));
 }
 function closeSheet() { const sh = $('sheet'); sh.classList.remove('show'); sh.hidden = true; }
+// Close button: some sheets (finished daily) send the player back to the home page.
+function dismissSheet() { const fn = S.onClose; S.onClose = null; if (fn) fn(); else closeSheet(); }
+const goHome = () => setView('daily');
 
-$('shClose').addEventListener('click', closeSheet);
+$('shClose').addEventListener('click', dismissSheet);
 $('tabDaily').addEventListener('click', () => { S.from = 'daily'; setView('daily'); });
 $('tabPractice').addEventListener('click', () => { S.from = 'practice'; setView('practice'); });
 
