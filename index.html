@@ -1815,7 +1815,7 @@ function dailySet(d) {
 // Shape: { stars: {id: n}, streak, last, days: { 'YYYY-MM-DD': { r: {slot: {f, t, ms}}, p: {slot, used, hint}|null, sk: 0|1 } } }
 // Saved in this browser. Signed-in players also sync it to their account.
 const KEY = 'bugspot.v2';
-const save = { stars: {}, streak: 0, last: '', days: {} };
+const save = { stars: {}, streak: 0, last: '', days: {}, ps: 0 };
 let firstVisit = false; // nothing saved in this browser yet
 try {
   let raw = localStorage.getItem(KEY);
@@ -1829,16 +1829,31 @@ try {
       if (typeof s.streak === 'number') save.streak = s.streak;
       if (typeof s.last === 'string') save.last = s.last;
       if (!old && s.days && typeof s.days === 'object') save.days = s.days;
+      if (s.ps) save.ps = 1;
     }
   }
 } catch (e) { /* storage unavailable */ }
+// Stars are for Practice only. Daily plays used to give stars too, so once per browser remove the
+// stars that came from a daily result (a higher practice score on the same bug is kept).
+if (!save.ps) {
+  try {
+    for (const key in save.days) {
+      const [y, m, d] = key.split('-').map(Number), set = dailySet(new Date(y, m - 1, d)), r = save.days[key].r || {};
+      for (const slot in r) {
+        const p = PUZZLES[set[slot]];
+        if (p && r[slot].f && (save.stars[p.id] | 0) <= 4 - r[slot].t) delete save.stars[p.id];
+      }
+    }
+  } catch (e) { /* ignore */ }
+  save.ps = 1;
+}
 
 function snapshot() {
   const keys = Object.keys(save.days).sort().slice(-14);
   const days = {};
   keys.forEach(k => { days[k] = save.days[k]; });
   save.days = days;
-  return { stars: save.stars, streak: save.streak, last: save.last, days };
+  return { stars: save.stars, streak: save.streak, last: save.last, days, ps: 1 };
 }
 function persist(skipSync) {
   const snap = snapshot();
@@ -2486,7 +2501,7 @@ function finish(found) {
   document.querySelectorAll('#screen [data-bug]').forEach(el => el.classList.add('found'));
   let st = 0;
   if (found) { st = 4 - tries; if (S.hint) st = Math.max(1, st - 1); }
-  if (found) save.stars[p.id] = Math.max(save.stars[p.id] || 0, st);
+  if (found && S.from === 'practice') save.stars[p.id] = Math.max(save.stars[p.id] || 0, st); // daily plays don't give practice stars
   if (S.from === 'daily') {
     const key = S.dayKey, day = getDay(key);
     day.r[S.slot] = { f: found, t: tries, ms: Math.round(time) };
