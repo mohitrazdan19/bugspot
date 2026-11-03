@@ -45,7 +45,10 @@ async function load() {
   $('who').textContent = 'Signed in as ' + sess.session.user.email;
   const r = await sb.rpc('admin_stats', { days: +$('range').value });
   if (r.error) { show('login'); $('err').textContent = 'Could not load stats.'; return; }
-  draw(r.data); show('dash'); loadUsers(r.data.days);
+  // "Today" has only one day of data, so the chart shows the last 7 days instead.
+  let chart = { days: r.data.days, daily: r.data.daily };
+  if (r.data.days === 0) { const w = await sb.rpc('admin_stats', { days: 7 }); if (!w.error) chart = { days: 7, daily: w.data.daily }; }
+  draw(r.data, chart); show('dash'); loadUsers(r.data.days);
 }
 async function loadUsers(days) {
   const r = await sb.rpc('admin_users');
@@ -64,15 +67,33 @@ async function loadUsers(days) {
   $('dash').insertAdjacentHTML('beforeend', '<div id="usersBox"><h2>Signed up ' + label + ' (' + list.length + ')</h2><div class="card" style="overflow-x:auto"><table><tr><th>Email</th><th>Name</th><th>Joined</th><th>Last sign-in</th></tr>' + rows + '</table></div><p class="mute" style="margin-top:8px">' + r.data.length + ' accounts in total</p></div>');
 }
 function pct(a, b) { return b ? Math.round(a * 100 / b) + '%' : '–'; }
-function draw(d) {
-  const e = d.events || {}, max = Math.max(1, ...d.daily.map(x => x.visitors));
+// One entry per day in the range (India time), with 0 for days that had no visits.
+function fillDays(daily, n) {
+  const seen = {}; daily.forEach(x => { seen[x.day] = x.visitors; });
+  const out = [];
+  for (let i = n - 1; i >= 0; i--) {
+    const day = new Date(Date.now() - i * 86400000).toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+    out.push({ day, visitors: seen[day] || 0 });
+  }
+  return out;
+}
+function chartHtml(c) {
+  const days = fillDays(c.daily, Math.max(1, c.days)), max = Math.max(1, ...days.map(x => x.visitors));
+  const every = days.length <= 10 ? 1 : days.length <= 31 ? 5 : 30, showN = days.length <= 14;
+  const label = t => new Date(t + 'T12:00:00+05:30').toLocaleDateString('en-IN', { day: 'numeric', month: 'short', timeZone: 'Asia/Kolkata' });
+  const cols = days.map(x => '<div class="col" title="' + esc(label(x.day)) + ': ' + x.visitors + ' visitor' + (x.visitors === 1 ? '' : 's') + '"><i style="height:' + (x.visitors ? Math.max(3, Math.round(x.visitors * 100 / max)) : 0) + '%">' + (showN ? '<em>' + x.visitors + '</em>' : '') + '</i></div>').join('');
+  const axis = days.map((x, i) => '<span>' + ((days.length - 1 - i) % every === 0 ? esc(label(x.day)) : '') + '</span>').join('');
+  const dense = days.length > 31 ? ' dense' : '';
+  return '<div class="bars' + dense + '">' + cols + '</div><div class="axis' + dense + '">' + axis + '</div>';
+}
+function draw(d, chart) {
+  const e = d.events || {};
   const kpi = (n, l) => '<div class="card kpi"><b>' + n + '</b><span>' + l + '</span></div>';
-  const bars = d.daily.map(x => '<i title="' + esc(x.day) + ': ' + x.visitors + ' visitors" style="height:' + Math.max(2, Math.round(x.visitors * 100 / max)) + '%"></i>').join('');
   const refs = d.referrers.map(x => '<tr><td>' + esc(x.ref) + '</td><td class="n">' + x.n + '</td></tr>').join('') || '<tr><td class="mute" colspan="2">No visits yet</td></tr>';
   const pz = d.puzzles.map(x => '<tr><td>' + esc(x.id) + '</td><td class="n">' + x.started + '</td><td class="n">' + x.found + '</td><td class="n">' + x.failed + '</td><td class="n">' + pct(x.found, x.found + x.failed) + '</td></tr>').join('') || '<tr><td class="mute" colspan="5">No plays yet</td></tr>';
   $('dash').innerHTML =
     '<div class="grid" style="margin-top:16px">' + kpi(d.visitors, d.days === 0 ? 'Visitors today' : 'Visitors (' + d.days + ' days)') + (d.days === 0 ? '' : kpi(d.visitors_today, 'Visitors today')) + kpi(d.visits, 'Visits') + '<div class="card kpi" id="kSignups"><b>' + d.accounts + '</b><span>Accounts created</span></div>' + '</div>' +
-    '<h2>Visitors per day</h2><div class="card"><div class="bars">' + (bars || '<span class="mute">No data yet</span>') + '</div></div>' +
+    '<h2>Visitors per day' + (d.days === 0 ? ' (last 7 days)' : '') + '</h2><div class="card">' + chartHtml(chart || d) + '</div>' +
     '<h2>Gameplay</h2><div class="grid">' + kpi(e.puzzle_start || 0, 'Puzzles started') + kpi(e.puzzle_found || 0, 'Bugs found') + kpi(e.puzzle_fail || 0, 'Missed') +
     kpi(pct(e.puzzle_found || 0, (e.puzzle_found || 0) + (e.puzzle_fail || 0)), 'Success rate') + kpi(e.share || 0, 'Share clicks') + '</div>' +
     '<h2>Where visitors come from</h2><div class="card"><table><tr><th>Source</th><th class="n">Visits</th></tr>' + refs + '</table></div>' +
