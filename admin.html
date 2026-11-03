@@ -88,4 +88,6 @@ $('out').addEventListener('click', async () => { await sb.auth.signOut(); show('
 $('range').addEventListener('change', load);
 try { sb = window.supabase.createClient(URL_, KEY); sb.auth.onAuthStateChange(() => setTimeout(load, 0)); load(); }
 catch (err) { show('login'); $('err').textContent = 'Could not load. Check your connection and refresh.'; }
-</script></body></html>
+</script>
+<link rel="stylesheet" href="bugspot-admin.css">
+</body></html>
