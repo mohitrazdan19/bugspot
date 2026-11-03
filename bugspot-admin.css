@@ -127,16 +127,24 @@ h2::before { content: ""; width: 10px; height: 10px; border-radius: 3px; flex: n
 
 /* ---------- Visitors chart ---------- */
 .bars {
-  height: 190px; gap: 4px; margin: 0; padding: 4px 0 0;
+  height: 190px; gap: 4px; margin: 0; padding: 20px 0 0;
   background: repeating-linear-gradient(to top, transparent 0, transparent 46px, color-mix(in srgb, var(--line) 70%, transparent) 46px, color-mix(in srgb, var(--line) 70%, transparent) 47px);
   border-bottom: 1px solid var(--line);
 }
+.bars .col { flex: 1; min-width: 0; max-width: 80px; height: 100%; display: flex; align-items: flex-end; }
 .bars i {
-  max-width: none; border-radius: 6px 6px 0 0; transition: filter .15s, transform .15s var(--ease);
+  position: relative; display: block; width: 100%; min-height: 0; border-radius: 6px 6px 0 0; transition: filter .15s, transform .15s var(--ease);
   background: linear-gradient(180deg, var(--a2), var(--a1)); transform-origin: bottom;
   animation: grow .6s var(--ease) both;
 }
-.bars i:hover { filter: brightness(1.15) saturate(1.2); transform: scaleY(1.03); }
+.bars .col:hover i { filter: brightness(1.15) saturate(1.2); }
+.bars em { position: absolute; bottom: 100%; left: 0; right: 0; padding-bottom: 4px; text-align: center; font: 600 12px/1 var(--mono); font-style: normal; color: var(--ink); }
+.bars, .axis { justify-content: center; }
+.bars.dense, .axis.dense { gap: 1px; }
+.bars.dense i { border-radius: 2px 2px 0 0; }
+.axis.dense span:last-child { display: flex; justify-content: flex-end; }
+.axis { display: flex; gap: 4px; margin-top: 8px; }
+.axis span { flex: 1; min-width: 0; max-width: 80px; text-align: center; white-space: nowrap; overflow: visible; font: 500 11px/1.2 var(--mono); color: var(--mute); }
 @keyframes grow { from { transform: scaleY(0); } to { transform: none; } }
 
 /* ---------- Tables ---------- */
