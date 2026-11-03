@@ -346,6 +346,210 @@
   .about p { margin: 0; }
   .about ul { margin: 0; padding-left: 20px; }
 </style>
+<style id="bugspot-enhance">
+/* =====================================================================
+   Bugspot — enhancement layer
+   Loaded after the main styles. CSS only: no markup or JS changes.
+   ===================================================================== */
+
+:root {
+  --ease: cubic-bezier(.2, .8, .2, 1);
+  --hero-a: #1a1850;
+  --hero-b: #3a2aa0;
+  --hero-c: #7a35d6;
+}
+
+html { scroll-behavior: smooth; }
+::selection { background: color-mix(in srgb, var(--a1) 30%, transparent); }
+
+/* ---------- Header: sticky, frosted, easier to hit ---------- */
+body { overflow-x: clip; }
+.top { position: sticky; top: 0; z-index: 20; margin: 0 0 18px; padding: 10px 0; }
+/* frosted bar runs edge to edge, while the logo and tabs stay lined up with the page */
+.top::before {
+  content: ""; position: absolute; z-index: -1; top: 0; bottom: 0; left: 50%; width: 100vw; transform: translateX(-50%);
+  background: color-mix(in srgb, var(--bg) 72%, transparent);
+  -webkit-backdrop-filter: blur(14px) saturate(1.4);
+  backdrop-filter: blur(14px) saturate(1.4);
+  border-bottom: 1px solid color-mix(in srgb, var(--line) 60%, transparent);
+}
+.brand { font-size: 28px; }
+.brand svg { transition: transform .3s var(--ease); }
+.brand:hover svg { transform: rotate(8deg) scale(1.08); }
+.tabs button { min-height: 40px; padding: 0 18px; display: inline-flex; align-items: center; }
+.tabs button:focus-visible { outline-offset: 1px; }
+
+/* ---------- Hero: bigger, more confident, one obvious action ---------- */
+.hero {
+  padding: 28px 24px 24px;
+  background:
+    radial-gradient(380px 200px at 100% 0%, rgba(255, 90, 140, .45), transparent 62%),
+    radial-gradient(300px 220px at 0% 100%, rgba(80, 180, 255, .22), transparent 65%),
+    linear-gradient(140deg, var(--hero-a) 0%, var(--hero-b) 55%, var(--hero-c) 100%);
+  background-size: 140% 140%, 140% 140%, 100% 100%;
+  animation: heroDrift 14s ease-in-out infinite alternate;
+}
+@keyframes heroDrift { to { background-position: 30% 20%, 70% 80%, 0 0; } }
+.hero::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; opacity: .5;
+  background: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, .16) 1px, transparent 0) 0 0 / 20px 20px;
+  -webkit-mask-image: linear-gradient(160deg, #000 0%, transparent 70%);
+  mask-image: linear-gradient(160deg, #000 0%, transparent 70%);
+}
+.hero::after { width: 190px; height: 190px; opacity: .1; right: -26px; bottom: -34px; }
+.hero h1 { font-size: clamp(32px, 9vw, 46px); letter-spacing: -1px; margin: 14px 0 12px; }
+.hero .lede { font-size: 17px; line-height: 1.55; color: rgba(255, 255, 255, .86); }
+.hero .eyebrow { display: inline-block; padding: 6px 10px; border-radius: 999px; background: rgba(255, 255, 255, .12); color: #fff; }
+.hero .slots { margin: 16px 0 4px; gap: 7px; }
+.hero .sl { width: 34px; height: 34px; border-radius: 10px; font-size: 14px; }
+.hero .btn-p {
+  position: relative; min-height: 60px; font-size: 19px; border-radius: 18px;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  transition: transform .18s var(--ease), box-shadow .2s;
+}
+.hero .btn-p::after { content: "→"; font-family: var(--body); font-weight: 600; transition: transform .2s var(--ease); }
+.hero .btn-p:hover { transform: translateY(-2px); }
+.hero .btn-p:hover::after { transform: translateX(5px); }
+.hero .btn-p:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+.hero .meta { display: flex; flex-wrap: wrap; gap: 4px 6px; }
+
+/* ---------- Puzzle tiles: bigger targets, clearer state ---------- */
+.sumrow { margin: 26px 0 12px; }
+.sumrow h2 { font-size: 22px; }
+.grid { gap: 12px; }
+.tile { min-height: 112px; padding: 18px 14px 14px; }
+.tile .a { font-size: 17px; }
+.tile .stt.go { display: inline-flex; align-items: center; gap: 4px; margin-top: auto; font-weight: 700; }
+.tile:hover .stt.go { color: var(--a2); }
+.tile:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+.tile.done { box-shadow: none; }
+
+/* ---------- Play screen: ticket + phone get room to breathe ---------- */
+.playbar { padding: 4px 0; }
+.link { padding: 12px 8px 12px 0; }
+.link:hover { text-decoration-color: var(--a1); }
+.ticket { background: color-mix(in srgb, var(--bug) 5%, var(--surface)); font-size: 15px; }
+.phone { transition: transform .3s var(--ease); }
+.screen { min-height: 460px; }
+
+/* ---------- Bug report sheet ---------- */
+.sheet { backdrop-filter: blur(6px); }
+.sheet h2 { font-size: 26px; }
+.rep { font-size: 16px; line-height: 1.55; }
+
+/* ---------- About block: scannable instead of a text wall ---------- */
+.about { padding: 28px 24px; border-radius: 22px; box-shadow: var(--shadow); }
+.about h2 { font-size: 26px; letter-spacing: -.4px; }
+.about > p { font-size: 16px; line-height: 1.65; max-width: 62ch; }
+.about h3 { font: 600 12px/1 var(--mono); letter-spacing: 1px; text-transform: uppercase; color: var(--dim); margin: 28px 0 12px; }
+.about ul { list-style: none; padding: 0; display: grid; gap: 10px; counter-reset: step; }
+.about li {
+  counter-increment: step; position: relative; padding: 14px 14px 14px 58px;
+  background: var(--raise); border: 1px solid var(--line); border-radius: 14px;
+  color: var(--ink); font-size: 15px; line-height: 1.5;
+}
+.about li::before {
+  content: counter(step); position: absolute; left: 14px; top: 12px;
+  width: 32px; height: 32px; border-radius: 10px; display: grid; place-items: center;
+  font: 700 15px/1 var(--display); color: #fff;
+  background: linear-gradient(135deg, var(--a1), var(--a2));
+}
+
+/* ---------- Desktop: use the screen, don't leave a thin strip ---------- */
+@media (min-width: 900px) {
+  #app { max-width: 1040px; }
+
+  /* landing: hero pinned left, puzzles on the right */
+  #view:has(.hero) {
+    display: grid; grid-template-columns: 420px 1fr; column-gap: 32px; align-items: start;
+  }
+  #view:has(.hero) > .hero { grid-row: 1 / span 2; position: sticky; top: 92px; }
+  #view:has(.hero) > .sumrow { margin-top: 4px; }
+  #view:has(.hero) > .grid { grid-template-columns: repeat(2, 1fr); align-self: start; }
+  #view:has(.hero) > :nth-child(n+4) { grid-column: 2; }
+
+  /* play screen: stay a comfortable reading width, centred */
+  #view:not(:has(.hero)) { max-width: 560px; margin: 0 auto; }
+  .about { max-width: none; }
+  .about ul { grid-template-columns: 1fr 1fr; }
+}
+
+/* ---------- Small phones ---------- */
+@media (max-width: 420px) {
+  .hero { padding: 24px 18px 20px; }
+  .hero .slots { gap: 5px; flex-wrap: nowrap; }
+  .hero .sl { width: 30px; height: 30px; font-size: 13px; }
+  .grid { gap: 8px; }
+  .tile { padding: 16px 10px 12px; }
+  .tile .a { font-size: 14.5px; white-space: nowrap; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .hero { animation: none; }
+  .hero .btn-p, .hero .btn-p::after, .phone, .brand svg { transition: none; }
+}
+
+/* =====================================================================
+   PRACTICE SCREEN
+   ===================================================================== */
+
+/* Stats chips become three equal "scoreboard" cells (also on the Daily hero) */
+.hero .hchips { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 18px; }
+.hero .hchip {
+  flex-direction: column; justify-content: center; gap: 2px; padding: 12px 6px; text-align: center;
+  border-radius: 16px; font: 600 12px/1.2 var(--body); color: rgba(255, 255, 255, .8);
+  background: rgba(255, 255, 255, .10); border: 1px solid rgba(255, 255, 255, .16);
+}
+.hero .hchip b { display: block; order: -1; font: 800 26px/1 var(--display); color: #fff; }
+
+/* Level headers become tinted cards that stay visible while you scroll that level */
+.lv {
+  position: sticky; top: 78px; z-index: 5;
+  margin: 26px 0 12px; padding: 14px 16px; border-radius: 20px;
+  background: color-mix(in srgb, var(--lv, var(--p4)) 9%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--lv, var(--p4)) 28%, var(--line));
+  box-shadow: var(--shadow);
+}
+.lvbadge { width: 46px; height: 46px; border-radius: 15px; font-size: 21px; }
+.lvtxt { gap: 9px; }
+.lvtxt h2 { font-size: 20px; }
+.prog { height: 9px; border-radius: 5px; background: color-mix(in srgb, var(--lv, var(--line)) 16%, var(--line)); }
+.prog i { min-width: 0; background: linear-gradient(90deg, color-mix(in srgb, var(--lv) 70%, #fff), var(--lv)); }
+.lv > .meta { align-self: center; padding: 6px 10px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); white-space: nowrap; }
+
+/* Tiles inside levels: calmer when unplayed, rewarding when solved */
+.lv + .grid { margin-bottom: 6px; }
+.lv + .grid .tile .st { display: flex; gap: 2px; font-size: 18px; }
+.lv + .grid .tile .st i { color: color-mix(in srgb, var(--lv) 22%, var(--line)); }
+.lv + .grid .tile:hover { border-color: var(--lv); box-shadow: 0 12px 28px -10px color-mix(in srgb, var(--lv) 55%, transparent); }
+.lv + .grid .tile.done { background: color-mix(in srgb, var(--lv) 10%, var(--surface)); }
+
+/* Locked Expert level: a teaser, not a dead end */
+.lv.lock {
+  position: relative; top: auto; overflow: hidden; isolation: isolate;
+  background: repeating-linear-gradient(135deg, transparent 0 10px, color-mix(in srgb, var(--lv) 6%, transparent) 10px 20px), var(--surface);
+  border-style: dashed;
+}
+.lv.lock .lvbadge { font-size: 20px; }
+.lvnote { margin-top: -2px; font-size: 14px; }
+.soon { background: linear-gradient(135deg, var(--a1), var(--a2)); color: #fff; padding: 6px 10px; }
+
+/* Desktop: hero pinned left, every other block flows in the right column */
+@media (min-width: 900px) {
+  #view:has(.hero) { row-gap: 0; }
+  #view:has(.hero) > .hero { grid-row: 1 / span 30; }
+  #view:has(.hero) > :not(.hero) { grid-column: 2; }
+  #view:has(.hero) > .grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 420px) {
+  .lv { padding: 12px; gap: 10px; }
+  .lvbadge { width: 40px; height: 40px; font-size: 18px; }
+  .lv > .meta { font-size: 12px; padding: 5px 8px; }
+  .hero .hchip b { font-size: 22px; }
+}
+@media (prefers-reduced-motion: reduce) { .prog i { transition: none; } }
+</style>
 
 <div id="app">
   <header class="top">
