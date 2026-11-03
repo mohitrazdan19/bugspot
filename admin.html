@@ -48,23 +48,7 @@ async function load() {
   // "Today" has only one day of data, so the chart shows the last 7 days instead.
   let chart = { days: r.data.days, daily: r.data.daily };
   if (r.data.days === 0) { const w = await sb.rpc('admin_stats', { days: 7 }); if (!w.error) chart = { days: 7, daily: w.data.daily }; }
-  draw(r.data, chart); show('dash'); loadUsers(r.data.days);
-}
-async function loadUsers(days) {
-  const r = await sb.rpc('admin_users');
-  if (r.error || !Array.isArray(r.data)) return; // not set up yet: leave the section out
-  // Same window as the stats above: "Today" = since midnight India time, otherwise the last N days.
-  let from;
-  if (days === 0) from = new Date(new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }) + 'T00:00:00+05:30');
-  else from = new Date(Date.now() - days * 86400000);
-  const list = r.data.filter(u => u.joined && new Date(u.joined) >= from);
-  const label = days === 0 ? 'today' : 'in the last ' + days + ' days';
-  const k = $('kSignups');
-  if (k) { k.querySelector('b').textContent = list.length; k.querySelector('span').textContent = 'Signed up ' + label; }
-  const day = t => t ? new Date(t).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' }) : '–';
-  const rows = list.map(u => '<tr><td>' + esc(u.email || '–') + '</td><td>' + (esc(u.name) || '<span class="mute">–</span>') + '</td><td>' + day(u.joined) + '</td><td>' + day(u.last_seen) + '</td></tr>').join('') || '<tr><td class="mute" colspan="4">Nobody signed up ' + label + '</td></tr>';
-  const old = $('usersBox'); if (old) old.remove();
-  $('dash').insertAdjacentHTML('beforeend', '<div id="usersBox"><h2>Signed up ' + label + ' (' + list.length + ')</h2><div class="card" style="overflow-x:auto"><table><tr><th>Email</th><th>Name</th><th>Joined</th><th>Last sign-in</th></tr>' + rows + '</table></div><p class="mute" style="margin-top:8px">' + r.data.length + ' accounts in total</p></div>');
+  draw(r.data, chart); show('dash');
 }
 function pct(a, b) { return b ? Math.round(a * 100 / b) + '%' : '–'; }
 // One entry per day in the range (India time), with 0 for days that had no visits.
@@ -92,7 +76,7 @@ function draw(d, chart) {
   const refs = d.referrers.map(x => '<tr><td>' + esc(x.ref) + '</td><td class="n">' + x.n + '</td></tr>').join('') || '<tr><td class="mute" colspan="2">No visits yet</td></tr>';
   const pz = d.puzzles.map(x => '<tr><td>' + esc(x.id) + '</td><td class="n">' + x.started + '</td><td class="n">' + x.found + '</td><td class="n">' + x.failed + '</td><td class="n">' + pct(x.found, x.found + x.failed) + '</td></tr>').join('') || '<tr><td class="mute" colspan="5">No plays yet</td></tr>';
   $('dash').innerHTML =
-    '<div class="grid" style="margin-top:16px">' + kpi(d.visitors, d.days === 0 ? 'Visitors today' : 'Visitors (' + d.days + ' days)') + (d.days === 0 ? '' : kpi(d.visitors_today, 'Visitors today')) + kpi(d.visits, 'Visits') + '<div class="card kpi" id="kSignups"><b>' + d.accounts + '</b><span>Accounts created</span></div>' + '</div>' +
+    '<div class="grid" style="margin-top:16px">' + kpi(d.visitors, d.days === 0 ? 'Visitors today' : 'Visitors (' + d.days + ' days)') + (d.days === 0 ? '' : kpi(d.visitors_today, 'Visitors today')) + kpi(d.visits, 'Visits') + '</div>' +
     '<h2>Visitors per day' + (d.days === 0 ? ' (last 7 days)' : '') + '</h2><div class="card">' + chartHtml(chart || d) + '</div>' +
     '<h2>Gameplay</h2><div class="grid">' + kpi(e.puzzle_start || 0, 'Puzzles started') + kpi(e.puzzle_found || 0, 'Bugs found') + kpi(e.puzzle_fail || 0, 'Missed') +
     kpi(pct(e.puzzle_found || 0, (e.puzzle_found || 0) + (e.puzzle_fail || 0)), 'Success rate') + kpi(e.share || 0, 'Share clicks') + '</div>' +
