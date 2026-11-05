@@ -580,6 +580,30 @@ body { overflow-x: clip; }
   .hero .hchip b { font-size: 22px; }
 }
 @media (prefers-reduced-motion: reduce) { .prog i { transition: none; } }
+
+/* ---------- welcome card (first visit, or "How to play") ---------- */
+.ticket .how { color: var(--dim); margin: 0; }
+.wc { position: fixed; inset: 0; z-index: 60; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(15, 15, 40, .55); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); opacity: 0; transition: opacity .2s; }
+.wc[hidden] { display: none; }
+.wc.show { opacity: 1; }
+.wc-card { width: 100%; max-width: 400px; max-height: calc(100vh - 32px); overflow: auto; background: var(--surface); border-radius: 24px; box-shadow: 0 30px 80px rgba(40, 30, 120, .35); font-family: var(--body); transform: translateY(12px) scale(.98); transition: transform .25s var(--ease); }
+.wc.show .wc-card { transform: none; }
+.wc-top { background: linear-gradient(135deg, #5b5bf7, #9b4dff); color: #fff; padding: 26px 24px 22px; }
+.wc-live { display: inline-flex; align-items: center; gap: 7px; background: rgba(255, 255, 255, .18); border-radius: 999px; padding: 5px 11px; font: 600 12px var(--mono); letter-spacing: .04em; text-transform: uppercase; }
+.wc-live::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #5ff0b0; box-shadow: 0 0 0 3px rgba(95, 240, 176, .25); }
+.wc-top h2 { margin: 14px 0 8px; font: 800 30px/1.1 var(--display); color: #fff; }
+.wc-top p { margin: 0; font-size: 15px; line-height: 1.45; opacity: .92; }
+.wc-body { padding: 20px 24px 22px; }
+.wc-steps { list-style: none; margin: 0 0 20px; padding: 0; display: flex; flex-direction: column; gap: 13px; }
+.wc-steps li { display: flex; gap: 12px; align-items: flex-start; }
+.wc-ic { flex: none; width: 38px; height: 38px; border-radius: 12px; background: color-mix(in srgb, #5b5bf7 12%, var(--surface)); display: flex; align-items: center; justify-content: center; font-size: 19px; }
+.wc-steps li > div > b { display: block; font: 700 15px var(--display); color: var(--ink); }
+.wc-steps li > div > span { display: block; font-size: 13.5px; color: var(--dim); margin-top: 2px; }
+.wc-go { width: 100%; border: 0; border-radius: 14px; padding: 15px; font: 700 17px var(--display); color: #fff; background: linear-gradient(135deg, #5b5bf7, #9b4dff); box-shadow: 0 10px 24px rgba(91, 91, 247, .35); cursor: pointer; }
+.wc-go:hover { filter: brightness(1.06); }
+.wc-foot { text-align: center; margin-top: 12px; font-size: 13px; color: var(--dim); }
+@media (max-width: 380px) { .wc-top h2 { font-size: 26px; } }
+@media (prefers-reduced-motion: reduce) { .wc, .wc-card { transition: none; } }
 </style>
 
 <div id="app">
@@ -607,6 +631,25 @@ body { overflow-x: clip; }
     <h3>Who is it for?</h3>
     <p>Manual and automation testers who want to sharpen their eye for detail, people preparing for QA interviews, and teams who want a quick daily warm-up. It is free and needs no sign-up.</p>
   </section>
+
+  <div id="welcome" class="wc" role="dialog" aria-modal="true" aria-labelledby="wcT" hidden>
+    <div class="wc-card">
+      <div class="wc-top">
+        <span id="wcLive" class="wc-live">New bugs every day</span>
+        <h2 id="wcT">Can you spot<br>the bug? 🐞</h2>
+        <p>8 real-world bugs every day, made for testers. Takes about 2 minutes.</p>
+      </div>
+      <div class="wc-body">
+        <ul class="wc-steps">
+          <li><span class="wc-ic" aria-hidden="true">👆</span><div><b>Tap what's wrong</b><span>A fake app screen hides one bug.</span></div></li>
+          <li><span class="wc-ic" aria-hidden="true">🐞</span><div><b>3 tries per bug</b><span>Fewer tries, more points. Max 800 a day.</span></div></li>
+          <li><span class="wc-ic" aria-hidden="true">🔥</span><div><b>Build a streak</b><span>New set every day. Share your score.</span></div></li>
+        </ul>
+        <button id="wcGo" class="wc-go" type="button">Start today's 8 bugs →</button>
+        <div class="wc-foot">Free · No sign-up</div>
+      </div>
+    </div>
+  </div>
 
   <div id="sheet" class="sheet" role="dialog" aria-modal="false" aria-labelledby="shT" hidden>
     <div class="sheet-in">
@@ -3559,7 +3602,7 @@ function renderPlay() {
     '<div class="playbar"><button id="back" class="link" type="button">‹ Back</button>' +
     '<div class="ptitle">Puzzle ' + (S.from === 'daily' ? (S.slot + 1) + ' of ' + SLOTS : '#' + p2(S.idx + 1)) + '</div>' +
     '<div id="tries" class="tries" role="img" aria-label="' + (3 - S.used) + ' tries left">' + triesHtml() + '</div></div>' +
-    '<div class="ticket"><span class="tid">QA-' + (104 + S.idx) + '</span><span class="trk t-' + trk(p) + '">' + tl(trk(p)) + '</span><span id="note" class="grow">Something on this screen is wrong. Tap it.</span><button id="hintBtn" class="link" type="button">Hint</button></div>' +
+    '<div class="ticket"><span class="tid">QA-' + (104 + S.idx) + '</span><span class="trk t-' + trk(p) + '">' + tl(trk(p)) + '</span><span id="note" class="grow">Something on this screen is wrong. Tap it.</span><button id="hintBtn" class="link" type="button">Hint</button><button id="howBtn" class="link how" type="button">How to play</button></div>' +
     '<div class="phone" id="phone"><div class="screen" id="screen" style="--ac:' + p.ac + '">' + p.html + '</div></div>' +
     '<div id="after" class="after" hidden></div>';
   $('back').addEventListener('click', () => setView(S.from === 'daily' ? 'daily' : 'practice'));
@@ -3570,6 +3613,7 @@ function renderPlay() {
     $('hintBtn').hidden = true;
     if (S.from === 'daily') { const d = getDay(S.dayKey); if (d.p) { d.p.hint = true; persist(); } }
   });
+  $('howBtn').addEventListener('click', () => showWelcome(true));
   $('screen').addEventListener('click', onTap);
   if (S.hint) { $('note').textContent = 'Hint: ' + p.hint; $('hintBtn').hidden = true; }
 }
@@ -3709,6 +3753,38 @@ $('shClose').addEventListener('click', dismissSheet);
 $('tabDaily').addEventListener('click', () => { S.from = 'daily'; setView('daily'); });
 $('tabPractice').addEventListener('click', () => { S.from = 'practice'; setView('practice'); });
 
+// ---------- welcome card ----------
+// Shown on the first visit (over puzzle 1) and from "How to play" on each puzzle.
+let wcCount = null;
+function loadPlayersToday() {
+  if (wcCount !== null || !CONFIG.SUPABASE_URL || !CONFIG.SUPABASE_KEY) return;
+  wcCount = 0;
+  fetch(CONFIG.SUPABASE_URL + '/rest/v1/rpc/players_today', {
+    method: 'POST',
+    headers: { apikey: CONFIG.SUPABASE_KEY, Authorization: 'Bearer ' + CONFIG.SUPABASE_KEY, 'Content-Type': 'application/json' },
+    body: '{}',
+  }).then(r => r.ok ? r.json() : 0).then(n => {
+    wcCount = Number(n) || 0;
+    // A small number looks empty, so only show it once a few people have played.
+    if (wcCount >= 3) $('wcLive').textContent = wcCount + ' testers played today';
+  }).catch(() => {});
+}
+function showWelcome(again) {
+  const w = $('welcome');
+  loadPlayersToday();
+  $('wcGo').textContent = again === true ? 'Got it' : 'Start today\'s 8 bugs →';
+  w.hidden = false;
+  requestAnimationFrame(() => w.classList.add('show'));
+}
+function hideWelcome() {
+  const w = $('welcome');
+  w.classList.remove('show');
+  w.hidden = true;
+}
+$('wcGo').addEventListener('click', hideWelcome);
+$('welcome').addEventListener('click', e => { if (e.target === $('welcome')) hideWelcome(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('welcome').hidden) hideWelcome(); });
+
 initAuth();
 track('visit', firstVisit ? { first: 1 } : undefined);
 setView('daily');
@@ -3717,6 +3793,8 @@ setView('daily');
 if (firstVisit && !getJoin() && !/[?&]signin\b/.test(location.search)) {
   const set = dailySet(new Date());
   if (set.length && avail() > 0) startPlay(set[0], 'daily', 0);
+  // A short welcome card explains the game before the first tap.
+  showWelcome();
 }
 
 if (typeof __TEST__ !== 'undefined') __TEST__({ S, save, startPlay, setView, onTap, PUZZLES });
