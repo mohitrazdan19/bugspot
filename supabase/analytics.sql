@@ -84,3 +84,19 @@ grant execute on function public.admin_users() to authenticated;
 alter table public.analytics_events drop constraint if exists analytics_events_event_check;
 alter table public.analytics_events add constraint analytics_events_event_check check (event in
   ('visit','puzzle_start','puzzle_found','puzzle_fail','signin_sent','signin','share','signin_prompt','signin_click'));
+
+-- Public count for the welcome card: people who started a puzzle today (India time).
+-- Returns only a number, so it is safe to call without signing in.
+create or replace function public.players_today()
+returns integer
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select count(distinct visitor)::int from analytics_events
+  where event = 'puzzle_start'
+    and (created_at at time zone 'Asia/Kolkata')::date = (now() at time zone 'Asia/Kolkata')::date;
+$$;
+revoke all on function public.players_today() from public;
+grant execute on function public.players_today() to anon, authenticated;
