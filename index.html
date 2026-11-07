@@ -648,7 +648,7 @@ body { background: var(--bg); color: var(--ink); font-family: var(--body); }
 @keyframes labDrift { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(3vmax, -3vmax) scale(1.08); } }
 
 /* ---------- header ---------- */
-.top::before { background: rgba(251, 248, 255, .6); border-bottom-color: rgba(228, 220, 247, .7); }
+.top::before { background: rgba(251, 248, 255, .94); border-bottom-color: rgba(228, 220, 247, .7); }
 .brand svg { background: linear-gradient(140deg, #ff8aa0, #ff5c7a); box-shadow: 0 6px 16px rgba(255, 92, 122, .35); }
 .tabs { background: var(--glass); border-color: var(--glass-line); box-shadow: var(--shadow); }
 .tabs button[aria-selected="true"] { background: linear-gradient(110deg, var(--a1), var(--a2)); color: #fff; box-shadow: 0 6px 16px rgba(124, 92, 255, .35); }
@@ -725,7 +725,9 @@ body { background: var(--bg); color: var(--ink); font-family: var(--body); }
 .lv + .grid .tile.done { background: var(--t); }
 
 /* ---------- practice ---------- */
-.lv { background: var(--glass); border-color: var(--glass-line); border-radius: 22px; }
+/* level headers stay pinned while you scroll, so they must be solid or the tiles show through */
+.lv { background: #fff; border-color: var(--line); border-radius: 22px; }
+.lv.lock { background: repeating-linear-gradient(135deg, transparent 0 10px, color-mix(in srgb, var(--lv) 6%, transparent) 10px 20px), #fff; }
 .lv > .meta { background: #fff; border-color: var(--line); }
 .prog { background: var(--raise); }
 .trkchip { background: var(--glass); border-color: var(--line); font-family: var(--body); font-weight: 700; }
