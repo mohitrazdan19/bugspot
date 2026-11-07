@@ -1,7 +1,7 @@
 <!doctype html><html><head><meta charset=utf8><title>Bugspot: Daily Spot the Bug Game for QA Testers</title><meta name="description" content="A free daily bug puzzle for QA testers. Spot the bug on a fake app screen in three tries, then read the bug report."><meta property="og:title" content="Bugspot: Daily Spot the Bug Game for QA Testers"><meta property="og:description" content="One screen. One bug. Three tries. Can you spot it?"><meta property="og:type" content="website"><meta property="og:url" content="https://mohitrazdan19.github.io/bugspot/"><meta property="og:site_name" content="Bugspot"><meta property="og:image" content="https://mohitrazdan19.github.io/bugspot/og.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:alt" content="Bugspot: Can you spot the bug? A free daily puzzle for QA testers."><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Bugspot: Daily Spot the Bug Game for QA Testers"><meta name="twitter:description" content="One screen. One bug. Three tries. Can you spot it?"><meta name="twitter:image" content="https://mohitrazdan19.github.io/bugspot/og.png"><link rel="canonical" href="https://mohitrazdan19.github.io/bugspot/"><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27%3E%3Crect width=%2724%27 height=%2724%27 rx=%276%27 fill=%27%23d6283a%27/%3E%3Cpath fill=%27%23fff%27 d=%27M12 8.2c-2.6 0-4.4 1.9-4.4 4.6S9.4 19 12 19s4.4-3.6 4.4-6.2S14.6 8.2 12 8.2Z%27/%3E%3C/svg%3E"><script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Bugspot","url":"https://mohitrazdan19.github.io/bugspot/","applicationCategory":"GameApplication","operatingSystem":"Any","description":"A free daily spot-the-bug puzzle game for QA testers and software testers. Find the defect on a fake app screen in three tries, then read the bug report.","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
 <style>
   /* Layout concept: a tester's desk. A quiet bug-tracker chrome (ticket strip, mono ids,
      severity pills) around one loud object, the phone showing the app under test.
@@ -605,7 +605,202 @@ body { overflow-x: clip; }
 @media (max-width: 380px) { .wc-top h2 { font-size: 26px; } }
 @media (prefers-reduced-motion: reduce) { .wc, .wc-card { transition: none; } }
 </style>
+<style id="bugspot-lab">
+/* =====================================================================
+   Bug Lab look (Nov 2026). Loaded last, so it wins over the layers above.
+   Bright and light only: pastel glows, white glass cards, violet-to-pink
+   accent, a bug mascot and playful motion. Dark mode keeps the same light look.
+   ===================================================================== */
+:root, :root:not([data-theme="light"]), :root[data-theme="dark"] {
+  color-scheme: light;
+  --bg: #fbf8ff; --surface: #ffffff; --raise: #f6f2ff; --ink: #2d2350; --dim: #5f567f; --line: #e4dcf7;
+  --bug: #e23d5a; --ok: #0f7a55; --ok-soft: #d4f7e6; --focus: #7c5cff;
+  --p1: #e23d5a; --p2: #c2560a; --p3: #6d4aff; --p4: #6b6488; --on-sev: #ffffff;
+  --a1: #7c5cff; --a2: #e0489a; --a-ink: #5b3fe0; --a-soft: #efe9ff;
+  --glass: rgba(255, 255, 255, .74); --glass-line: rgba(255, 255, 255, .95);
+  --shadow: 0 2px 6px rgba(91, 63, 224, .06), 0 10px 26px rgba(91, 63, 224, .09);
+  --shadow-up: 0 4px 10px rgba(91, 63, 224, .08), 0 18px 38px rgba(91, 63, 224, .16);
+  --body: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --ease: cubic-bezier(.2, .8, .2, 1);
+  /* pastel per track: background / text */
+  --fe: #fff1a8; --fe-i: #6b5200; --be: #e6dcff; --be-i: #4b2fa8; --api: #c8f5e0; --api-i: #0f6b4a;
+  --db: #ffe0cc; --db-i: #9a3d0a; --ai: #ffd6ea; --ai-i: #9d1e5c;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: light;
+    --bg: #fbf8ff; --surface: #ffffff; --raise: #f6f2ff; --ink: #2d2350; --dim: #5f567f; --line: #e4dcf7;
+    --bug: #e23d5a; --ok: #0f7a55; --ok-soft: #d4f7e6; --focus: #7c5cff;
+    --p1: #e23d5a; --p2: #c2560a; --p3: #6d4aff; --p4: #6b6488; --on-sev: #ffffff;
+    --a1: #7c5cff; --a2: #e0489a;
+    --shadow: 0 2px 6px rgba(91, 63, 224, .06), 0 10px 26px rgba(91, 63, 224, .09);
+    --shadow-up: 0 4px 10px rgba(91, 63, 224, .08), 0 18px 38px rgba(91, 63, 224, .16);
+  }
+}
 
+/* ---------- page: soft drifting glows instead of a flat backdrop ---------- */
+body { background: var(--bg); color: var(--ink); font-family: var(--body); }
+.lab-bg { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+.lab-bg i { position: absolute; border-radius: 50%; filter: blur(60px); opacity: .85; animation: labDrift 14s ease-in-out infinite; }
+.lab-bg i:nth-child(1) { width: 46vmax; height: 46vmax; left: -14vmax; top: -16vmax; background: #b9f3dc; }
+.lab-bg i:nth-child(2) { width: 40vmax; height: 40vmax; right: -14vmax; top: 10vh; background: #dccfff; animation-duration: 18s; animation-delay: -6s; }
+.lab-bg i:nth-child(3) { width: 44vmax; height: 44vmax; left: 20vw; bottom: -24vmax; background: #ffd9c2; animation-duration: 22s; animation-delay: -11s; }
+@keyframes labDrift { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(3vmax, -3vmax) scale(1.08); } }
+
+/* ---------- header ---------- */
+.top::before { background: rgba(251, 248, 255, .6); border-bottom-color: rgba(228, 220, 247, .7); }
+.brand svg { background: linear-gradient(140deg, #ff8aa0, #ff5c7a); box-shadow: 0 6px 16px rgba(255, 92, 122, .35); }
+.tabs { background: var(--glass); border-color: var(--glass-line); box-shadow: var(--shadow); }
+.tabs button[aria-selected="true"] { background: linear-gradient(110deg, var(--a1), var(--a2)); color: #fff; box-shadow: 0 6px 16px rgba(124, 92, 255, .35); }
+.acct button { background: var(--glass); border-color: var(--glass-line); }
+
+/* ---------- cards ---------- */
+.card { background: var(--glass); border: 1px solid var(--glass-line); border-radius: 28px; box-shadow: var(--shadow);
+  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+.eyebrow { font-family: var(--body); font-weight: 800; letter-spacing: .6px; color: var(--a-ink); }
+
+/* ---------- buttons: gradient with a slow shine ---------- */
+.btn-p { background: linear-gradient(100deg, var(--a1), var(--a2), var(--a1)); background-size: 220% 100%; color: #fff; border-radius: 20px;
+  font-family: var(--body); font-weight: 800; box-shadow: 0 12px 26px -8px rgba(124, 92, 255, .6); animation: labSheen 6s linear infinite; }
+.btn-p:hover { filter: brightness(1.05); box-shadow: 0 16px 30px -8px rgba(124, 92, 255, .7); }
+@keyframes labSheen { from { background-position: 0% 50%; } to { background-position: 220% 50%; } }
+.btn-s { background: var(--glass); border: 1.5px solid var(--line); border-radius: 20px; font-family: var(--body); font-weight: 700; color: var(--ink); }
+.btn-s:hover { border-color: var(--a1); }
+
+/* ---------- hero: light glass card with the bug mascot ---------- */
+.hero, .hero.scard { color: var(--ink); background: var(--glass); border: 1px solid var(--glass-line); animation: none;
+  box-shadow: 0 16px 40px -14px rgba(91, 63, 224, .28); }
+.hero::before { display: none; }
+.hero::after { content: ""; position: absolute; z-index: 0; right: 14px; top: 14px; left: auto; bottom: auto; width: 74px; height: 74px; opacity: 1;
+  transform-origin: 50% 85%; background: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2072%2072'%3E%3Cpath%20d='M29%2016c-3-6-8-8-12-7M43%2016c3-6%208-8%2012-7'%20stroke='%232d2350'%20stroke-width='3.5'%20fill='none'%20stroke-linecap='round'/%3E%3Cellipse%20cx='36'%20cy='46'%20rx='21'%20ry='22'%20fill='%237c5cff'/%3E%3Ccircle%20cx='36'%20cy='25'%20r='13'%20fill='%23e0489a'/%3E%3Ccircle%20cx='31'%20cy='24'%20r='4.5'%20fill='%23fff'/%3E%3Ccircle%20cx='41'%20cy='24'%20r='4.5'%20fill='%23fff'/%3E%3Ccircle%20cx='32'%20cy='25'%20r='2.2'%20fill='%232d2350'/%3E%3Ccircle%20cx='42'%20cy='25'%20r='2.2'%20fill='%232d2350'/%3E%3Ccircle%20cx='28'%20cy='44'%20r='4'%20fill='%23fff'%20fill-opacity='.6'/%3E%3Ccircle%20cx='44'%20cy='52'%20r='5'%20fill='%23fff'%20fill-opacity='.6'/%3E%3Ccircle%20cx='29'%20cy='57'%20r='3'%20fill='%23fff'%20fill-opacity='.6'/%3E%3C/svg%3E") center / contain no-repeat; animation: labWiggle 1.9s ease-in-out infinite; }
+@keyframes labWiggle { 0%, 100% { transform: rotate(-8deg); } 50% { transform: rotate(8deg); } }
+.hero > * { position: relative; z-index: 1; }
+.hero .eyebrow { background: var(--a-soft); color: var(--a-ink); max-width: calc(100% - 84px); }
+.hero h1, .hero .res { color: var(--ink); }
+.hero .res { font-size: 46px; letter-spacing: -1px; background: linear-gradient(110deg, var(--a1), var(--a2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.hero .res small { -webkit-text-fill-color: var(--dim); color: var(--dim); }
+.hero .lede, .hero .rt, .hero .note, .hero .meta { color: var(--dim); }
+.hero .meta b { color: var(--ink); }
+.hero .btn-p { background: linear-gradient(100deg, var(--a1), var(--a2), var(--a1)); background-size: 220% 100%; color: #fff; box-shadow: 0 12px 26px -8px rgba(124, 92, 255, .6); }
+.hero .btn-p:focus-visible { outline-color: var(--a1); }
+.hero .btn-s { background: #fff; border-color: var(--line); color: var(--ink); }
+.hero .btn-s:hover { background: #fff; border-color: var(--a1); }
+.hero .row2 { border-top-color: var(--line); }
+
+/* today's 8 bugs as little tiles that pop in */
+.hero .slots { gap: 7px; }
+.hero .sl { width: 36px; height: 36px; border-radius: 12px; background: rgba(255, 255, 255, .6); border: 2px dashed #cfc6ec; color: var(--dim); box-shadow: none;
+  animation: labPop .5s var(--ease) both; }
+.hero .sl.g { background: var(--api); color: var(--api-i); border: 2px solid transparent; box-shadow: none; }
+.hero .sl.r { background: #ffd6de; color: #a3203a; border: 2px solid transparent; box-shadow: none; }
+.hero .sl:nth-child(2) { animation-delay: .06s; } .hero .sl:nth-child(3) { animation-delay: .12s; } .hero .sl:nth-child(4) { animation-delay: .18s; }
+.hero .sl:nth-child(5) { animation-delay: .24s; } .hero .sl:nth-child(6) { animation-delay: .30s; } .hero .sl:nth-child(7) { animation-delay: .36s; } .hero .sl:nth-child(8) { animation-delay: .42s; }
+.hero .sl:not(.g, .r, .l):not(.sl:not(.g, .r, .l) ~ .sl) { border: 2px solid var(--a1); background: #fff; animation: labPop .5s var(--ease) both, labPulse 1.8s 1s ease-out infinite; }
+@keyframes labPop { 0% { transform: scale(.4); opacity: 0; } 70% { transform: scale(1.12); } 100% { transform: scale(1); opacity: 1; } }
+@keyframes labPulse { 0% { box-shadow: 0 0 0 0 rgba(124, 92, 255, .5); } 100% { box-shadow: 0 0 0 12px rgba(124, 92, 255, 0); } }
+
+.scard .sl.g::after { content: "✓"; font: 800 15px/1 var(--body); }
+.scard .sl.r::after { content: "×"; font: 800 17px/1 var(--body); }
+.hero .hchip { background: #fff; border: 1px solid var(--line); color: var(--dim); }
+.hero .hchip b { color: var(--a-ink); }
+
+/* ---------- puzzle tiles: one pastel per track ---------- */
+.sumrow h2, .about h2 { font-family: var(--display); }
+.tile { --t: #ffffff; --ti: var(--ink); background: color-mix(in srgb, var(--t) 45%, #fff); border: 1px solid var(--glass-line); border-radius: 22px; box-shadow: var(--shadow);
+  animation: labPop .5s var(--ease) both; }
+.tile[data-trk="Frontend"] { --t: var(--fe); --ti: var(--fe-i); } .tile[data-trk="Backend"] { --t: var(--be); --ti: var(--be-i); }
+.tile[data-trk="API"] { --t: var(--api); --ti: var(--api-i); } .tile[data-trk="Database"] { --t: var(--db); --ti: var(--db-i); }
+.tile[data-trk="AI"] { --t: var(--ai); --ti: var(--ai-i); }
+.tile::before { height: 5px; background: var(--t); }
+.tile .d { background: rgba(255, 255, 255, .7); color: var(--ti); }
+.tile.done { background: var(--t); }
+.tile.done .a, .tile.done .n { color: var(--ti); }
+.tile:hover { border-color: #fff; box-shadow: var(--shadow-up); }
+.grid > .tile:nth-child(2) { animation-delay: .05s; } .grid > .tile:nth-child(3) { animation-delay: .1s; } .grid > .tile:nth-child(4) { animation-delay: .15s; }
+.grid > .tile:nth-child(5) { animation-delay: .2s; } .grid > .tile:nth-child(6) { animation-delay: .25s; } .grid > .tile:nth-child(n+7) { animation-delay: .3s; }
+.grid > .tile:has(.stt.go):not(.tile:has(.stt.go) ~ .tile) { border: 2px solid var(--a1); animation: labPop .5s var(--ease) both, labPulse 1.8s 1s ease-out infinite; }
+.tile .stt.go { color: var(--a-ink); }
+.tile .stt.ok { color: var(--ok); }
+.tile.got::after { background: var(--ok); }
+.lv + .grid .tile.done { background: var(--t); }
+
+/* ---------- practice ---------- */
+.lv { background: var(--glass); border-color: var(--glass-line); border-radius: 22px; }
+.lv > .meta { background: #fff; border-color: var(--line); }
+.prog { background: var(--raise); }
+.trkchip { background: var(--glass); border-color: var(--line); font-family: var(--body); font-weight: 700; }
+.trkchip[aria-pressed="true"] { background: var(--a-soft); color: var(--a-ink); border-color: #b9a6ff; }
+.trk { background: var(--fe); color: var(--fe-i); }
+.trk.t-Backend { background: var(--be); color: var(--be-i); } .trk.t-API { background: var(--api); color: var(--api-i); }
+.trk.t-Database { background: var(--db); color: var(--db-i); } .trk.t-AI { background: var(--ai); color: var(--ai-i); }
+.soon { background: linear-gradient(110deg, var(--a1), var(--a2)); color: #fff; }
+.note.callout { background: var(--a-soft); border-color: #d6cbff; }
+
+/* ---------- play screen: light phone, friendly mission strip ---------- */
+.link { color: var(--ink); text-decoration-color: #cfc6ec; }
+.ptitle { font-family: var(--display); font-weight: 800; }
+.tries svg { color: #ff5c7a; }
+.ticket { background: var(--glass); border: 1px solid var(--glass-line); border-left: 0; border-radius: 22px; box-shadow: var(--shadow); padding: 12px 14px; }
+.tid { background: var(--a-soft); color: var(--a-ink); }
+.phone { background: #fff; border: 2px solid #ece4ff; box-shadow: 0 20px 44px -12px rgba(91, 63, 224, .35); }
+.screen::before { background: #e4dcf7; }
+
+/* ---------- bug report and share sheets ---------- */
+.sheet { background: rgba(255, 255, 255, .94); border-top: 1px solid var(--glass-line); box-shadow: 0 -24px 60px rgba(91, 63, 224, .22); }
+.x { background: #fff; border-color: var(--line); }
+.ea > div:first-child { background: var(--api); }
+.ea > div:last-child { background: #ffe1e6; }
+.tip { background: var(--fe); border-left: 0; }
+.tip b { color: var(--fe-i); }
+.sharebox { background: var(--raise); }
+.scard { overflow: hidden; }
+.hero.scard::after { width: 84px; height: 84px; left: 50%; right: auto; margin-left: -42px; top: 14px; background-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2072%2072'%3E%3Cpath%20d='M29%2016c-3-6-8-8-12-7M43%2016c3-6%208-8%2012-7'%20stroke='%232d2350'%20stroke-width='3.5'%20fill='none'%20stroke-linecap='round'/%3E%3Cellipse%20cx='36'%20cy='46'%20rx='21'%20ry='22'%20fill='%237c5cff'/%3E%3Ccircle%20cx='36'%20cy='25'%20r='13'%20fill='%23e0489a'/%3E%3Cpath%20d='M29%2024q2-3%204%200M39%2024q2-3%204%200'%20stroke='%23fff'%20stroke-width='2.6'%20fill='none'%20stroke-linecap='round'/%3E%3Cpath%20d='M31%2030q5%204%2010%200'%20stroke='%23fff'%20stroke-width='2.4'%20fill='none'%20stroke-linecap='round'/%3E%3Ccircle%20cx='28'%20cy='44'%20r='4'%20fill='%23fff'%20fill-opacity='.6'/%3E%3Ccircle%20cx='44'%20cy='52'%20r='5'%20fill='%23fff'%20fill-opacity='.6'/%3E%3Ccircle%20cx='29'%20cy='57'%20r='3'%20fill='%23fff'%20fill-opacity='.6'/%3E%3C/svg%3E"); animation: labBob 2.6s ease-in-out infinite; }
+@keyframes labBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+.scard .eyebrow { margin-top: 96px; max-width: none; }
+.scard .big { background: linear-gradient(110deg, var(--a1), var(--a2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.scard .big small { -webkit-text-fill-color: var(--dim); }
+.scard .verdict { color: var(--ink); }
+.scard .sq { animation: labPop .5s var(--ease) both; }
+.scard .sq:nth-child(2) { animation-delay: .07s; } .scard .sq:nth-child(3) { animation-delay: .14s; } .scard .sq:nth-child(4) { animation-delay: .21s; }
+.scard .sq:nth-child(5) { animation-delay: .28s; } .scard .sq:nth-child(6) { animation-delay: .35s; } .scard .sq:nth-child(7) { animation-delay: .42s; } .scard .sq:nth-child(8) { animation-delay: .49s; }
+.conf { position: absolute; inset: 0; z-index: 0 !important; pointer-events: none; overflow: hidden; }
+.conf i { position: absolute; top: -20px; width: 9px; height: 15px; border-radius: 3px; animation: labFall 3.4s linear infinite; }
+.conf i:nth-child(6n+1) { background: #ffd84d; } .conf i:nth-child(6n+2) { background: #7ee2b8; } .conf i:nth-child(6n+3) { background: #b9a4ff; }
+.conf i:nth-child(6n+4) { background: #ff9fc6; } .conf i:nth-child(6n+5) { background: #ffb07a; } .conf i:nth-child(6n) { background: var(--a1); }
+.conf i:nth-child(1) { left: 6%; } .conf i:nth-child(2) { left: 14%; animation-delay: .6s; animation-duration: 3.9s; } .conf i:nth-child(3) { left: 22%; animation-delay: 1.4s; }
+.conf i:nth-child(4) { left: 31%; animation-delay: .3s; animation-duration: 4.2s; } .conf i:nth-child(5) { left: 40%; animation-delay: 2s; } .conf i:nth-child(6) { left: 49%; animation-delay: 1s; animation-duration: 3.7s; }
+.conf i:nth-child(7) { left: 58%; animation-delay: .2s; } .conf i:nth-child(8) { left: 66%; animation-delay: 1.7s; animation-duration: 4.4s; } .conf i:nth-child(9) { left: 74%; animation-delay: .9s; }
+.conf i:nth-child(10) { left: 82%; animation-delay: 2.4s; animation-duration: 3.6s; } .conf i:nth-child(11) { left: 90%; animation-delay: .5s; } .conf i:nth-child(12) { left: 95%; animation-delay: 1.9s; animation-duration: 4s; }
+@keyframes labFall { 0% { transform: translateY(0) rotate(0); opacity: 0; } 10% { opacity: 1; } 100% { transform: translateY(420px) rotate(560deg); opacity: 0; } }
+
+/* ---------- about and welcome card ---------- */
+.about { background: var(--glass); border-color: var(--glass-line); }
+.about h3 { font-family: var(--body); color: var(--a-ink); }
+.about li { background: #fff; border-color: var(--line); }
+.wc { background: rgba(60, 40, 120, .28); }
+.wc-top { background: linear-gradient(130deg, #b9f3dc, #dccfff 55%, #ffd9c2); color: var(--ink); position: relative; }
+.wc-top::after { content: ""; position: absolute; right: 18px; top: 16px; width: 64px; height: 64px; background: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2072%2072'%3E%3Cpath%20d='M29%2016c-3-6-8-8-12-7M43%2016c3-6%208-8%2012-7'%20stroke='%232d2350'%20stroke-width='3.5'%20fill='none'%20stroke-linecap='round'/%3E%3Cellipse%20cx='36'%20cy='46'%20rx='21'%20ry='22'%20fill='%237c5cff'/%3E%3Ccircle%20cx='36'%20cy='25'%20r='13'%20fill='%23e0489a'/%3E%3Ccircle%20cx='31'%20cy='24'%20r='4.5'%20fill='%23fff'/%3E%3Ccircle%20cx='41'%20cy='24'%20r='4.5'%20fill='%23fff'/%3E%3Ccircle%20cx='32'%20cy='25'%20r='2.2'%20fill='%232d2350'/%3E%3Ccircle%20cx='42'%20cy='25'%20r='2.2'%20fill='%232d2350'/%3E%3Ccircle%20cx='28'%20cy='44'%20r='4'%20fill='%23fff'%20fill-opacity='.6'/%3E%3Ccircle%20cx='44'%20cy='52'%20r='5'%20fill='%23fff'%20fill-opacity='.6'/%3E%3Ccircle%20cx='29'%20cy='57'%20r='3'%20fill='%23fff'%20fill-opacity='.6'/%3E%3C/svg%3E") center / contain no-repeat;
+  transform-origin: 50% 85%; animation: labWiggle 1.9s ease-in-out infinite; }
+.wc-top h2 { color: var(--ink); }
+.wc-top p { color: var(--dim); opacity: 1; }
+.wc-live { background: rgba(255, 255, 255, .75); color: var(--a-ink); }
+.wc-ic { background: var(--a-soft); }
+.wc-go { background: linear-gradient(110deg, var(--a1), var(--a2)); box-shadow: 0 12px 26px -8px rgba(124, 92, 255, .6); }
+
+@media (max-width: 420px) {
+  .hero::after { width: 58px; height: 58px; right: 10px; top: 10px; }
+  .hero .eyebrow { max-width: calc(100% - 66px); }
+  .hero .sl { width: 32px; height: 32px; border-radius: 10px; }
+  .hero .res { font-size: 40px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lab-bg i, .btn-p, .hero::after, .scard::after, .wc-top::after, .hero .sl, .tile, .scard .sq, .conf i,
+  .grid > .tile:has(.stt.go) { animation: none !important; }
+  .conf { display: none; }
+}
+</style>
+
+<div class="lab-bg" aria-hidden="true"><i></i><i></i><i></i></div>
 <div id="app">
   <header class="top">
     <div class="brand"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 8.2c-2.6 0-4.4 1.9-4.4 4.6S9.4 19 12 19s4.4-3.6 4.4-6.2S14.6 8.2 12 8.2Z"/><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M12 8.2V19M9.3 6.4a2.7 2.7 0 0 1 5.4 0M7.6 12.3 4 10.6M16.4 12.3 20 10.6M8 16.4l-3.4 1.6M16 16.4l3.4 1.6"/></svg>Bugspot</div>
@@ -3365,7 +3560,7 @@ function renderDaily() {
     const p = PUZZLES[idx], r = day.r[i], locked = i >= n;
     const status = r ? (r.f ? '+' + pointsFor(true, r.t, r.h) + ' pts · ' + r.t + (r.t === 1 ? ' try' : ' tries') : 'Missed · 0 pts') : (locked ? '🔒 Sign in' : 'Play');
     const stc = r ? (r.f ? 'ok' : 'no') : (locked ? '' : 'go');
-    return '<button class="tile' + (r ? ' done ' + (r.f ? 'got' : 'lost') : '') + (locked ? ' lock' : '') + '" type="button" data-lv="' + p.diff + '" data-s="' + i + '" aria-label="Puzzle ' + (i + 1) + ', ' + tl(trk(p)) + ', ' + dl(p.diff) + ', ' + status + '">' +
+    return '<button class="tile' + (r ? ' done ' + (r.f ? 'got' : 'lost') : '') + (locked ? ' lock' : '') + '" type="button" data-lv="' + p.diff + '" data-trk="' + trk(p) + '" data-s="' + i + '" aria-label="Puzzle ' + (i + 1) + ', ' + tl(trk(p)) + ', ' + dl(p.diff) + ', ' + status + '">' +
       // Unplayed tiles say "Puzzle 01" so the screen name cannot hint at the bug.
       (r ? '<span class="n">#' + p2(i + 1) + '</span><span class="a">' + p.area : '<span class="a">Puzzle ' + p2(i + 1)) + '</span><span class="d">' + tl(trk(p)) + ' · ' + dl(p.diff) + '</span><span class="stt ' + stc + '">' + (r || locked ? status : 'Play ›') + '</span></button>';
   }).join('');
@@ -3484,7 +3679,7 @@ function scoreCard() {
   const sq = set.map((x, i) => { const r = day.r[i]; return '<i class="sl ' + (r ? (r.f ? 'g' : 'r') : 'l') + '">' + (i >= n && !r ? '🔒' : '') + '</i>'; }).join('');
   const max = n * MAX_PTS, verdict = t.pts >= max ? 'Flawless hunt!' : t.pts >= max * 0.75 ? 'Sharp eyes' : t.pts >= max * 0.4 ? 'Not bad' : 'Bugs everywhere';
   const streak = liveStreak();
-  return '<section class="card hero scard"><p class="eyebrow">' + esc(BRAND) + ' Daily · ' + dayLabel(today) + '</p>' +
+  return '<section class="card hero scard">' + (t.found ? '<div class="conf" aria-hidden="true">' + '<i></i>'.repeat(12) + '</div>' : '') + '<p class="eyebrow">' + esc(BRAND) + ' Daily · ' + dayLabel(today) + '</p>' +
     '<div class="big">' + t.pts + '<small>/' + max + ' pts</small></div><div class="verdict">' + verdict + ' · ' + t.found + ' of ' + n + ' found</div>' +
     '<div class="sqs" aria-hidden="true">' + sq + '</div>' +
     (streak ? '<div class="hchips"><span class="hchip">🔥 <b>' + streak + '</b> day streak</span></div>' : '') + '</section>';
@@ -3557,7 +3752,7 @@ function renderPractice() {
     }
     html += '<div class="grid">' + idxs.map(i => {
       const p = PUZZLES[i], s = save.stars[p.id];
-      return '<button class="tile' + (s !== undefined ? ' done' : '') + '" type="button" data-lv="' + p.diff + '" data-i="' + i + '" aria-label="Puzzle ' + (i + 1) + ', ' + tl(trk(p)) + ', ' + (s !== undefined ? p.area + ', ' : '') + dl(p.diff) + (s !== undefined ? ', ' + s + ' stars' : '') + '">' +
+      return '<button class="tile' + (s !== undefined ? ' done' : '') + '" type="button" data-lv="' + p.diff + '" data-trk="' + trk(p) + '" data-i="' + i + '" aria-label="Puzzle ' + (i + 1) + ', ' + tl(trk(p)) + ', ' + (s !== undefined ? p.area + ', ' : '') + dl(p.diff) + (s !== undefined ? ', ' + s + ' stars' : '') + '">' +
         (s !== undefined ? '<span class="n">#' + p2(i + 1) + '</span><span class="a">' + p.area : '<span class="a">Puzzle ' + p2(i + 1)) + '</span><span class="d">' + tl(trk(p)) + ' · ' + dl(p.diff) + '</span>' +
         '<span class="st" aria-hidden="true">' + stars(s || 0) + '</span></button>';
     }).join('') + '</div>';
