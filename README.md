@@ -2,39 +2,17 @@
 
 The site at https://quizzifytech.com (the repo name stays `bugspot`). A daily spot-the-bug game for QA testers. One file, `index.html`, hosted on GitHub Pages.
 
-## Open access (current)
-Everything is free for now: `OPEN_ACCESS: true` in `CONFIG` gives everyone all 8 daily bugs and all practice levels with no sign-in, and hides the Sign in button. Set it to `false` to bring back the rules below. Managers can still sign in by adding `?signin` to the address, and team invite links still ask for sign-in.
+## No sign-in on the public site
 
-## Guest and signed-in play (when OPEN_ACCESS is off)
-- Everyone gets the same 8 bugs each day (3 easy, 3 medium, 2 hard).
-- Guests play the first 3. Signed-in players play all 8 and unlock practice levels.
-- Practice levels: Easy, Medium, Hard. Solving 75% of a level opens the next.
-
-## Sign-in setup (done for project `bugspot`)
-1. Create a Supabase project and run `supabase/schema.sql`. Done.
-2. In Supabase, Authentication, URL Configuration: set Site URL to `https://quizzifytech.com/` and add Redirect URLs `https://quizzifytech.com/**` and `https://www.quizzifytech.com/**` (keep the old `https://mohitrazdan19.github.io/bugspot/` too).
-3. Put the project URL and the publishable key in `CONFIG` near the top of the game script in `index.html`. Done.
-4. Optional: enable the Google provider and set `GOOGLE: true`.
-
-Supabase's built-in email sender allows only a few emails an hour. Add a custom SMTP sender before a public launch.
-
-The 3-bug limit for guests is enforced in the browser only. It is a gentle nudge, not security.
+Everyone plays all 8 daily bugs and every practice level free, with no sign-up. The public game has no sign-in and never asks for an email (removed in Nov 2026, including team invite links `?join=` and the `?signin` manager link). The admin page keeps its own sign-in. The old sign-in and teams code is in git history if it is ever needed again; `supabase/schema.sql` and `supabase/teams.sql` still describe those tables.
 
 ## Usage stats and admin page
 
-The game sends anonymous events (visit, puzzle start/found/missed, sign-in, share) with a random per-browser id. No IP address, email or other personal data is stored.
+The game sends anonymous events (visit, puzzle start/found/missed, share) with a random per-browser id. No IP address, email or other personal data is stored.
 
 - Tables and functions: `supabase/analytics.sql` (already applied to the project).
 - Admin page: `admin.html` (private, signed-in owner only). Admins are the emails listed in the `admins` table.
 - To add another admin: `insert into public.admins (email) values ('name@example.com');`
-
-## Teams (for corporate QA groups)
-
-- A signed-in manager opens Account, Team, and creates a team. They get an invite link like `https://.../bugspot/?join=CODE`.
-- Anyone who opens the link signs in, sees what the manager can view (email, bugs solved, stars, streak, last played day), and joins. They can leave any time.
-- The manager's View progress screen ranks members by stars and has a Download CSV button.
-- Tables and functions: `supabase/teams.sql` (already applied to the project). All access goes through the functions; the tables have no direct policies.
-- Still to build: certificates, per-level leaderboard, removing members from the screen.
 
 ## Search and link previews
 
