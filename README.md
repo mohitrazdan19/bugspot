@@ -1,6 +1,6 @@
-# Bugspot
+# QuizzifyTech
 
-A daily spot-the-bug game for QA testers. One file, `index.html`, hosted on GitHub Pages.
+The site at https://quizzifytech.com (the repo name stays `bugspot`). A daily spot-the-bug game for QA testers. One file, `index.html`, hosted on GitHub Pages.
 
 ## Open access (current)
 Everything is free for now: `OPEN_ACCESS: true` in `CONFIG` gives everyone all 8 daily bugs and all practice levels with no sign-in, and hides the Sign in button. Set it to `false` to bring back the rules below. Managers can still sign in by adding `?signin` to the address, and team invite links still ask for sign-in.
