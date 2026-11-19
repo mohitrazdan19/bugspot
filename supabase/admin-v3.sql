@@ -1,19 +1,18 @@
--- Admin panel v3: count people who really played.
+-- Admin panel v3: count people who really played, and pick any dates.
 -- The site opens puzzle 1 by itself for new visitors, so puzzle_start counts everyone (bots too).
--- "Played" = finished at least one puzzle (found the bug or used all tries). Run once in the SQL editor.
-create or replace function public.admin_stats(days int default 30) returns jsonb
+-- "Played" = finished at least one puzzle (found the bug or used all tries).
+-- admin_stats_range(from, to) powers the calendar. Run once in the SQL editor (safe to run again).
+create or replace function public.admin_stats_between(t0 timestamptz, t1 timestamptz, d int) returns jsonb
 language plpgsql stable security definer set search_path = public as $$
-declare d int := least(greatest(coalesce(days, 30), 0), 365); res jsonb; cutoff timestamptz;
+declare res jsonb; cutoff timestamptz := t0;
 begin
   if not public.is_admin() then raise exception 'not allowed'; end if;
-  -- days = 0 means today only (since midnight, India time)
-  cutoff := case when d = 0 then date_trunc('day', now() at time zone 'Asia/Kolkata') at time zone 'Asia/Kolkata' else now() - make_interval(days => d) end;
 
   with ev as (
     select * from analytics_events a
     where not exists (select 1 from admin_ignored_visitors i where i.visitor = a.visitor)
   ),
-  rng as (select * from ev where created_at >= cutoff),
+  rng as (select * from ev where created_at >= t0 and created_at < t1),
   -- each visitor seen in the range, and on how many different days they ever visited
   vis as (
     select r.visitor,
@@ -23,6 +22,8 @@ begin
   )
   select jsonb_build_object(
     'days', d,
+    'from', (t0 at time zone 'Asia/Kolkata')::date,
+    'to', ((t1 - interval '1 second') at time zone 'Asia/Kolkata')::date,
     'visitors', (select count(*) from vis),
     'visits', (select count(*) from rng where event = 'visit'),
     'visitors_today', (select count(distinct visitor) from ev where event = 'visit' and (created_at at time zone 'Asia/Kolkata')::date = (now() at time zone 'Asia/Kolkata')::date),
@@ -63,5 +64,30 @@ begin
   ) into res;
   return res;
 end $$;
+revoke all on function public.admin_stats_between(timestamptz, timestamptz, int) from public, anon, authenticated;
+
+-- Quick ranges: days = 0 means today (since midnight, India time), otherwise the last N days.
+create or replace function public.admin_stats(days int default 30) returns jsonb
+language plpgsql stable security definer set search_path = public as $$
+declare d int := least(greatest(coalesce(days, 30), 0), 365);
+begin
+  if not public.is_admin() then raise exception 'not allowed'; end if;
+  return public.admin_stats_between(
+    case when d = 0 then date_trunc('day', now() at time zone 'Asia/Kolkata') at time zone 'Asia/Kolkata' else now() - make_interval(days => d) end,
+    now() + interval '1 minute', d);
+end $$;
 revoke all on function public.admin_stats(int) from public, anon;
 grant execute on function public.admin_stats(int) to authenticated;
+
+-- Calendar: any single day or from-to range of India-time dates, both ends included (up to 366 days).
+create or replace function public.admin_stats_range(from_day date, to_day date) returns jsonb
+language plpgsql stable security definer set search_path = public as $$
+declare a date := least(from_day, to_day); b date := greatest(from_day, to_day);
+begin
+  if not public.is_admin() then raise exception 'not allowed'; end if;
+  if a is null or b is null then raise exception 'pick both dates'; end if;
+  if b - a > 365 then a := b - 365; end if;
+  return public.admin_stats_between(a::timestamp at time zone 'Asia/Kolkata', (b + 1)::timestamp at time zone 'Asia/Kolkata', b - a + 1);
+end $$;
+revoke all on function public.admin_stats_range(date, date) from public, anon;
+grant execute on function public.admin_stats_range(date, date) to authenticated;

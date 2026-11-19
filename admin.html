@@ -104,6 +104,14 @@ h2 small { font: 600 13px var(--body); color: var(--mute); }
 .mode dt { font-size: 12px; font-weight: 700; color: var(--mute); }
 .mode dd { margin: 0; font: 800 24px/1.1 var(--display); font-variant-numeric: tabular-nums; }
 
+/* calendar */
+.cal { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; margin-top: 16px; padding: 14px 16px; }
+.cal label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; font-weight: 700; color: var(--mute); }
+.cal input { min-height: 42px; padding: 0 12px; font-weight: 600; }
+.cal button { min-height: 42px; padding: 0 20px; border: 0; color: #fff; font-weight: 800; cursor: pointer;
+  background: linear-gradient(110deg, var(--a1), var(--a2)); box-shadow: 0 6px 16px rgba(124, 92, 255, .3); }
+.cal .mute { font-size: 12px; flex-basis: 100%; }
+@media (max-width: 640px) { .cal label { flex: 1; min-width: 130px; } .cal button { flex-basis: 100%; } }
 /* chart */
 .bars { display: flex; align-items: flex-end; justify-content: center; gap: 4px; height: 190px; padding-top: 20px; border-bottom: 1px solid var(--line);
   background: repeating-linear-gradient(to top, transparent 0 46px, var(--line) 46px 47px); }
@@ -143,9 +151,15 @@ td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; }
 <div class="top">
   <div class="brand"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 8.2c-2.6 0-4.4 1.9-4.4 4.6S9.4 19 12 19s4.4-3.6 4.4-6.2S14.6 8.2 12 8.2Z"/><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M12 8.2V19M9.3 6.4a2.7 2.7 0 0 1 5.4 0M7.6 12.3 4 10.6M16.4 12.3 20 10.6M8 16.4l-3.4 1.6M16 16.4l3.4 1.6"/></svg>
     <div><h1>QuizzifyTech admin</h1><div class="mute" id="who">Private page for the site owner</div></div></div>
-  <div class="ctl"><select id="range" hidden aria-label="Time range"><option value="0">Today</option><option value="7">Last 7 days</option><option value="30" selected>Last 30 days</option><option value="90">Last 90 days</option></select>
+  <div class="ctl"><select id="range" hidden aria-label="Time range"><option value="0">Today</option><option value="yday">Yesterday</option><option value="7">Last 7 days</option><option value="30" selected>Last 30 days</option><option value="90">Last 90 days</option><option value="custom">📅 Pick dates…</option></select>
   <button id="out" hidden type="button">Sign out</button></div>
 </div>
+<form id="cal" class="cal card" hidden>
+  <label>From<input id="d1" type="date" required></label>
+  <label>To<input id="d2" type="date" required></label>
+  <button id="apply" type="submit">Show</button>
+  <span class="mute">Pick the same date twice to see one day.</span>
+</form>
 <nav class="links" id="links" hidden aria-label="Quick links">
   <a href="https://quizzifytech.com/" target="_blank" rel="noopener">Open the site</a>
   <a href="https://search.google.com/search-console" target="_blank" rel="noopener">Google Search Console</a>
@@ -164,7 +178,7 @@ td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; }
 const URL_ = "https://otfuymjeqoghridciiqm.supabase.co", KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im90ZnV5bWplcW9naHJpZGNpaXFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI3NDYxNTIsImV4cCI6MjEwODMyMjE1Mn0.uK3WhRMTTQ8rGB1PXM3Umd6ruNjs0RLbuWkMu5PoS5Q", HERE = location.origin + location.pathname;
 const $ = id => document.getElementById(id), esc = t => String(t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 let sb;
-function show(which) { $('login').hidden = which !== 'login'; $('dash').hidden = $('links').hidden = which !== 'dash'; $('range').hidden = $('out').hidden = which !== 'dash'; }
+function show(which) { $('login').hidden = which !== 'login'; $('dash').hidden = $('links').hidden = which !== 'dash'; $('range').hidden = $('out').hidden = which !== 'dash'; $('cal').hidden = which !== 'dash' || $('range').value !== 'custom'; }
 async function load() {
   $('err').textContent = '';
   const { data: sess } = await sb.auth.getSession();
@@ -175,27 +189,42 @@ async function load() {
     return;
   }
   $('who').textContent = 'Signed in as ' + sess.session.user.email;
-  const r = await sb.rpc('admin_stats', { days: +$('range').value });
-  if (r.error) { show('login'); $('err').textContent = 'Could not load stats.'; return; }
-  // "Today" has only one day of data, so the chart shows the last 7 days instead.
-  let chart = { days: r.data.days, daily: r.data.daily };
-  if (r.data.days === 0) { const w = await sb.rpc('admin_stats', { days: 7 }); if (!w.error) chart = { days: 7, daily: w.data.daily }; }
+  const v = $('range').value;
+  let r, chart;
+  if (v === 'custom' || v === 'yday') {
+    // Calendar: any India-time dates, both ends included.
+    const a = v === 'yday' ? istDay(-1) : $('d1').value, b = v === 'yday' ? a : $('d2').value;
+    if (!a || !b) { $('err').textContent = 'Pick a From and a To date.'; return; }
+    r = await sb.rpc('admin_stats_range', { from_day: a, to_day: b });
+    if (r.error) { $('err').textContent = /admin_stats_range|function/i.test(r.error.message || '') ? 'To pick dates, run the Supabase update (admin-v3.sql) first.' : 'Could not load stats.'; return; }
+    r.data.custom = true;
+    chart = { days: r.data.days, daily: r.data.daily, end: r.data.to };
+    // One day has a single bar, so the chart shows the 7 days up to it instead.
+    if (r.data.days === 1) { const w = await sb.rpc('admin_stats_range', { from_day: addDays(r.data.to, -6), to_day: r.data.to }); if (!w.error) chart = { days: 7, daily: w.data.daily, end: r.data.to }; }
+  } else {
+    r = await sb.rpc('admin_stats', { days: +v });
+    if (r.error) { show('login'); $('err').textContent = 'Could not load stats.'; return; }
+    chart = { days: r.data.days, daily: r.data.daily };
+    // "Today" has only one day of data, so the chart shows the last 7 days instead.
+    if (r.data.days === 0) { const w = await sb.rpc('admin_stats', { days: 7 }); if (!w.error) chart = { days: 7, daily: w.data.daily }; }
+  }
   draw(r.data, chart); show('dash');
 }
 const num = n => (n || 0).toLocaleString('en-IN');
 function pct(a, b) { return b ? Math.round(a * 100 / b) + '%' : '–'; }
-// One entry per day in the range (India time), with 0 for days that had no visits.
-function fillDays(daily, n) {
+// Dates are India-time "YYYY-MM-DD" strings.
+const istDay = off => new Date(Date.now() + (off || 0) * 86400000).toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+const addDays = (t, n) => new Date(Date.parse(t + 'T12:00:00Z') + n * 86400000).toISOString().slice(0, 10);
+const dayLabel = t => new Date(t + 'T12:00:00+05:30').toLocaleDateString('en-IN', { day: 'numeric', month: 'short', timeZone: 'Asia/Kolkata' });
+// One entry per day in the range, ending today (or on `end`), with 0 for days that had no visits.
+function fillDays(daily, n, end) {
   const seen = {}; daily.forEach(x => { seen[x.day] = x.visitors; });
-  const out = [];
-  for (let i = n - 1; i >= 0; i--) {
-    const day = new Date(Date.now() - i * 86400000).toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
-    out.push({ day, visitors: seen[day] || 0 });
-  }
+  const last = end || istDay(0), out = [];
+  for (let i = n - 1; i >= 0; i--) { const day = addDays(last, -i); out.push({ day, visitors: seen[day] || 0 }); }
   return out;
 }
 function chartHtml(c) {
-  const days = fillDays(c.daily, Math.max(1, c.days)), max = Math.max(1, ...days.map(x => x.visitors));
+  const days = fillDays(c.daily, Math.max(1, c.days), c.end), max = Math.max(1, ...days.map(x => x.visitors));
   const every = days.length <= 10 ? 1 : days.length <= 31 ? 5 : 30, showN = days.length <= 14;
   const label = t => new Date(t + 'T12:00:00+05:30').toLocaleDateString('en-IN', { day: 'numeric', month: 'short', timeZone: 'Asia/Kolkata' });
   const cols = days.map(x => '<div class="col" title="' + esc(label(x.day)) + ': ' + x.visitors + ' visitor' + (x.visitors === 1 ? '' : 's') + '"><i style="height:' + (x.visitors ? Math.max(3, Math.round(x.visitors * 100 / max)) : 0) + '%">' + (showN ? '<em>' + x.visitors + '</em>' : '') + '</i></div>').join('');
@@ -217,18 +246,20 @@ function modeHtml(icon, title, m) {
     cell('Players', num(m.players)) + cell('Puzzles started', num(m.started)) + cell('Bugs found', num(m.found)) + cell('Success rate', pct(m.found || 0, tried)) + '</dl></div>';
 }
 function draw(d, chart) {
-  const e = d.events || {}, v2 = 'funnel' in d, range = d.days === 0 ? 'today' : 'in the last ' + d.days + ' days';
+  const e = d.events || {}, v2 = 'funnel' in d, one = d.custom && d.days === 1;
+  const span = d.custom ? (one ? 'on ' + dayLabel(d.from) : dayLabel(d.from) + ' – ' + dayLabel(d.to)) : '';
+  const range = d.custom ? (one ? span : 'between ' + dayLabel(d.from) + ' and ' + dayLabel(d.to)) : d.days === 0 ? 'today' : 'in the last ' + d.days + ' days';
   const refs = d.referrers.map(x => '<tr><td>' + esc(x.ref) + '</td><td class="n">' + num(x.n) + '</td></tr>').join('') || '<tr><td class="mute" colspan="2">No visits yet</td></tr>';
   const pz = d.puzzles.map(x => '<tr><td>' + esc(x.id) + '</td><td class="n">' + x.started + '</td><td class="n">' + x.found + '</td><td class="n">' + x.failed + '</td><td class="n">' + pct(x.found, x.found + x.failed) + '</td></tr>').join('') || '<tr><td class="mute" colspan="5">No plays yet</td></tr>';
   let html = '<div class="grid" style="margin-top:20px">' +
-    kpi(num(d.visitors), d.days === 0 ? 'Visitors today' : 'Visitors (' + d.days + ' days)', 'different people', 'hero') +
+    kpi(num(d.visitors), d.custom ? (one ? 'Visitors ' + span : 'Visitors, ' + span) : d.days === 0 ? 'Visitors today' : 'Visitors (' + d.days + ' days)', 'different people', 'hero') +
     ('played' in d ? kpi(num(d.played), 'Played', pct(d.played, d.visitors) + ' of visitors finished a puzzle') : '') +
-    (d.days === 0 ? '' : kpi(num(d.visitors_today), 'Visitors today')) +
+    (d.days === 0 || d.custom ? '' : kpi(num(d.visitors_today), 'Visitors today')) +
     (v2 ? kpi(num(d.new_visitors), 'New visitors', 'first visit ' + range) + kpi(num(d.returning), 'Came back', pct(d.returning, d.visitors) + ' visited on 2+ days') : '') +
     kpi(num(d.visits), 'Visits', 'page opens') + '</div>' +
     (v2 ? '<p class="note">' + (d.ignored ? 'Your own visits are left out (' + d.ignored + ' device' + (d.ignored === 1 ? '' : 's') + ' hidden).' : 'Your own visits are still counted. Tap "Hide my visits on this device" above.') + '</p>'
         : '<p class="note">Run the Supabase update (admin-v2.sql) to see new visitors, returning visitors, the funnel and Today\'s Quiz vs Practice.</p>') +
-    '<h2>Visitors per day' + (d.days === 0 ? ' <small>last 7 days</small>' : '') + '</h2><div class="card">' + chartHtml(chart || d) + '</div>';
+    '<h2>Visitors per day' + (d.days === 0 ? ' <small>last 7 days</small>' : one ? ' <small>7 days up to ' + dayLabel(d.to) + '</small>' : '') + '</h2><div class="card">' + chartHtml(chart || d) + '</div>';
   if (v2) html += '<h2>Where people drop off</h2>' + funnelHtml(d.funnel) +
     '<h2>Today\'s Quiz vs Practice</h2><div class="modes">' + modeHtml('📅', 'Today\'s Quiz', (d.modes || {}).daily) + modeHtml('🎯', 'Practice', (d.modes || {}).practice) + '</div>';
   html += '<h2>All plays</h2><div class="grid">' + kpi(num(e.puzzle_start), 'Puzzles started') + kpi(num(e.puzzle_found), 'Bugs found') + kpi(num(e.puzzle_fail), 'Missed') +
@@ -256,7 +287,10 @@ $('go').addEventListener('click', async () => {
   $('msg').textContent = error ? 'Could not send the link. Wait a minute and try again.' : 'Check your inbox and open the link on this device.';
 });
 $('out').addEventListener('click', async () => { await sb.auth.signOut(); show('login'); $('who').textContent = 'Private page for the site owner'; });
-$('range').addEventListener('change', load);
+// Calendar: starts on the last 7 days; dates after today can't be picked.
+$('d2').value = $('d2').max = $('d1').max = istDay(0); $('d1').value = istDay(-6);
+$('range').addEventListener('change', () => { $('cal').hidden = $('range').value !== 'custom'; load(); });
+$('cal').addEventListener('submit', ev => { ev.preventDefault(); load(); });
 try { sb = window.supabase.createClient(URL_, KEY); sb.auth.onAuthStateChange(() => setTimeout(load, 0)); load(); }
 catch (err) { show('login'); $('err').textContent = 'Could not load. Check your connection and refresh.'; }
 </script>
