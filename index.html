@@ -3244,10 +3244,18 @@ function visitorId() {
 }
 // Only the real site counts. Local copies and screenshot runs (localhost, file://, previews) send nothing.
 const TRACK_HOSTS = ['quizzifytech.com', 'www.quizzifytech.com', 'mohitrazdan19.github.io'];
+// Bots, crawlers and link-preview fetchers that run the page are not people, so they send nothing.
+const BOT_RE = /bot|crawl|spider|slurp|preview|facebookexternalhit|headless|lighthouse|pagespeed|inspectiontool|google-read-aloud|mediapartners|embedly|quora link|vkshare|w3c_validator|phantomjs|puppeteer|playwright|selenium/i;
+function isBot() {
+  try { return !!navigator.webdriver || BOT_RE.test(navigator.userAgent || ''); } catch (e) { return false; }
+}
 function track(event, props) {
   if (!CONFIG.SUPABASE_URL || !CONFIG.SUPABASE_KEY) return;
   if (TRACK_HOSTS.indexOf(location.hostname) < 0) return;
+  if (isBot()) return;
   try {
+    // Visits also note the browser type (no personal data), so odd traffic can be checked later.
+    if (event === 'visit') { props = Object.assign({}, props, { ua: String(navigator.userAgent || '').slice(0, 160) }); }
     let ref = '';
     try { ref = document.referrer ? new URL(document.referrer).hostname : ''; } catch (e) { /* ignore */ }
     fetch(CONFIG.SUPABASE_URL + '/rest/v1/analytics_events', {

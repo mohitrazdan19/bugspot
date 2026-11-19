@@ -72,7 +72,7 @@ h2::before { content: ""; width: 10px; height: 10px; border-radius: 3px; flex: n
 h2 small { font: 600 13px var(--body); color: var(--mute); }
 .card { background: var(--glass); border: 1px solid var(--glass-line); border-radius: 24px; padding: 18px; box-shadow: var(--shadow);
   -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
-.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 14px; }
 .kpi { display: flex; flex-direction: column; gap: 6px; padding: 18px; animation: rise .45s var(--ease) both; transition: transform .2s var(--ease), box-shadow .2s; }
 .kpi:hover { transform: translateY(-3px); box-shadow: var(--shadow-up); }
 .kpi b { order: 2; font: 800 38px/1 var(--display); letter-spacing: -1px; font-variant-numeric: tabular-nums; }
@@ -207,8 +207,8 @@ const kpi = (n, l, sub, cls) => '<div class="card kpi' + (cls ? ' ' + cls : '') 
 function funnelHtml(f) {
   const top = f.visited || 0;
   const step = (l, n) => '<div class="st"><div class="lb">' + l + '</div><div class="tr"><i style="width:' + (top ? Math.round(n * 100 / top) : 0) + '%"></i></div><div class="v">' + num(n) + '<small>' + (top ? pct(n, top) : '–') + '</small></div></div>';
-  return '<div class="card fun">' + step('Visited', top) + step('Started a puzzle', f.started) + step('Found a bug', f.found) + step('Shared', f.shared) + '</div>' +
-    '<p class="note">Each line counts people, not clicks. The % is out of everyone who visited.</p>';
+  return '<div class="card fun">' + step('Visited', top) + ('played' in f ? step('Played a puzzle', f.played) : step('Started a puzzle', f.started)) + step('Found a bug', f.found) + step('Shared', f.shared) + '</div>' +
+    '<p class="note">Each line counts people, not clicks. The % is out of everyone who visited. ' + ('played' in f ? '"Played" means they finished at least one puzzle (puzzle 1 opens by itself, so opening it does not count).' : '') + '</p>';
 }
 function modeHtml(icon, title, m) {
   m = m || {}; const tried = (m.found || 0) + (m.failed || 0);
@@ -222,6 +222,7 @@ function draw(d, chart) {
   const pz = d.puzzles.map(x => '<tr><td>' + esc(x.id) + '</td><td class="n">' + x.started + '</td><td class="n">' + x.found + '</td><td class="n">' + x.failed + '</td><td class="n">' + pct(x.found, x.found + x.failed) + '</td></tr>').join('') || '<tr><td class="mute" colspan="5">No plays yet</td></tr>';
   let html = '<div class="grid" style="margin-top:20px">' +
     kpi(num(d.visitors), d.days === 0 ? 'Visitors today' : 'Visitors (' + d.days + ' days)', 'different people', 'hero') +
+    ('played' in d ? kpi(num(d.played), 'Played', pct(d.played, d.visitors) + ' of visitors finished a puzzle') : '') +
     (d.days === 0 ? '' : kpi(num(d.visitors_today), 'Visitors today')) +
     (v2 ? kpi(num(d.new_visitors), 'New visitors', 'first visit ' + range) + kpi(num(d.returning), 'Came back', pct(d.returning, d.visitors) + ' visited on 2+ days') : '') +
     kpi(num(d.visits), 'Visits', 'page opens') + '</div>' +
