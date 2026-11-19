@@ -1,0 +1,38 @@
+/* Shared look for the text pages (About, Privacy, Terms, Contact). Matches the game's light "Bug Lab" style. */
+:root {
+  color-scheme: light;
+  --bg: #fbf8ff; --surface: #ffffff; --ink: #2d2350; --dim: #5f567f; --line: #e4dcf7;
+  --accent: #7c5cff; --accent2: #e23d5a;
+  --display: 'Bricolage Grotesque', system-ui, sans-serif;
+  --body: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 400 16px/1.7 var(--body); overflow-x: clip; }
+.bg { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+.bg i { position: absolute; border-radius: 50%; filter: blur(60px); opacity: .7; }
+.bg i:nth-child(1) { width: 46vmax; height: 46vmax; left: -14vmax; top: -16vmax; background: #b9f3dc; }
+.bg i:nth-child(2) { width: 40vmax; height: 40vmax; right: -14vmax; top: 10vh; background: #dccfff; }
+.wrap { max-width: 760px; margin: 0 auto; padding: 0 16px 40px; }
+.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 0; }
+.brand { display: inline-flex; align-items: center; gap: 8px; font: 800 22px/1 var(--display); color: var(--ink); text-decoration: none; }
+.brand svg { width: 32px; height: 32px; padding: 5px; border-radius: 10px; background: #e11d48; color: #fff; }
+.play { font: 700 14px/1 var(--body); color: #fff; text-decoration: none; padding: 11px 16px; border-radius: 999px; background: linear-gradient(120deg, #7c5cff, #e2459a); white-space: nowrap; }
+article { background: rgba(255,255,255,.86); border: 1px solid var(--line); border-radius: 22px; padding: 28px 24px; box-shadow: 0 2px 6px rgba(91,63,224,.06), 0 10px 26px rgba(91,63,224,.09); }
+h1 { font: 800 34px/1.1 var(--display); letter-spacing: -.5px; margin: 0 0 6px; }
+h2 { font: 700 22px/1.25 var(--display); margin: 30px 0 8px; }
+h3 { font: 700 17px/1.3 var(--body); margin: 20px 0 6px; }
+p, ul, ol { margin: 0 0 12px; }
+ul, ol { padding-left: 22px; }
+li { margin-bottom: 6px; }
+a { color: #5b3fe0; }
+.meta { color: var(--dim); font-size: 14px; margin-bottom: 20px; }
+.note { background: #f6f2ff; border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; }
+.mail { display: inline-block; font: 700 18px/1.2 var(--body); padding: 14px 18px; border-radius: 14px; background: #f6f2ff; border: 1px solid var(--line); text-decoration: none; word-break: break-all; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; margin: 8px 0 16px; }
+th, td { text-align: left; vertical-align: top; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+th { font-weight: 700; }
+.tbl { overflow-x: auto; }
+footer.site { margin-top: 28px; text-align: center; font-size: 14px; color: var(--dim); }
+footer.site nav { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 18px; margin-bottom: 8px; }
+footer.site a { color: var(--dim); }
+@media (max-width: 520px) { article { padding: 22px 16px; } h1 { font-size: 28px; } .brand { font-size: 19px; } }

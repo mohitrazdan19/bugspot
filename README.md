@@ -41,3 +41,12 @@ The game sends anonymous events (visit, puzzle start/found/missed, sign-in, shar
 - `og.png` is the preview image shown when the link is shared on LinkedIn, WhatsApp, X and others. If the site moves to a new domain, update the URLs in the `og:` and `twitter:` tags, `canonical`, and `sitemap.xml`.
 - `sitemap.xml` lists the game page. Submit it in Google Search Console (add the site as a URL-prefix property). A `robots.txt` only works at the root of a domain, so add one after moving to a custom domain.
 - New visitors (nothing saved in the browser) start straight on puzzle 1. Their `visit` event carries `{ "first": 1 }`.
+
+## Google AdSense
+
+- Pages AdSense looks for: `about.html`, `privacy.html`, `terms.html`, `contact.html` (shared look in `pages.css`). Every page has footer links to them.
+- `notice.js` shows a one-time privacy notice at the bottom of each page. The legal consent for EEA, UK and Swiss visitors comes from Google's own consent message (AdSense, Privacy & messaging), which loads with the AdSense script.
+- Ads are **off**. Each page's `<head>` has a commented-out block marked `ADSENSE`. To switch on: put the publisher ID (`ca-pub-...`) in both lines and remove the comment's first and last line, in `index.html`, `about.html`, `privacy.html`, `terms.html` and `contact.html`.
+- `ads.txt` is a placeholder. After approval, replace its last line with the line AdSense shows under Sites (remove the `# `).
+- Contact email on the pages is `hello@quizzifytech.com`. That mailbox must exist (Titan email on the domain).
+- `robots.txt` points to `sitemap.xml` and keeps `admin.html` out of search.

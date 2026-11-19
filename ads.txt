@@ -1,0 +1,5 @@
+# ads.txt for quizzifytech.com
+# Placeholder until Google AdSense approves the site.
+# When AdSense gives you a publisher ID, replace the line below with your own ID
+# and remove the "# " at its start. Google shows the exact line under Sites in AdSense.
+# google.com, pub-0000000000000000, DIRECT, f08c47fec0942fa0
