@@ -12,7 +12,7 @@ Everything is free for now: `OPEN_ACCESS: true` in `CONFIG` gives everyone all 8
 
 ## Sign-in setup (done for project `bugspot`)
 1. Create a Supabase project and run `supabase/schema.sql`. Done.
-2. In Supabase, Authentication, URL Configuration: set Site URL and add a Redirect URL of `https://mohitrazdan19.github.io/bugspot/`.
+2. In Supabase, Authentication, URL Configuration: set Site URL to `https://quizzifytech.com/` and add Redirect URLs `https://quizzifytech.com/**` and `https://www.quizzifytech.com/**` (keep the old `https://mohitrazdan19.github.io/bugspot/` too).
 3. Put the project URL and the publishable key in `CONFIG` near the top of the game script in `index.html`. Done.
 4. Optional: enable the Google provider and set `GOOGLE: true`.
 
