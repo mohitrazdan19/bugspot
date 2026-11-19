@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset=utf8><title>Bugspot: Daily Spot the Bug Game for QA Testers</title><meta name="description" content="A free daily bug puzzle for QA testers. Spot the bug on a fake app screen in three tries, then read the bug report."><meta property="og:title" content="Bugspot: Daily Spot the Bug Game for QA Testers"><meta property="og:description" content="One screen. One bug. Three tries. Can you spot it?"><meta property="og:type" content="website"><meta property="og:url" content="https://quizzifytech.com/"><meta property="og:site_name" content="Bugspot"><meta property="og:image" content="https://quizzifytech.com/og.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:alt" content="Bugspot: Can you spot the bug? A free daily puzzle for QA testers."><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Bugspot: Daily Spot the Bug Game for QA Testers"><meta name="twitter:description" content="One screen. One bug. Three tries. Can you spot it?"><meta name="twitter:image" content="https://quizzifytech.com/og.png"><link rel="canonical" href="https://quizzifytech.com/"><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27%3E%3Crect width=%2724%27 height=%2724%27 rx=%276%27 fill=%27%23d6283a%27/%3E%3Cpath fill=%27%23fff%27 d=%27M12 8.2c-2.6 0-4.4 1.9-4.4 4.6S9.4 19 12 19s4.4-3.6 4.4-6.2S14.6 8.2 12 8.2Z%27/%3E%3C/svg%3E"><script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Bugspot","url":"https://quizzifytech.com/","applicationCategory":"GameApplication","operatingSystem":"Any","description":"A free daily spot-the-bug puzzle game for QA testers and software testers. Find the defect on a fake app screen in three tries, then read the bug report.","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html><html><head><meta charset=utf8><title>QuizzifyTech: Daily tech quizzes for testers and developers</title><meta name="description" content="QuizzifyTech: a free daily tech quiz for QA testers and developers. Spot the bug on a fake app screen in three tries, then read the bug report."><meta property="og:title" content="QuizzifyTech: Daily tech quizzes for testers and developers"><meta property="og:description" content="One screen. One bug. Three tries. Can you spot it?"><meta property="og:type" content="website"><meta property="og:url" content="https://quizzifytech.com/"><meta property="og:site_name" content="QuizzifyTech"><meta property="og:image" content="https://quizzifytech.com/og.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:alt" content="QuizzifyTech: Can you spot the bug? A free daily quiz for QA testers."><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="QuizzifyTech: Daily tech quizzes for testers and developers"><meta name="twitter:description" content="One screen. One bug. Three tries. Can you spot it?"><meta name="twitter:image" content="https://quizzifytech.com/og.png"><link rel="canonical" href="https://quizzifytech.com/"><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27%3E%3Crect width=%2724%27 height=%2724%27 rx=%276%27 fill=%27%23d6283a%27/%3E%3Cpath fill=%27%23fff%27 d=%27M12 8.2c-2.6 0-4.4 1.9-4.4 4.6S9.4 19 12 19s4.4-3.6 4.4-6.2S14.6 8.2 12 8.2Z%27/%3E%3C/svg%3E"><script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"QuizzifyTech","url":"https://quizzifytech.com/","applicationCategory":"GameApplication","operatingSystem":"Any","description":"A free daily spot-the-bug puzzle game for QA testers and software testers. Find the defect on a fake app screen in three tries, then read the bug report.","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
@@ -800,14 +800,17 @@ body { background: var(--bg); color: var(--ink); font-family: var(--body); }
   .grid > .tile:has(.stt.go) { animation: none !important; }
   .conf { display: none; }
 }
+/* Longer QuizzifyTech name + "Today’s Quiz" tab: keep both tabs in view on phones */
+@media (max-width: 520px) { .top { gap: 8px; } .brand { font-size: 21px; gap: 7px; min-width: 0; } .brand svg { width: 32px; height: 32px; padding: 5px; } .tabs button { padding: 0 11px; font-size: 13px; min-height: 36px; white-space: nowrap; } }
+@media (max-width: 370px) { .brand { font-size: 18px; } .brand svg { width: 28px; height: 28px; } .tabs button { padding: 0 9px; font-size: 12px; } }
 </style>
 
 <div class="lab-bg" aria-hidden="true"><i></i><i></i><i></i></div>
 <div id="app">
   <header class="top">
-    <div class="brand"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 8.2c-2.6 0-4.4 1.9-4.4 4.6S9.4 19 12 19s4.4-3.6 4.4-6.2S14.6 8.2 12 8.2Z"/><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M12 8.2V19M9.3 6.4a2.7 2.7 0 0 1 5.4 0M7.6 12.3 4 10.6M16.4 12.3 20 10.6M8 16.4l-3.4 1.6M16 16.4l3.4 1.6"/></svg>Bugspot</div>
+    <div class="brand"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 8.2c-2.6 0-4.4 1.9-4.4 4.6S9.4 19 12 19s4.4-3.6 4.4-6.2S14.6 8.2 12 8.2Z"/><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M12 8.2V19M9.3 6.4a2.7 2.7 0 0 1 5.4 0M7.6 12.3 4 10.6M16.4 12.3 20 10.6M8 16.4l-3.4 1.6M16 16.4l3.4 1.6"/></svg>QuizzifyTech</div>
     <nav class="tabs" aria-label="Mode">
-      <button id="tabDaily" type="button" aria-selected="true">Daily</button>
+      <button id="tabDaily" type="button" aria-selected="true">Today’s Quiz</button>
       <button id="tabPractice" type="button" aria-selected="false">Practice</button>
     </nav>
   </header>
@@ -815,13 +818,13 @@ body { background: var(--bg); color: var(--ink); font-family: var(--body); }
   <main id="view"></main>
 
   <section id="about" class="about" aria-labelledby="abT">
-    <h2 id="abT">What is Bugspot?</h2>
-    <p>Bugspot is a free daily spot-the-bug game for QA testers, software testers and developers. Each puzzle shows a screen from a made-up app with one defect hiding in plain sight: a wrong total, a broken label, a date that cannot be right. Tap the bug before your three tries run out, then read a short bug report that explains what was wrong and why it matters.</p>
+    <h2 id="abT">What is QuizzifyTech?</h2>
+    <p>QuizzifyTech is a free daily spot-the-bug quiz for QA testers, software testers and developers. Each puzzle shows a screen from a made-up app with one defect hiding in plain sight: a wrong total, a broken label, a date that cannot be right. Tap the bug before your three tries run out, then read a short bug report that explains what was wrong and why it matters.</p>
     <h3>How to play</h3>
     <ul>
       <li>Every day there are 8 new bugs, from easy to hard, across frontend, backend, API, database and AI testing. Everyone gets the same set.</li>
       <li>Tap the part of the screen you think is wrong. You have three tries, and a hint if you need it.</li>
-      <li>Score points: 100 if you find the bug on the first try, 60 on the second, 30 on the third. A hint costs 20 points. The best daily score is 800.</li>
+      <li>Score points: 100 if you find the bug on the first try, 60 on the second, 30 on the third. A hint costs 20 points. The best score for Today’s Quiz is 800.</li>
       <li>Share your result and keep your streak going. A new set arrives at midnight.</li>
       <li>Want more? Practice mode has every bug, sorted into Beginner, Intermediate and Experienced levels. Pick a track to practise only API, database or AI bugs.</li>
     </ul>
@@ -3061,7 +3064,7 @@ const CONFIG = {
   OPEN_ACCESS: true,
   SITE: 'https://quizzifytech.com/',
 };
-const BRAND = 'Bugspot'; // game name shown in the share text and share image
+const BRAND = 'QuizzifyTech'; // game name shown in the share text and share image
 const SLOTS = 8;      // bugs in the daily set
 const FREE = 3;       // bugs a guest can play each day
 const UNLOCK_AT = 0.75; // share of a level to solve before the next level opens
@@ -3391,7 +3394,7 @@ function offerJoin() {
   if (!code || !sb || !user) return;
   openSheet({
     sev: null, id: 'Team invite', status: '', title: 'Join your team?',
-    body: '<p>Your manager invited you to a Bugspot team.</p><p class="note">If you join, your manager can see your email, bugs solved, stars, streak and last played day. They cannot see anything else. You can leave the team any time from Account.</p><p id="tmMsg" class="note" role="status"></p>',
+    body: '<p>Your manager invited you to a QuizzifyTech team.</p><p class="note">If you join, your manager can see your email, bugs solved, stars, streak and last played day. They cannot see anything else. You can leave the team any time from Account.</p><p id="tmMsg" class="note" role="status"></p>',
     buttons: [
       { label: 'Join team', primary: true, fn: async btn => {
         btn.disabled = true;
@@ -3492,7 +3495,7 @@ async function showDashboard(id, name) {
       [i + 1, r.email, r.role, r.per.Easy, totals.Easy, r.per.Medium, totals.Medium, r.per.Hard, totals.Hard, r.stars, r.streak, r.last].map(csvCell).join(',')));
     const a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([lines.join('\r\n')], { type: 'text/csv' }));
-    a.download = 'bugspot-team-' + dayKey(today) + '.csv';
+    a.download = 'quizzifytech-team-' + dayKey(today) + '.csv';
     document.body.appendChild(a); a.click(); a.remove();
   });
 }
@@ -3570,7 +3573,7 @@ function renderDaily() {
       (r ? '<span class="n">#' + p2(i + 1) + '</span><span class="a">' + p.area : '<span class="a">Puzzle ' + p2(i + 1)) + '</span><span class="d">' + tl(trk(p)) + ' · ' + dl(p.diff) + '</span><span class="stt ' + stc + '">' + (r || locked ? status : 'Play ›') + '</span></button>';
   }).join('');
   $('view').innerHTML =
-    '<section class="card hero"><p class="eyebrow">Daily bugs · ' + dayLabel(today) + '</p>' +
+    '<section class="card hero"><p class="eyebrow">Today’s Quiz · ' + dayLabel(today) + '</p>' +
     '<div class="slots" role="img" aria-label="' + t.found + ' of ' + n + ' found">' + sq + '</div>' + head + lede +
     '<div class="stack" style="margin-top:16px">' + primary + second + '</div>' +
     '<p class="meta" style="margin-top:14px">Next set in <b id="cd">' + nextBugIn() + '</b> · Streak <b>' + liveStreak() + '</b> ' + (liveStreak() === 1 ? 'day' : 'days') + '</p></section>' +
@@ -3592,7 +3595,7 @@ function renderDaily() {
 function shareText() {
   const today = new Date(), day = getDay(dayKey(today)), set = dailySet(today), n = avail(), t = tally(day);
   const sq = set.map((x, i) => { const r = day.r[i]; return r ? (r.f ? '🟩' : '🟥') : (i >= n ? '🔒' : '⬜'); }).join('');
-  return BRAND + ' Daily · ' + dayLabel(today) + '\n' + sq + '\n🏆 ' + t.pts + '/' + n * MAX_PTS + ' points · ' + t.found + ' of ' + n + ' bugs found' +
+  return BRAND + ' · Today’s Quiz · ' + dayLabel(today) + '\n' + sq + '\n🏆 ' + t.pts + '/' + n * MAX_PTS + ' points · ' + t.found + ' of ' + n + ' bugs found' +
     '\nCan you spot them? ' + CONFIG.SITE;
 }
 
@@ -3615,7 +3618,7 @@ function drawShareCard() {
   g.fillStyle = '#eceff6'; g.fillRect(0, 0, 1200, 630);
   g.fillStyle = '#ffffff'; g.beginPath(); g.roundRect(60, 60, 1080, 510, 36); g.fill();
   g.fillStyle = '#101729'; g.font = '800 54px ' + sans; g.textBaseline = 'alphabetic';
-  g.fillText(BRAND + ' Daily', 110, 150);
+  g.fillText(BRAND + ' · Today’s Quiz', 110, 150);
   // little bug icon, top right of the card
   g.save(); g.translate(1020, 150); g.strokeStyle = '#d6283a'; g.lineWidth = 7; g.lineCap = 'round';
   [-1, 1].forEach(d => [-22, 0, 22].forEach(y => { g.beginPath(); g.moveTo(d * 26, y); g.lineTo(d * 52, y + (y ? y / 2 : 0) - 4); g.stroke(); }));
@@ -3674,7 +3677,7 @@ function shareTargets(text) {
     ['Share on X', 'https://twitter.com/intent/tweet?text=' + t],
     ['Share on WhatsApp', 'https://wa.me/?text=' + t],
     ['Share on Telegram', 'https://t.me/share/url?url=' + u + '&text=' + encodeURIComponent(text.replace(CONFIG.SITE, '').trim())],
-    ['Share on Reddit', 'https://www.reddit.com/submit?url=' + u + '&title=' + encodeURIComponent(BRAND + ' Daily result')],
+    ['Share on Reddit', 'https://www.reddit.com/submit?url=' + u + '&title=' + encodeURIComponent(BRAND + ' · Today’s Quiz result')],
   ];
 }
 
@@ -3684,7 +3687,7 @@ function scoreCard() {
   const sq = set.map((x, i) => { const r = day.r[i]; return '<i class="sl ' + (r ? (r.f ? 'g' : 'r') : 'l') + '">' + (i >= n && !r ? '🔒' : '') + '</i>'; }).join('');
   const max = n * MAX_PTS, verdict = t.pts >= max ? 'Flawless hunt!' : t.pts >= max * 0.75 ? 'Sharp eyes' : t.pts >= max * 0.4 ? 'Not bad' : 'Bugs everywhere';
   const streak = liveStreak();
-  return '<section class="card hero scard">' + (t.found ? '<div class="conf" aria-hidden="true">' + '<i></i>'.repeat(12) + '</div>' : '') + '<p class="eyebrow">' + esc(BRAND) + ' Daily · ' + dayLabel(today) + '</p>' +
+  return '<section class="card hero scard">' + (t.found ? '<div class="conf" aria-hidden="true">' + '<i></i>'.repeat(12) + '</div>' : '') + '<p class="eyebrow">Today’s Quiz · ' + dayLabel(today) + '</p>' +
     '<div class="big">' + t.pts + '<small>/' + max + ' pts</small></div><div class="verdict">' + verdict + ' · ' + t.found + ' of ' + n + ' found</div>' +
     '<div class="sqs" aria-hidden="true">' + sq + '</div>' +
     (streak ? '<div class="hchips"><span class="hchip">🔥 <b>' + streak + '</b> day streak</span></div>' : '') + '</section>';
@@ -3693,7 +3696,7 @@ function showShare() {
   track('share');
   const text = shareText();
   openSheet({
-    sev: null, id: 'Daily result', status: '', title: 'Share your result',
+    sev: null, id: 'Today’s Quiz result', status: '', title: 'Share your result',
     body: scoreCard(), cls: 'share',
     buttons: [
       { label: 'Copy result', primary: true, fn: btn => copyText(text, btn) },
