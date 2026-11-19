@@ -28,3 +28,9 @@ The game sends anonymous events (visit, puzzle start/found/missed, share) with a
 - `ads.txt` is a placeholder. After approval, replace its last line with the line AdSense shows under Sites (remove the `# `).
 - Contact email on the pages is `hello@quizzifytech.com`. That mailbox must exist (Titan email on the domain).
 - `robots.txt` points to `sitemap.xml` and keeps `admin.html` out of search.
+
+## Bug library (readable pages for search and AdSense)
+
+- `bugs/index.html` lists every puzzle by track and level; `bugs/<puzzle id>.html` is one page per bug (clue, steps, expected vs actual, why it matters, testing tip, related bugs). Linked from the footer, the About box and the About page.
+- These pages are **generated**. After adding or editing puzzles, run `node tools/build-bugs.mjs` from the repo root (no packages needed). It rebuilds `bugs/` and `sitemap.xml`.
+- Each bug page has a "Spot this bug" button linking to `/?p=<puzzle id>`, which opens that puzzle in Practice.

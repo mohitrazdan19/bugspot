@@ -840,10 +840,12 @@ body { background: var(--bg); color: var(--ink); font-family: var(--body); }
     </ul>
     <h3>Who is it for?</h3>
     <p>Manual and automation testers who want to sharpen their eye for detail, people preparing for QA interviews, and teams who want a quick daily warm-up. It is free and needs no sign-up. <a href="/about.html">More about QuizzifyTech</a></p>
+    <h3>Bug library</h3>
+    <p>Want to study? Every bug has a full write-up: steps to reproduce, expected and actual results, severity and a testing tip. <a href="/bugs/">Browse the Bug library</a></p>
   </section>
 
   <footer class="sitefoot">
-    <nav aria-label="Site"><a href="/about.html">About</a><a href="/privacy.html">Privacy Policy</a><a href="/terms.html">Terms</a><a href="/contact.html">Contact</a></nav>
+    <nav aria-label="Site"><a href="/bugs/">Bug library</a><a href="/about.html">About</a><a href="/privacy.html">Privacy Policy</a><a href="/terms.html">Terms</a><a href="/contact.html">Contact</a></nav>
     <p>© 2026 QuizzifyTech. Free daily tech quizzes for testers and developers.</p>
   </footer>
 
@@ -3781,7 +3783,16 @@ track('visit', firstVisit ? { first: 1 } : undefined);
 setView('daily');
 // New players go straight into puzzle 1 so the game itself is the first thing they see.
 // Back returns to the daily list.
-if (firstVisit) {
+// Links from the Bug library (?p=<puzzle id>) open that bug straight away in Practice.
+let deepIdx = -1;
+try {
+  const pid = new URLSearchParams(location.search).get('p');
+  if (pid) { deepIdx = PUZZLES.findIndex(x => x.id === pid); history.replaceState(null, '', location.pathname); }
+} catch (e) { /* ignore */ }
+if (deepIdx >= 0) {
+  setView('practice');
+  startPlay(deepIdx, 'practice', 0);
+} else if (firstVisit) {
   const set = dailySet(new Date());
   if (set.length && avail() > 0) startPlay(set[0], 'daily', 0);
   // A short welcome card explains the game before the first tap.
