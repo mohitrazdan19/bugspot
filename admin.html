@@ -55,15 +55,15 @@ button:active { transform: scale(.98); }
 #hideMsg { width: 100%; font-size: 13px; color: var(--mute); }
 
 /* sign-in */
-main:has(#login:not([hidden])) { max-width: 520px; padding-top: 9vh; }
-main:has(#login:not([hidden])) .links { display: none; }
-#login { margin-top: 22px; padding: 28px 24px; border-radius: 28px; }
-#login p { margin: 0 0 16px; font: 800 21px/1.25 var(--display); }
-#login .row { display: flex; flex-direction: column; gap: 12px; }
-#login input { min-height: 54px; padding: 0 16px; font-size: 16px; }
-#go { min-height: 54px; border: 0; border-radius: 16px; color: #fff; font: 800 17px/1 var(--display); cursor: pointer;
+main:has(#login:not([hidden])), main:has(#setpw:not([hidden])) { max-width: 520px; padding-top: 9vh; }
+#login, #setpw { margin-top: 22px; padding: 28px 24px; border-radius: 28px; }
+#login p, #setpw p { margin: 0 0 16px; font: 800 21px/1.25 var(--display); }
+#login .row, #setpw .row { display: flex; flex-direction: column; gap: 12px; }
+#login input, #setpw input { min-height: 54px; padding: 0 16px; font-size: 16px; }
+#go, #save { min-height: 54px; border: 0; border-radius: 16px; color: #fff; font: 800 17px/1 var(--display); cursor: pointer;
   background: linear-gradient(110deg, var(--a1), var(--a2)); box-shadow: 0 10px 24px -8px rgba(124, 92, 255, .6); }
-#msg { margin-top: 12px; color: var(--mute); font-size: 14px; }
+.lnk { margin-top: 14px; padding: 4px 0; border: 0; background: none; color: var(--a-ink); font-weight: 700; font-size: 14px; text-decoration: underline; cursor: pointer; }
+#msg, #pmsg { margin-top: 12px; color: var(--mute); font-size: 14px; }
 #err { margin-top: 16px; text-align: center; color: var(--mute); }
 
 /* sections, cards, numbers */
@@ -154,9 +154,18 @@ td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; }
   <div id="hideMsg" hidden></div>
 </nav>
 <section id="login" class="card" hidden>
-<p>Sign in with the owner email to see the numbers.</p>
-<div class="row"><input id="em" type="email" placeholder="you@example.com" autocomplete="email" aria-label="Email"><button id="go" type="button">Send sign-in link</button></div>
-<div id="msg"></div></section>
+<p>Sign in with the owner email and password to see the numbers.</p>
+<form id="lf" class="row" novalidate><input id="em" type="email" placeholder="you@example.com" autocomplete="username" aria-label="Email" required>
+<input id="pw" type="password" placeholder="Password" autocomplete="current-password" aria-label="Password" required>
+<button id="go" type="submit">Sign in</button></form>
+<button id="forgot" class="lnk" type="button">Forgot your password, or never set one?</button>
+<div id="msg" role="status"></div></section>
+<section id="setpw" class="card" hidden>
+<p>Choose a new password</p>
+<form id="pf" class="row" novalidate><input id="pw1" type="password" placeholder="New password, 8+ characters" autocomplete="new-password" aria-label="New password" required>
+<input id="pw2" type="password" placeholder="Type it again" autocomplete="new-password" aria-label="Type the new password again" required>
+<button id="save" type="submit">Save password</button></form>
+<div id="pmsg" role="status"></div></section>
 <section id="dash" hidden></section><div id="err"></div>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
@@ -164,11 +173,14 @@ td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; }
 const URL_ = "https://otfuymjeqoghridciiqm.supabase.co", KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im90ZnV5bWplcW9naHJpZGNpaXFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI3NDYxNTIsImV4cCI6MjEwODMyMjE1Mn0.uK3WhRMTTQ8rGB1PXM3Umd6ruNjs0RLbuWkMu5PoS5Q", HERE = location.origin + location.pathname;
 const $ = id => document.getElementById(id), esc = t => String(t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 let sb;
-function show(which) { $('login').hidden = which !== 'login'; $('dash').hidden = $('links').hidden = which !== 'dash'; $('range').hidden = $('out').hidden = which !== 'dash'; }
+let recovering = /type=recovery/.test(location.hash);
+function show(which) { $('login').hidden = which !== 'login'; $('setpw').hidden = which !== 'setpw'; $('dash').hidden = $('links').hidden = which !== 'dash'; $('range').hidden = $('out').hidden = which !== 'dash'; }
 async function load() {
   $('err').textContent = '';
   const { data: sess } = await sb.auth.getSession();
   if (!sess.session) { show('login'); return; }
+  // Opened from a "set your password" email: ask for the new password first.
+  if (recovering) { show('setpw'); $('who').textContent = 'Setting a password for ' + sess.session.user.email; return; }
   const ok = await sb.rpc('is_admin');
   if (ok.error || ok.data !== true) {
     show('login'); $('msg').textContent = 'This account is not an admin: ' + (sess.session.user.email || '') + '.';
@@ -248,15 +260,39 @@ $('hide').addEventListener('click', async () => {
   m.textContent = 'Done. Visits from this device are now left out. Do this once on each phone or laptop you use.';
   load();
 });
-$('go').addEventListener('click', async () => {
-  const email = $('em').value.trim(); if (!email) return;
+$('lf').addEventListener('submit', async ev => {
+  ev.preventDefault();
+  const email = $('em').value.trim(), password = $('pw').value;
+  if (!email || !password) { $('msg').textContent = 'Enter your email and password.'; return; }
+  $('msg').textContent = 'Signing in…'; $('go').disabled = true;
+  const { error } = await sb.auth.signInWithPassword({ email, password });
+  $('go').disabled = false; $('pw').value = '';
+  $('msg').textContent = !error ? '' : /confirm/i.test(error.message) ? 'This email is not confirmed yet.'
+    : /rate|too many/i.test(error.message) ? 'Too many tries. Wait a few minutes and try again.' : 'Wrong email or password.';
+});
+// Sends a one-time link to set or reset the password. The link opens this page, which then asks for the new password.
+$('forgot').addEventListener('click', async () => {
+  const email = $('em').value.trim();
+  if (!email) { $('msg').textContent = 'Type your email above first, then tap this again.'; $('em').focus(); return; }
   $('msg').textContent = 'Sending…';
-  const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: HERE } });
-  $('msg').textContent = error ? 'Could not send the link. Wait a minute and try again.' : 'Check your inbox and open the link on this device.';
+  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: HERE });
+  $('msg').textContent = error ? 'Could not send the email. Wait a minute and try again.' : 'Check your inbox for a link to set your password, and open it on this device.';
+});
+$('pf').addEventListener('submit', async ev => {
+  ev.preventDefault();
+  const a = $('pw1').value, b = $('pw2').value;
+  if (a.length < 8) { $('pmsg').textContent = 'Use at least 8 characters.'; return; }
+  if (a !== b) { $('pmsg').textContent = 'The two passwords are different. Type them again.'; return; }
+  $('pmsg').textContent = 'Saving…'; $('save').disabled = true;
+  const { error } = await sb.auth.updateUser({ password: a });
+  $('save').disabled = false;
+  if (error) { $('pmsg').textContent = /different|same/i.test(error.message) ? 'Pick a password you have not used before.' : 'Could not save it: ' + error.message; return; }
+  $('pw1').value = $('pw2').value = ''; recovering = false; history.replaceState(null, '', HERE);
+  $('pmsg').textContent = ''; load();
 });
 $('out').addEventListener('click', async () => { await sb.auth.signOut(); show('login'); $('who').textContent = 'Private page for the site owner'; });
 $('range').addEventListener('change', load);
-try { sb = window.supabase.createClient(URL_, KEY); sb.auth.onAuthStateChange(() => setTimeout(load, 0)); load(); }
+try { sb = window.supabase.createClient(URL_, KEY); sb.auth.onAuthStateChange(ev => { if (ev === 'PASSWORD_RECOVERY') recovering = true; setTimeout(load, 0); }); load(); }
 catch (err) { show('login'); $('err').textContent = 'Could not load. Check your connection and refresh.'; }
 </script>
 </body></html>
