@@ -1,38 +1,170 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><title>QuizzifyTech Admin</title>
 <meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#eceff6;--card:#fff;--ink:#101729;--mute:#566078;--line:#d7dce8;--acc:#d6283a;color-scheme:light}
-@media(prefers-color-scheme:dark){:root{--bg:#0e1322;--card:#171e33;--ink:#eef1fa;--mute:#9aa5c2;--line:#2a3452;color-scheme:dark}}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.4 -apple-system,"Segoe UI",Roboto,sans-serif}
-main{max-width:920px;margin:0 auto;padding:20px 16px 48px}
-h1{font-size:24px;margin:0 0 4px}h2{font-size:17px;margin:28px 0 10px}.mute{color:var(--mute)}
-.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
-.kpi b{display:block;font-size:28px;line-height:1.1}.kpi span{color:var(--mute);font-size:13px}
-button,select,input{font:inherit;border-radius:12px;border:1px solid var(--line);padding:10px 14px;background:var(--card);color:var(--ink)}
-button.p{background:var(--ink);color:var(--bg);border-color:var(--ink);cursor:pointer}
-.bars{display:flex;align-items:flex-end;gap:3px;height:140px;margin-top:8px}
-.bars i{flex:1;max-width:28px;background:var(--acc);border-radius:3px 3px 0 0;min-height:2px}
-table{width:100%;border-collapse:collapse}td,th{padding:8px 6px;border-bottom:1px solid var(--line);text-align:left}th{color:var(--mute);font-weight:600;font-size:13px}
-td.n,th.n{text-align:right}.row{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
-#msg{margin-top:10px;color:var(--mute)}[hidden]{display:none!important}
-</style></head><body><main>
-<div class="row"><div><h1>QuizzifyTech admin</h1><div class="mute" id="who">Private page for the site owner</div></div>
-<div><select id="range" hidden><option value="0">Today</option><option value="7">Last 7 days</option><option value="30" selected>Last 30 days</option><option value="90">Last 90 days</option></select>
-<button id="out" hidden type="button">Sign out</button></div></div>
-<section id="login" class="card" style="margin-top:16px" hidden>
+/* QuizzifyTech admin: same light "Bug Lab" look as the site (pastel glows, white glass cards,
+   violet-to-pink accent, deep-violet text). Light only, like the site. */
+:root {
+  color-scheme: light;
+  --bg: #fbf8ff; --surface: #fff; --raise: #f6f2ff; --ink: #2d2350; --mute: #5f567f; --line: #e4dcf7;
+  --a1: #7c5cff; --a2: #e0489a; --a-ink: #5b3fe0; --a-soft: #efe9ff; --ok: #0f7a55; --ok-soft: #d4f7e6; --bug: #e23d5a;
+  --glass: rgba(255, 255, 255, .78); --glass-line: rgba(255, 255, 255, .95);
+  --shadow: 0 2px 6px rgba(91, 63, 224, .06), 0 10px 26px rgba(91, 63, 224, .09);
+  --shadow-up: 0 4px 10px rgba(91, 63, 224, .08), 0 18px 38px rgba(91, 63, 224, .16);
+  --display: 'Bricolage Grotesque', system-ui, sans-serif;
+  --body: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --ease: cubic-bezier(.2, .8, .2, 1);
+}
+* { box-sizing: border-box }
+body { margin: 0; min-height: 100vh; background: var(--bg); color: var(--ink); font: 500 15px/1.5 var(--body); }
+.lab-bg { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+.lab-bg i { position: absolute; border-radius: 50%; filter: blur(60px); opacity: .8; animation: drift 16s ease-in-out infinite; }
+.lab-bg i:nth-child(1) { width: 46vmax; height: 46vmax; left: -14vmax; top: -16vmax; background: #b9f3dc; }
+.lab-bg i:nth-child(2) { width: 40vmax; height: 40vmax; right: -14vmax; top: 10vh; background: #dccfff; animation-duration: 20s; animation-delay: -6s; }
+.lab-bg i:nth-child(3) { width: 44vmax; height: 44vmax; left: 20vw; bottom: -24vmax; background: #ffd9c2; animation-duration: 24s; animation-delay: -11s; }
+@keyframes drift { 0%, 100% { transform: none; } 50% { transform: translate(3vmax, -3vmax) scale(1.08); } }
+main { max-width: 1040px; margin: 0 auto; padding: 28px 20px 64px; }
+.mute { color: var(--mute); }
+[hidden] { display: none !important; }
+
+/* header */
+.top { display: flex; gap: 14px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+.brand { display: flex; align-items: center; gap: 12px; }
+.brand svg { width: 46px; height: 46px; padding: 8px; border-radius: 14px; color: #fff; flex: none; transform: rotate(-8deg);
+  background: linear-gradient(140deg, #ff8aa0, #ff5c7a); box-shadow: 0 6px 16px rgba(255, 92, 122, .35); }
+h1 { margin: 0; font: 800 28px/1.05 var(--display); letter-spacing: -.5px; }
+#who { margin-top: 4px; font-size: 13px; }
+.ctl { display: flex; gap: 10px; }
+button, select, input { font: inherit; color: var(--ink); border-radius: 14px; border: 1px solid var(--line); background: var(--surface);
+  transition: border-color .15s, box-shadow .15s, transform .12s var(--ease); }
+select, .ctl button { min-height: 42px; padding: 0 14px; font-weight: 700; cursor: pointer; box-shadow: var(--shadow); }
+#out { border-radius: 999px; padding: 0 18px; }
+select:hover, .ctl button:hover { border-color: var(--a1); }
+button:active { transform: scale(.98); }
+:is(button, select, input, a):focus-visible { outline: 3px solid var(--a1); outline-offset: 2px; }
+
+/* quick links */
+.links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+.links a, .links button { display: inline-flex; align-items: center; gap: 6px; min-height: 38px; padding: 0 14px; border-radius: 999px;
+  background: var(--glass); border: 1px solid var(--glass-line); box-shadow: var(--shadow); color: var(--a-ink);
+  font-weight: 700; font-size: 14px; text-decoration: none; cursor: pointer; }
+.links a:hover, .links button:hover { transform: translateY(-2px); box-shadow: var(--shadow-up); }
+.links a::after { content: "↗"; font-size: 12px; opacity: .7; }
+#hideMsg { width: 100%; font-size: 13px; color: var(--mute); }
+
+/* sign-in */
+main:has(#login:not([hidden])) { max-width: 520px; padding-top: 9vh; }
+main:has(#login:not([hidden])) .links { display: none; }
+#login { margin-top: 22px; padding: 28px 24px; border-radius: 28px; }
+#login p { margin: 0 0 16px; font: 800 21px/1.25 var(--display); }
+#login .row { display: flex; flex-direction: column; gap: 12px; }
+#login input { min-height: 54px; padding: 0 16px; font-size: 16px; }
+#go { min-height: 54px; border: 0; border-radius: 16px; color: #fff; font: 800 17px/1 var(--display); cursor: pointer;
+  background: linear-gradient(110deg, var(--a1), var(--a2)); box-shadow: 0 10px 24px -8px rgba(124, 92, 255, .6); }
+#msg { margin-top: 12px; color: var(--mute); font-size: 14px; }
+#err { margin-top: 16px; text-align: center; color: var(--mute); }
+
+/* sections, cards, numbers */
+h2 { display: flex; align-items: center; gap: 10px; margin: 34px 0 12px; font: 800 20px/1.2 var(--display); letter-spacing: -.2px; }
+h2::before { content: ""; width: 10px; height: 10px; border-radius: 3px; flex: none; background: linear-gradient(135deg, var(--a1), var(--a2)); }
+h2 small { font: 600 13px var(--body); color: var(--mute); }
+.card { background: var(--glass); border: 1px solid var(--glass-line); border-radius: 24px; padding: 18px; box-shadow: var(--shadow);
+  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; }
+.kpi { display: flex; flex-direction: column; gap: 6px; padding: 18px; animation: rise .45s var(--ease) both; transition: transform .2s var(--ease), box-shadow .2s; }
+.kpi:hover { transform: translateY(-3px); box-shadow: var(--shadow-up); }
+.kpi b { order: 2; font: 800 38px/1 var(--display); letter-spacing: -1px; font-variant-numeric: tabular-nums; }
+.kpi span { order: 1; font-weight: 700; font-size: 13px; color: var(--mute); }
+.kpi small { order: 3; font-size: 12px; color: var(--mute); }
+.kpi.hero { color: #fff; border: 0; background: linear-gradient(140deg, #7c5cff, #b04ae0 60%, #e0489a); }
+.kpi.hero span, .kpi.hero small { color: rgba(255, 255, 255, .85); }
+.kpi:nth-child(2) { animation-delay: .04s } .kpi:nth-child(3) { animation-delay: .08s } .kpi:nth-child(n+4) { animation-delay: .12s }
+@keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.note { margin: 10px 2px 0; font-size: 13px; color: var(--mute); }
+
+/* funnel */
+.fun { display: grid; gap: 12px; }
+.fun .st { display: grid; grid-template-columns: 150px 1fr 90px; gap: 12px; align-items: center; }
+.fun .lb { font-weight: 700; }
+.fun .tr { height: 26px; border-radius: 999px; background: var(--a-soft); overflow: hidden; }
+.fun .tr i { display: block; height: 100%; min-width: 4px; border-radius: 999px; background: linear-gradient(90deg, var(--a1), var(--a2));
+  transform-origin: left; animation: grow .6s var(--ease) both; }
+.fun .v { text-align: right; font-weight: 800; font-variant-numeric: tabular-nums; }
+.fun .v small { display: block; font-weight: 600; font-size: 12px; color: var(--mute); }
+@keyframes grow { from { transform: scaleX(0); } to { transform: none; } }
+
+/* modes */
+.modes { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.mode h3 { margin: 0 0 12px; font: 800 18px var(--display); display: flex; align-items: center; gap: 8px; }
+.mode h3 span { font-size: 20px; }
+.mode dl { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 0; }
+.mode dl div { padding: 10px 12px; border-radius: 14px; background: var(--raise); }
+.mode dt { font-size: 12px; font-weight: 700; color: var(--mute); }
+.mode dd { margin: 0; font: 800 24px/1.1 var(--display); font-variant-numeric: tabular-nums; }
+
+/* chart */
+.bars { display: flex; align-items: flex-end; justify-content: center; gap: 4px; height: 190px; padding-top: 20px; border-bottom: 1px solid var(--line);
+  background: repeating-linear-gradient(to top, transparent 0 46px, var(--line) 46px 47px); }
+.bars .col { flex: 1; min-width: 0; max-width: 80px; height: 100%; display: flex; align-items: flex-end; }
+.bars i { position: relative; display: block; width: 100%; border-radius: 6px 6px 0 0; background: linear-gradient(180deg, var(--a2), var(--a1));
+  transform-origin: bottom; animation: growY .6s var(--ease) both; }
+.bars .col:hover i { filter: brightness(1.12); }
+.bars em { position: absolute; bottom: 100%; left: 0; right: 0; padding-bottom: 4px; text-align: center; font: 700 12px/1 var(--body); font-style: normal; color: var(--ink); }
+.axis { display: flex; justify-content: center; gap: 4px; margin-top: 8px; }
+.axis span { flex: 1; min-width: 0; max-width: 80px; text-align: center; white-space: nowrap; font-size: 11px; font-weight: 600; color: var(--mute); }
+.bars.dense, .axis.dense { gap: 1px; } .bars.dense i { border-radius: 2px 2px 0 0; }
+@keyframes growY { from { transform: scaleY(0); } to { transform: none; } }
+
+/* tables */
+.card:has(table) { padding: 6px 0 0; overflow-x: auto; }
+table { width: 100%; min-width: 420px; border-collapse: collapse; }
+th, td { padding: 12px 18px; text-align: left; border-bottom: 1px solid var(--line); }
+th { font-size: 12px; font-weight: 700; color: var(--mute); }
+tr:last-child td { border-bottom: 0; }
+tr:hover > td { background: rgba(124, 92, 255, .05); }
+td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; }
+
+@media (max-width: 640px) {
+  main { padding: 18px 16px 48px; }
+  h1 { font-size: 23px; } .brand svg { width: 40px; height: 40px; padding: 7px; }
+  .ctl { width: 100%; } .ctl select { flex: 1; }
+  .kpi b { font-size: 30px; }
+  .grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .modes { grid-template-columns: 1fr; }
+  .fun .st { grid-template-columns: 1fr 70px; gap: 6px 10px; } .fun .lb { grid-column: 1 / -1; } .fun .tr { grid-column: 1; }
+  table { min-width: 0; } th, td { padding-left: 12px; padding-right: 12px; } td:first-child { word-break: break-word; }
+}
+@media (prefers-reduced-motion: reduce) { .lab-bg i, .kpi, .bars i, .fun .tr i { animation: none; } }
+</style></head><body>
+<div class="lab-bg" aria-hidden="true"><i></i><i></i><i></i></div>
+<main>
+<div class="top">
+  <div class="brand"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 8.2c-2.6 0-4.4 1.9-4.4 4.6S9.4 19 12 19s4.4-3.6 4.4-6.2S14.6 8.2 12 8.2Z"/><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M12 8.2V19M9.3 6.4a2.7 2.7 0 0 1 5.4 0M7.6 12.3 4 10.6M16.4 12.3 20 10.6M8 16.4l-3.4 1.6M16 16.4l3.4 1.6"/></svg>
+    <div><h1>QuizzifyTech admin</h1><div class="mute" id="who">Private page for the site owner</div></div></div>
+  <div class="ctl"><select id="range" hidden aria-label="Time range"><option value="0">Today</option><option value="7">Last 7 days</option><option value="30" selected>Last 30 days</option><option value="90">Last 90 days</option></select>
+  <button id="out" hidden type="button">Sign out</button></div>
+</div>
+<nav class="links" id="links" hidden aria-label="Quick links">
+  <a href="https://quizzifytech.com/" target="_blank" rel="noopener">Open the site</a>
+  <a href="https://search.google.com/search-console" target="_blank" rel="noopener">Google Search Console</a>
+  <a href="https://supabase.com/dashboard/project/otfuymjeqoghridciiqm" target="_blank" rel="noopener">Supabase</a>
+  <button id="hide" type="button">🙈 Hide my visits on this device</button>
+  <div id="hideMsg" hidden></div>
+</nav>
+<section id="login" class="card" hidden>
 <p>Sign in with the owner email to see the numbers.</p>
-<div class="row" style="justify-content:flex-start"><input id="em" type="email" placeholder="you@example.com" autocomplete="email" style="flex:1;min-width:220px"><button id="go" class="p" type="button">Send sign-in link</button></div>
+<div class="row"><input id="em" type="email" placeholder="you@example.com" autocomplete="email" aria-label="Email"><button id="go" type="button">Send sign-in link</button></div>
 <div id="msg"></div></section>
-<section id="dash" hidden></section><div id="err" class="mute" style="margin-top:16px"></div>
+<section id="dash" hidden></section><div id="err"></div>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>
 const URL_ = "https://otfuymjeqoghridciiqm.supabase.co", KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im90ZnV5bWplcW9naHJpZGNpaXFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI3NDYxNTIsImV4cCI6MjEwODMyMjE1Mn0.uK3WhRMTTQ8rGB1PXM3Umd6ruNjs0RLbuWkMu5PoS5Q", HERE = location.origin + location.pathname;
 const $ = id => document.getElementById(id), esc = t => String(t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 let sb;
-function show(which) { $('login').hidden = which !== 'login'; $('dash').hidden = which !== 'dash'; $('range').hidden = $('out').hidden = which !== 'dash'; }
+function show(which) { $('login').hidden = which !== 'login'; $('dash').hidden = $('links').hidden = which !== 'dash'; $('range').hidden = $('out').hidden = which !== 'dash'; }
 async function load() {
   $('err').textContent = '';
   const { data: sess } = await sb.auth.getSession();
@@ -50,6 +182,7 @@ async function load() {
   if (r.data.days === 0) { const w = await sb.rpc('admin_stats', { days: 7 }); if (!w.error) chart = { days: 7, daily: w.data.daily }; }
   draw(r.data, chart); show('dash');
 }
+const num = n => (n || 0).toLocaleString('en-IN');
 function pct(a, b) { return b ? Math.round(a * 100 / b) + '%' : '–'; }
 // One entry per day in the range (India time), with 0 for days that had no visits.
 function fillDays(daily, n) {
@@ -70,19 +203,51 @@ function chartHtml(c) {
   const dense = days.length > 31 ? ' dense' : '';
   return '<div class="bars' + dense + '">' + cols + '</div><div class="axis' + dense + '">' + axis + '</div>';
 }
+const kpi = (n, l, sub, cls) => '<div class="card kpi' + (cls ? ' ' + cls : '') + '"><b>' + n + '</b><span>' + l + '</span>' + (sub ? '<small>' + sub + '</small>' : '') + '</div>';
+function funnelHtml(f) {
+  const top = f.visited || 0;
+  const step = (l, n) => '<div class="st"><div class="lb">' + l + '</div><div class="tr"><i style="width:' + (top ? Math.round(n * 100 / top) : 0) + '%"></i></div><div class="v">' + num(n) + '<small>' + (top ? pct(n, top) : '–') + '</small></div></div>';
+  return '<div class="card fun">' + step('Visited', top) + step('Started a puzzle', f.started) + step('Found a bug', f.found) + step('Shared', f.shared) + '</div>' +
+    '<p class="note">Each line counts people, not clicks. The % is out of everyone who visited.</p>';
+}
+function modeHtml(icon, title, m) {
+  m = m || {}; const tried = (m.found || 0) + (m.failed || 0);
+  const cell = (l, v) => '<div><dt>' + l + '</dt><dd>' + v + '</dd></div>';
+  return '<div class="card mode"><h3><span aria-hidden="true">' + icon + '</span>' + title + '</h3><dl>' +
+    cell('Players', num(m.players)) + cell('Puzzles started', num(m.started)) + cell('Bugs found', num(m.found)) + cell('Success rate', pct(m.found || 0, tried)) + '</dl></div>';
+}
 function draw(d, chart) {
-  const e = d.events || {};
-  const kpi = (n, l) => '<div class="card kpi"><b>' + n + '</b><span>' + l + '</span></div>';
-  const refs = d.referrers.map(x => '<tr><td>' + esc(x.ref) + '</td><td class="n">' + x.n + '</td></tr>').join('') || '<tr><td class="mute" colspan="2">No visits yet</td></tr>';
+  const e = d.events || {}, v2 = 'funnel' in d, range = d.days === 0 ? 'today' : 'in the last ' + d.days + ' days';
+  const refs = d.referrers.map(x => '<tr><td>' + esc(x.ref) + '</td><td class="n">' + num(x.n) + '</td></tr>').join('') || '<tr><td class="mute" colspan="2">No visits yet</td></tr>';
   const pz = d.puzzles.map(x => '<tr><td>' + esc(x.id) + '</td><td class="n">' + x.started + '</td><td class="n">' + x.found + '</td><td class="n">' + x.failed + '</td><td class="n">' + pct(x.found, x.found + x.failed) + '</td></tr>').join('') || '<tr><td class="mute" colspan="5">No plays yet</td></tr>';
-  $('dash').innerHTML =
-    '<div class="grid" style="margin-top:16px">' + kpi(d.visitors, d.days === 0 ? 'Visitors today' : 'Visitors (' + d.days + ' days)') + (d.days === 0 ? '' : kpi(d.visitors_today, 'Visitors today')) + kpi(d.visits, 'Visits') + '</div>' +
-    '<h2>Visitors per day' + (d.days === 0 ? ' (last 7 days)' : '') + '</h2><div class="card">' + chartHtml(chart || d) + '</div>' +
-    '<h2>Gameplay</h2><div class="grid">' + kpi(e.puzzle_start || 0, 'Puzzles started') + kpi(e.puzzle_found || 0, 'Bugs found') + kpi(e.puzzle_fail || 0, 'Missed') +
-    kpi(pct(e.puzzle_found || 0, (e.puzzle_found || 0) + (e.puzzle_fail || 0)), 'Success rate') + kpi(e.share || 0, 'Share clicks') + '</div>' +
+  let html = '<div class="grid" style="margin-top:20px">' +
+    kpi(num(d.visitors), d.days === 0 ? 'Visitors today' : 'Visitors (' + d.days + ' days)', 'different people', 'hero') +
+    (d.days === 0 ? '' : kpi(num(d.visitors_today), 'Visitors today')) +
+    (v2 ? kpi(num(d.new_visitors), 'New visitors', 'first visit ' + range) + kpi(num(d.returning), 'Came back', pct(d.returning, d.visitors) + ' visited on 2+ days') : '') +
+    kpi(num(d.visits), 'Visits', 'page opens') + '</div>' +
+    (v2 ? '<p class="note">' + (d.ignored ? 'Your own visits are left out (' + d.ignored + ' device' + (d.ignored === 1 ? '' : 's') + ' hidden).' : 'Your own visits are still counted. Tap "Hide my visits on this device" above.') + '</p>'
+        : '<p class="note">Run the Supabase update (admin-v2.sql) to see new visitors, returning visitors, the funnel and Today\'s Quiz vs Practice.</p>') +
+    '<h2>Visitors per day' + (d.days === 0 ? ' <small>last 7 days</small>' : '') + '</h2><div class="card">' + chartHtml(chart || d) + '</div>';
+  if (v2) html += '<h2>Where people drop off</h2>' + funnelHtml(d.funnel) +
+    '<h2>Today\'s Quiz vs Practice</h2><div class="modes">' + modeHtml('📅', 'Today\'s Quiz', (d.modes || {}).daily) + modeHtml('🎯', 'Practice', (d.modes || {}).practice) + '</div>';
+  html += '<h2>All plays</h2><div class="grid">' + kpi(num(e.puzzle_start), 'Puzzles started') + kpi(num(e.puzzle_found), 'Bugs found') + kpi(num(e.puzzle_fail), 'Missed') +
+    kpi(pct(e.puzzle_found || 0, (e.puzzle_found || 0) + (e.puzzle_fail || 0)), 'Success rate') + kpi(num(e.share), 'Share clicks') + '</div>' +
     '<h2>Where visitors come from</h2><div class="card"><table><tr><th>Source</th><th class="n">Visits</th></tr>' + refs + '</table></div>' +
     '<h2>Most missed puzzles</h2><div class="card"><table><tr><th>Puzzle</th><th class="n">Started</th><th class="n">Found</th><th class="n">Missed</th><th class="n">Rate</th></tr>' + pz + '</table></div>';
+  $('dash').innerHTML = html;
 }
+// Leave this browser out of the numbers. The site stores its random visitor id under bugspot.vid,
+// and the admin page is on the same address, so it can read it.
+$('hide').addEventListener('click', async () => {
+  const m = $('hideMsg'); m.hidden = false;
+  let vid = ''; try { vid = localStorage.getItem('bugspot.vid') || ''; } catch (e) { /* ignore */ }
+  if (!vid) { m.textContent = 'Nothing to hide yet: this device has not opened the site. Open the site once here, then tap this again.'; return; }
+  m.textContent = 'Hiding…';
+  const r = await sb.rpc('admin_ignore_visitor', { v: vid });
+  if (r.error) { m.textContent = 'Could not do this yet. Run the Supabase update (admin-v2.sql) first.'; return; }
+  m.textContent = 'Done. Visits from this device are now left out. Do this once on each phone or laptop you use.';
+  load();
+});
 $('go').addEventListener('click', async () => {
   const email = $('em').value.trim(); if (!email) return;
   $('msg').textContent = 'Sending…';
@@ -94,5 +259,4 @@ $('range').addEventListener('change', load);
 try { sb = window.supabase.createClient(URL_, KEY); sb.auth.onAuthStateChange(() => setTimeout(load, 0)); load(); }
 catch (err) { show('login'); $('err').textContent = 'Could not load. Check your connection and refresh.'; }
 </script>
-<link rel="stylesheet" href="bugspot-admin.css">
 </body></html>
