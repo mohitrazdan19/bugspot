@@ -34,3 +34,10 @@ The game sends anonymous events (visit, puzzle start/found/missed, share) with a
 - `bugs/index.html` lists every puzzle by track and level; `bugs/<puzzle id>.html` is one page per bug (clue, steps, expected vs actual, why it matters, testing tip, related bugs). Linked from the footer, the About box and the About page.
 - These pages are **generated**. After adding or editing puzzles, run `node tools/build-bugs.mjs` from the repo root (no packages needed). It rebuilds `bugs/` and `sitemap.xml`.
 - Each bug page has a "Spot this bug" button linking to `/?p=<puzzle id>`, which opens that puzzle in Practice.
+
+## Google Tag Manager and Google Analytics 4
+
+- `gtm.js` loads on every page before the AdSense block. It sets Google consent mode (denied by default in the EEA, UK and Switzerland until Google's consent message is answered, granted elsewhere) and loads GTM only on quizzifytech.com, never for bots or local copies.
+- GTM is **off** until an ID is set: put the container ID (`GTM-...`) in `var QT_GTM_ID = ''` at the top of `gtm.js`.
+- The game pushes `puzzle_start`, `puzzle_found`, `puzzle_fail`, `share` and `track_pick` to `dataLayer`, with `puzzle_id`, `mode`, `tries` and `track` where they apply. Supabase stats are unchanged.
+- `tools/gtm-container.json` can be imported into GTM (Admin, Import container, Merge). It adds a GA4 Google tag on all pages, one GA4 event tag for the game events, and a `GA4 Measurement ID` variable to set to your `G-...` ID.

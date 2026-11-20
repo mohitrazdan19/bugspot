@@ -10,8 +10,8 @@
     d.className = 'qt-notice';
     d.setAttribute('role', 'region');
     d.setAttribute('aria-label', 'Privacy notice');
-    d.innerHTML = '<p>We save your game progress and a random visitor ID in your browser and count plays anonymously. ' +
-      'If ads are shown, Google may use cookies to show them. <a href="/privacy.html">Privacy Policy</a></p>' +
+    d.innerHTML = '<p>We save your game progress and a random visitor ID in your browser and count plays anonymously. We may use Google Analytics, and ' +
+      'if ads are shown, Google may use cookies to show them. <a href="/privacy.html">Privacy Policy</a></p>' +
       '<button type="button">OK</button>';
     var css = document.createElement('style');
     css.textContent = '.qt-notice{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:25;max-width:640px;margin:0 auto;display:flex;align-items:center;gap:12px;' +
