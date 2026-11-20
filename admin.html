@@ -133,6 +133,8 @@ th { font-size: 12px; font-weight: 700; color: var(--mute); }
 tr:last-child td { border-bottom: 0; }
 tr:hover > td { background: rgba(124, 92, 255, .05); }
 td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; }
+tr.hl > td { background: rgba(31, 168, 85, .08); font-weight: 700; }
+.si { display: inline-block; width: 1.6em; }
 
 @media (max-width: 640px) {
   main { padding: 18px 16px 48px; }
@@ -257,6 +259,17 @@ function modeHtml(icon, title, m) {
   return '<div class="card mode"><h3><span aria-hidden="true">' + icon + '</span>' + title + '</h3><dl>' +
     cell('Players', num(m.players)) + cell('Puzzles started', num(m.started)) + cell('Bugs found', num(m.found)) + cell('Success rate', pct(m.found || 0, tried)) + '</dl></div>';
 }
+// Where visitors come from, grouped by app or site. WhatsApp and Friends always get a row, even at 0.
+const SRC_ICON = { 'WhatsApp': '💬', 'LinkedIn': '💼', 'X (Twitter)': '𝕏', 'Telegram': '✈️', 'Reddit': '👽', 'Facebook': '📘', 'Instagram': '📷',
+  'Google': '🔎', 'Bing': '🔎', 'Shared result (copied)': '📋', 'Friends (sent by you)': '🤝', 'Direct / unknown': '❔', 'Inside the site': '↩️' };
+function sourcesHtml(list) {
+  list = list.slice(); ['WhatsApp', 'Friends (sent by you)'].forEach(n => { if (!list.some(x => x.source === n)) list.push({ source: n, visitors: 0, visits: 0 }); });
+  const total = list.reduce((a, x) => a + x.visitors, 0) || 1;
+  const rows = list.map(x => '<tr' + (x.source === 'WhatsApp' || x.source === 'Friends (sent by you)' ? ' class="hl"' : '') + '><td><span class="si" aria-hidden="true">' + (SRC_ICON[x.source] || '🌐') + '</span>' + esc(x.source) + '</td><td class="n">' + num(x.visitors) +
+    '</td><td class="n">' + Math.round(x.visitors * 100 / total) + '%</td><td class="n">' + num(x.visits) + '</td></tr>').join('');
+  return '<h2>Where visitors come from</h2><div class="card"><table><tr><th>Source</th><th class="n">Visitors</th><th class="n">Share</th><th class="n">Visits</th></tr>' + rows + '</table></div>' +
+    '<p class="note">WhatsApp and most chat apps don\'t say where a visitor came from, so they count as "Direct / unknown" unless the link has a tag. The site\'s share buttons add one. For your own posts, use quizzifytech.com/?src=whatsapp (or ?src=linkedin, ?src=telegram…). For links you send straight to friends, use quizzifytech.com/?src=friends.</p>';
+}
 function draw(d, chart) {
   const e = d.events || {}, v2 = 'funnel' in d, one = d.custom && d.days === 1;
   const span = d.custom ? (one ? 'on ' + dayLabel(d.from) : dayLabel(d.from) + ' – ' + dayLabel(d.to)) : '';
@@ -276,7 +289,7 @@ function draw(d, chart) {
     '<h2>Today\'s Quiz vs Practice</h2><div class="modes">' + modeHtml('📅', 'Today\'s Quiz', (d.modes || {}).daily) + modeHtml('🎯', 'Practice', (d.modes || {}).practice) + '</div>';
   html += '<h2>All plays</h2><div class="grid">' + kpi(num(e.puzzle_start), 'Puzzles started') + kpi(num(e.puzzle_found), 'Bugs found') + kpi(num(e.puzzle_fail), 'Missed') +
     kpi(pct(e.puzzle_found || 0, (e.puzzle_found || 0) + (e.puzzle_fail || 0)), 'Success rate') + kpi(num(e.share), 'Share clicks') + '</div>' +
-    '<h2>Where visitors come from</h2><div class="card"><table><tr><th>Source</th><th class="n">Visits</th></tr>' + refs + '</table></div>' +
+    ('sources' in d ? sourcesHtml(d.sources) : '<h2>Where visitors come from</h2><div class="card"><table><tr><th>Source</th><th class="n">Visits</th></tr>' + refs + '</table></div>') +
     '<h2>Most missed puzzles</h2><div class="card"><table><tr><th>Puzzle</th><th class="n">Started</th><th class="n">Found</th><th class="n">Missed</th><th class="n">Rate</th></tr>' + pz + '</table></div>';
   $('dash').innerHTML = html;
 }
