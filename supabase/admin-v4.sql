@@ -67,6 +67,7 @@ begin
             when r like '%instagram%' or r = 'ig' then 'Instagram'
             when r like '%google.%' or r like 'com.google.%' or r = 'google' then 'Google'
             when r like '%bing.%' or r = 'bing' then 'Bing'
+            when r in ('friends', 'friend') then 'Friends (sent by you)'
             when r in ('share', 'copy') then 'Shared result (copied)'
             when r like '%quizzifytech.com' or r like '%github.io' then 'Inside the site'
             else r end as src
