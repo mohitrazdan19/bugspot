@@ -6,6 +6,9 @@ var QT_GTM_ID = '';
 // The game pushes its events (puzzle_start, puzzle_found, puzzle_fail, share, track_pick) to this list.
 window.dataLayer = window.dataLayer || [];
 function gtag() { window.dataLayer.push(arguments); }
+// The game removes ?src= and ?utm_ tags from the address bar soon after loading, so keep the full
+// landing address here. The GTM setup sends it to Google Analytics as page_location, so campaigns still count.
+window.dataLayer.push({ original_location: location.href });
 
 // Consent mode v2. Visitors in the EEA, UK and Switzerland start with everything denied until they
 // answer Google's consent message (AdSense > Privacy & messaging), which updates these settings itself.
