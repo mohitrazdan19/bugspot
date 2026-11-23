@@ -41,3 +41,18 @@ The game sends anonymous events (visit, puzzle start/found/missed, share) with a
 - GTM is **off** until an ID is set: put the container ID (`GTM-...`) in `var QT_GTM_ID = ''` at the top of `gtm.js`.
 - The game pushes `puzzle_start`, `puzzle_found`, `puzzle_fail`, `share` and `track_pick` to `dataLayer`, with `puzzle_id`, `mode`, `tries` and `track` where they apply. Supabase stats are unchanged.
 - `tools/gtm-container.json` can be imported into GTM (Admin, Import container, Merge). It adds a GA4 Google tag on all pages, one GA4 event tag for the game events, and a `GA4 Measurement ID` variable to set to your `G-...` ID.
+
+## Staging site
+
+Changes are checked at **https://staging.quizzifytech.com** before they go live.
+
+- Staging is a second repo, `mohitrazdan19/quizzifytech-staging`, that holds a copy of this site. Its GitHub Pages source is "GitHub Actions" and its custom domain is `staging.quizzifytech.com` (DNS: `CNAME staging -> mohitrazdan19.github.io`).
+- On every push to that repo's `main`, `.github/workflows/staging.yml` runs `node tools/make-staging.mjs`, which removes AdSense and `ads.txt`, drops `sitemap.xml` and `CNAME`, blocks all crawling in `robots.txt`, adds `noindex, nofollow` to every page and shows a red STAGING badge. The workflow is skipped in this (live) repo.
+- Analytics never fire on staging (only live hosts are tracked).
+
+Flow for a change:
+1. The change is made on a branch here and a PR is opened.
+2. The same branch is pushed to the staging repo's `main` (`git push --force staging <branch>:main`). It is live on staging about a minute later.
+3. Check it on staging. When it looks right, merge the PR here, which publishes it to quizzifytech.com.
+
+Staging shows one change at a time: the last branch pushed to it.
