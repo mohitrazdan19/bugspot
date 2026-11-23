@@ -7,17 +7,17 @@
 //   - a small "STAGING" badge on every page so it is never confused with the live site
 // Analytics already skip this host (index.html TRACK_HOSTS and gtm.js only list the live hosts).
 import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { join, relative, resolve } from 'node:path';
 
 const root = new URL('..', import.meta.url).pathname;
-const out = process.argv[2];
+const out = process.argv[2] && resolve(process.argv[2]);
 if (!out) { console.error('usage: node tools/make-staging.mjs <outDir>'); process.exit(1); }
 
 const SKIP = new Set(['.git', '.github', 'tools', 'supabase', 'node_modules', 'CNAME', 'ads.txt', 'sitemap.xml', 'README.md']);
 rmSync(out, { recursive: true, force: true });
 mkdirSync(out, { recursive: true });
 for (const name of readdirSync(root)) {
-  if (SKIP.has(name) || join(root, name) === join(out)) continue;
+  if (SKIP.has(name) || resolve(root, name) === out) continue;
   cpSync(join(root, name), join(out, name), { recursive: true });
 }
 
