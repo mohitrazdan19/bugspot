@@ -24,8 +24,8 @@ The game sends anonymous events (visit, puzzle start/found/missed, share) with a
 
 - Pages AdSense looks for: `about.html`, `privacy.html`, `terms.html`, `contact.html` (shared look in `pages.css`). Every page has footer links to them.
 - `notice.js` shows a one-time privacy notice at the bottom of each page. The legal consent for EEA, UK and Swiss visitors comes from Google's own consent message (AdSense, Privacy & messaging), which loads with the AdSense script.
-- Ads are **off**. Each page's `<head>` has a commented-out block marked `ADSENSE`. To switch on: put the publisher ID (`ca-pub-...`) in both lines and remove the comment's first and last line, in `index.html`, `about.html`, `privacy.html`, `terms.html` and `contact.html`.
-- `ads.txt` is a placeholder. After approval, replace its last line with the line AdSense shows under Sites (remove the `# `).
+- AdSense is **on** (publisher `ca-pub-3028142354862663`): every page's `<head>` has the `google-adsense-account` meta tag and the `adsbygoogle.js` script. Generated bug pages copy them from `index.html`. Short-link redirect pages and `admin.html` have none.
+- `ads.txt` holds the AdSense seller line.
 - Contact email on the pages is `hello@quizzifytech.com`. That mailbox must exist (Titan email on the domain).
 - `robots.txt` points to `sitemap.xml` and keeps `admin.html` out of search.
 
