@@ -807,6 +807,17 @@ body { background: var(--bg); color: var(--ink); font-family: var(--body); }
 /* Longer QuizzifyTech name + "Today’s Quiz" tab: keep both tabs in view on phones */
 @media (max-width: 520px) { .top { gap: 8px; } .brand { font-size: 21px; gap: 7px; min-width: 0; } .brand svg { width: 32px; height: 32px; padding: 5px; } .tabs button { padding: 0 11px; font-size: 13px; min-height: 36px; white-space: nowrap; } }
 @media (max-width: 370px) { .brand { font-size: 18px; } .brand svg { width: 28px; height: 28px; } .tabs button { padding: 0 9px; font-size: 12px; } }
+/* Articles link in the game header. Desktop: between the logo and the tabs. Phones: top right, tabs move to a full-width row. */
+.top .artlink { order: 2; margin-left: auto; display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 14px; border-radius: 999px; font: 700 14px/1 var(--body); color: var(--ink); text-decoration: none; white-space: nowrap; }
+.top .artlink svg { width: 18px; height: 18px; color: #7c5cff; }
+.top .artlink:hover { background: rgba(124, 92, 255, .1); }
+.top .brand { order: 1; } .top .tabs { order: 3; }
+@media (max-width: 520px) {
+  .top { flex-wrap: wrap; row-gap: 8px; }
+  .top .artlink { min-height: 36px; padding: 0 10px; font-size: 13px; margin-right: -6px; }
+  .top .tabs { width: 100%; }
+  .top .tabs button { flex: 1; justify-content: center; }
+}
 /* Site footer: links to About, Privacy, Terms and Contact (needed for AdSense) */
 .sitefoot { margin: 28px 0 8px; padding: 8px 0 calc(16px + env(safe-area-inset-bottom, 0px)); text-align: center; font: 400 13px/1.6 var(--body); color: var(--dim); }
 .sitefoot nav { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 18px; margin-bottom: 4px; }
@@ -823,6 +834,7 @@ body { background: var(--bg); color: var(--ink); font-family: var(--body); }
       <button id="tabDaily" type="button" aria-selected="true">Today’s Quiz</button>
       <button id="tabPractice" type="button" aria-selected="false">Practice</button>
     </nav>
+    <a class="artlink" href="/articles/"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M4 5.5A1.5 1.5 0 0 1 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5zM20 5.5A1.5 1.5 0 0 0 18.5 4H13v16h5.5a1.5 1.5 0 0 0 1.5-1.5z"/></svg>Articles</a>
   </header>
   <main id="view"></main>
 

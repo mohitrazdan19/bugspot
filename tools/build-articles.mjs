@@ -40,7 +40,7 @@ const FAV = "data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 vi
 const adsStart = src.indexOf('<meta name="google-adsense-account"');
 const ADS = adsStart < 0 ? '' : src.slice(adsStart, src.indexOf('</script>', adsStart) + '</script>'.length);
 const LOGO = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 8.2c-2.6 0-4.4 1.9-4.4 4.6S9.4 19 12 19s4.4-3.6 4.4-6.2S14.6 8.2 12 8.2Z"/><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M12 8.2V19M9.3 6.4a2.7 2.7 0 0 1 5.4 0M7.6 12.3 4 10.6M16.4 12.3 20 10.6M8 16.4l-3.4 1.6M16 16.4l3.4 1.6"/></svg>';
-const HEADER = `<header class="top"><a class="brand" href="/">${LOGO}QuizzifyTech</a><nav class="topnav"><a class="lnk" href="/bugs/">Bug library</a><a class="lnk" href="/articles/" aria-current="page">Articles</a><a class="play" href="/">Play today’s quiz</a></nav></header>`;
+const HEADER = `<header class="top"><a class="brand" href="/">${LOGO}QuizzifyTech</a><nav class="topnav"><a class="lnk lib" href="/bugs/">Bug library</a><a class="lnk" href="/articles/" aria-current="page">Articles</a><a class="play" href="/">Play<span class="long"> today’s quiz</span></a></nav></header>`;
 const FOOT = `<footer class="site">
   <nav aria-label="Site"><a href="/">Play</a><a href="/articles/">Articles</a><a href="/bugs/">Bug library</a><a href="/about.html">About</a><a href="/privacy.html">Privacy Policy</a><a href="/terms.html">Terms</a><a href="/contact.html">Contact</a></nav>
   <p>© 2026 QuizzifyTech. Free daily tech quizzes for testers and developers.</p>

@@ -68,7 +68,8 @@ footer.site a { color: var(--dim); }
 .topnav a.lnk:hover { color: #5b3fe0; }
 
 /* Articles */
-@media (max-width: 640px) { .topnav a.lnk { display: none; } }
+@media (max-width: 640px) { .topnav { gap: 14px; } .topnav a.lnk.lib { display: none; } }
+@media (max-width: 400px) { .topnav .play .long { display: none; } }
 .hero { padding: 18px 0 8px; }
 .hero h1 { font-size: 44px; }
 .hero p.lede { font-size: 18px; color: var(--dim); max-width: 620px; margin: 6px 0 0; }

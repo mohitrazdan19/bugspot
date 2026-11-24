@@ -77,7 +77,7 @@ ${ADS}
 <body>
 <div class="bg" aria-hidden="true"><i></i><i></i></div>
 <div class="wrap">
-<header class="top"><a class="brand" href="/">${LOGO}QuizzifyTech</a><nav class="topnav"><a class="lnk" href="/bugs/">Bug library</a><a class="lnk" href="/articles/">Articles</a><a class="play" href="/">Play today’s quiz</a></nav></header>
+<header class="top"><a class="brand" href="/">${LOGO}QuizzifyTech</a><nav class="topnav"><a class="lnk lib" href="/bugs/">Bug library</a><a class="lnk" href="/articles/">Articles</a><a class="play" href="/">Play<span class="long"> today’s quiz</span></a></nav></header>
 <main>
 ${body.trim()}
 </main>
