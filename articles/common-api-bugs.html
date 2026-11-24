@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>10 common API bugs every tester should know (with examples) | QuizzifyTech</title>
+<meta name="description" content="A 200 OK can still be broken. The ten API bugs testers find most often, how to spot each one in the response, and a checklist for your next test.">
+<link rel="canonical" href="https://quizzifytech.com/articles/common-api-bugs.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="QuizzifyTech">
+<meta property="og:title" content="10 common API bugs every tester should know (with examples)">
+<meta property="og:description" content="A 200 OK can still be broken. The ten API bugs testers find most often, how to spot each one in the response, and a checklist for your next test.">
+<meta property="og:url" content="https://quizzifytech.com/articles/common-api-bugs.html">
+<meta property="og:image" content="https://quizzifytech.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta property="article:published_time" content="2026-11-24">
+<meta property="article:modified_time" content="2026-11-24">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27%3E%3Crect width=%2724%27 height=%2724%27 rx=%276%27 fill=%27%23d6283a%27/%3E%3Cpath fill=%27%23fff%27 d=%27M12 8.2c-2.6 0-4.4 1.9-4.4 4.6S9.4 19 12 19s4.4-3.6 4.4-6.2S14.6 8.2 12 8.2Z%27/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Plus+Jakarta+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/pages.css">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"10 common API bugs every tester should know","description":"A 200 OK can still be broken. The ten API bugs testers find most often, how to spot each one in the response, and a checklist for your next test.","image":"https://quizzifytech.com/og.png","datePublished":"2026-11-24","dateModified":"2026-11-24","author":{"@type":"Organization","name":"QuizzifyTech","url":"https://quizzifytech.com/"},"publisher":{"@type":"Organization","name":"QuizzifyTech","url":"https://quizzifytech.com/"},"mainEntityOfPage":"https://quizzifytech.com/articles/common-api-bugs.html","articleSection":"API testing","wordCount":1748}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Articles","item":"https://quizzifytech.com/articles/"},{"@type":"ListItem","position":2,"name":"10 common API bugs every tester should know","item":"https://quizzifytech.com/articles/common-api-bugs.html"}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is the most common API bug?","acceptedAnswer":{"@type":"Answer","text":"Responses that pass on the status code but carry wrong or missing data in the body, such as the wrong record, a null required field or an error message inside a 200 OK."}},{"@type":"Question","name":"Do I need to write code to test an API?","acceptedAnswer":{"@type":"Answer","text":"No. Postman, the browser’s network tab or curl is enough to find every bug in this guide. Code helps later, when you want to repeat the checks on every build."}},{"@type":"Question","name":"Why test the API if the screen already blocks bad input?","acceptedAnswer":{"@type":"Answer","text":"The screen is only one way in. Anyone can call the API directly with values the screen never sends, so the server must validate every input on its own."}},{"@type":"Question","name":"What status code should an API return when a record is not found?","acceptedAnswer":{"@type":"Answer","text":"Usually 404 Not Found, with a short error message in the body. Returning 200 OK with an error message makes clients treat the failure as a success."}}]}</script>
+<script src="/gtm.js"></script>
+<meta name="google-adsense-account" content="ca-pub-3028142354862663">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3028142354862663" crossorigin="anonymous"></script>
+</head>
+<body>
+<div class="bg" aria-hidden="true"><i></i><i></i></div>
+<div class="wrap">
+<header class="top"><a class="brand" href="/"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 8.2c-2.6 0-4.4 1.9-4.4 4.6S9.4 19 12 19s4.4-3.6 4.4-6.2S14.6 8.2 12 8.2Z"/><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M12 8.2V19M9.3 6.4a2.7 2.7 0 0 1 5.4 0M7.6 12.3 4 10.6M16.4 12.3 20 10.6M8 16.4l-3.4 1.6M16 16.4l3.4 1.6"/></svg>QuizzifyTech</a><nav class="topnav"><a class="lnk" href="/bugs/">Bug library</a><a class="lnk" href="/articles/" aria-current="page">Articles</a><a class="play" href="/">Play today’s quiz</a></nav></header>
+<main class="post">
+<p class="crumbs"><a href="/articles/">Articles</a> › <a href="/articles/#api">API testing</a></p>
+<article>
+<p class="eyebrow">API testing · Guide</p>
+<h1>10 common API bugs every tester should know</h1>
+<p class="lede">A 200 OK can still be broken. These are the API bugs we see most often, how to spot each one in the response, and a checklist you can use on your next test run.</p>
+<div class="author"><i>Q</i><span><strong>QuizzifyTech team</strong><br><time datetime="2026-11-24">Published 24 Nov 2026</time> · 9 min read</span></div>
+<div class="cover c-api"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4c-2 0-2.5 1-2.5 2.5v2.3c0 1.2-.8 2.2-2 2.2 1.2 0 2 1 2 2.2v2.3C5.5 19 6 20 8 20M16 4c2 0 2.5 1 2.5 2.5v2.3c0 1.2.8 2.2 2 2.2-1.2 0-2 1-2 2.2v2.3C18.5 19 18 20 16 20"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/></svg><b>API testing</b></div>
+<nav class="toc" aria-label="In this guide"><strong>In this guide</strong><ol><li><a href="#wrong-record">The API returns the wrong record</a></li><li><a href="#error-in-200">An error hidden inside a 200 OK</a></li><li><a href="#leaked-fields">Private fields leak to the browser</a></li><li><a href="#limits">Pagination and limits are ignored</a></li><li><a href="#sort-filter">Sort and filter parameters do not work</a></li><li><a href="#dates">Impossible dates</a></li><li><a href="#negative-values">Values the screen blocks, but the API accepts</a></li><li><a href="#ghost-data">Deleted data comes back</a></li><li><a href="#tokens">Tokens that never expire</a></li><li><a href="#cors">CORS that trusts every website</a></li><li><a href="#more">Two more to keep in mind</a></li></ol></nav>
+
+<p>Most API testing stops at the status code. The request went through, the response was 200, the test passed. But many of the worst bugs live inside the body of a successful response, where nobody looks. An API can return the wrong customer, leak a password hash or quietly ignore your filter, and still answer with a cheerful 200.</p>
+<p>Below are ten API bugs that show up again and again in real products. For each one you get what it looks like, why it matters and the one check that catches it. Every example links to a page in our Bug library, and you can try to spot each bug yourself before reading the answer.</p>
+
+<h2 id="wrong-record"><span class="n">1</span>The API returns the wrong record</h2>
+<p>You ask for user 17 and get user 18. The response looks perfect: right shape, right fields, status 200. Only the id gives it away. An off-by-one in a lookup, a wrong index or a cached response can show one customer another customer’s profile, which turns a small coding slip into a privacy incident.</p>
+<pre class="http">GET /api/users/17
+200 OK
+{ <span class="bad">"id": 18</span>, "name": "Arjun Mehta", ... }</pre>
+<p><strong>How to catch it:</strong> compare the id in the response with the id you asked for, every time. In automated tests this is a single line, and it is one of the most valuable lines you can write.</p>
+<div class="example"><span class="lbl">Real example</span><a class="t" href="/bugs/api-wrong-id.html">GET /users/17 returns the user with id 18<br><span class="byline">P2 · Major · Beginner</span></a><a class="go" href="/?p=api-wrong-id">Spot this bug →</a></div>
+
+<h2 id="error-in-200"><span class="n">2</span>An error hidden inside a 200 OK</h2>
+<p>The status says success, but the body says <code>"error": "Order not found"</code>. Apps that trust the status code will treat a failure as a success: they show an empty order, cache the error or move the user to the next step as if nothing went wrong.</p>
+<pre class="http">GET /api/orders/99999
+<span class="bad">200 OK</span>
+{ "error": "Order not found" }</pre>
+<p><strong>How to catch it:</strong> assert the status code and the body together. A missing record should be a 404, bad input a 400, a server problem a 5xx. If the body contains an error, the status must not be 2xx.</p>
+<div class="example"><span class="lbl">Real example</span><a class="t" href="/bugs/api-200.html">Orders API returns 200 OK with an error message in the body<br><span class="byline">P2 · Major · Intermediate</span></a><a class="go" href="/?p=api-200">Spot this bug →</a></div>
+
+<h2 id="leaked-fields"><span class="n">3</span>Private fields leak to the browser</h2>
+<p>The profile screen shows a name and an email, but the API sends the whole database row, including the password hash. Nobody sees it on screen, but anyone can see it in the browser’s network tab. Tokens, internal flags, other users’ emails and admin notes leak the same way, usually because the code returns a full object instead of picking safe fields.</p>
+<p><strong>How to catch it:</strong> read every field in the response, not just the ones the screen uses. Ask for each field: would I be happy if a stranger read this?</p>
+<div class="example"><span class="lbl">Real example</span><a class="t" href="/bugs/api-hash-leak.html">Profile API sends the password hash to the browser<br><span class="byline">P1 · Critical · Intermediate</span></a><a class="go" href="/?p=api-hash-leak">Spot this bug →</a></div>
+
+<div class="tryit"><span class="bugicon"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 8.2c-2.6 0-4.4 1.9-4.4 4.6S9.4 19 12 19s4.4-3.6 4.4-6.2S14.6 8.2 12 8.2Z"/><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M12 8.2V19M9.3 6.4a2.7 2.7 0 0 1 5.4 0M7.6 12.3 4 10.6M16.4 12.3 20 10.6M8 16.4l-3.4 1.6M16 16.4l3.4 1.6"/></svg></span><p><strong>Think you would catch these?</strong><br>Today’s quiz hides 8 bugs in fake app screens. Free, no sign-up.</p><a class="play" href="/">Play today’s quiz</a></div>
+
+<h2 id="limits"><span class="n">4</span>Pagination and limits are ignored</h2>
+<p>You ask for <code>limit=10</code> and get 12 items. It sounds harmless, but on the next page some orders will repeat and others will never be shown. Users will say “my order disappeared”, and nobody will be able to reproduce it.</p>
+<p><strong>How to catch it:</strong> count the items on the first, a middle and the last page. Walk through every page and check that no item appears twice and none goes missing. Try <code>limit=0</code>, a negative limit and a very large one too.</p>
+<div class="example"><span class="lbl">Real example</span><a class="t" href="/bugs/api-limit.html">Orders API ignores limit=10 and returns 12 items<br><span class="byline">P3 · Minor · Intermediate</span></a><a class="go" href="/?p=api-limit">Spot this bug →</a></div>
+
+<h2 id="sort-filter"><span class="n">5</span>Sort and filter parameters do not work</h2>
+<p>You sort by price from low to high and get ₹249, ₹1,299, ₹899, ₹1,999. The classic cause is sorting numbers as text, where “1299” comes before “899” because 1 comes before 8. The same thing happens with filters that are silently ignored when a parameter name is misspelt.</p>
+<p><strong>How to catch it:</strong> test sorting with values of different lengths, such as 99, 899 and 1,299. For filters, check that every item in the response really matches the filter, not just the first few.</p>
+<div class="example"><span class="lbl">Real example</span><a class="t" href="/bugs/api-sort-ignored.html">Sort by price (low to high) puts ₹899 after ₹1,299<br><span class="byline">P3 · Minor · Intermediate</span></a><a class="go" href="/?p=api-sort-ignored">Spot this bug →</a></div>
+
+<h2 id="dates"><span class="n">6</span>Impossible dates</h2>
+<p>An order placed near the end of February gets a delivery date of <code>2026-02-31</code>. Date maths done by hand (adding days to the day number without moving the month) breaks at month ends and leap years. Time zones cause the same class of bug: a date that is right in UTC can be a day off for a user in India.</p>
+<p><strong>How to catch it:</strong> test dates around the 28th to the 31st, on 29 February, at the end of the year, and close to midnight in your users’ time zone. Parse every date in the response and check that it is a real date.</p>
+<div class="example"><span class="lbl">Real example</span><a class="t" href="/bugs/api-bad-date.html">Delivery date in the API is 31 February<br><span class="byline">P3 · Minor · Beginner</span></a><a class="go" href="/?p=api-bad-date">Spot this bug →</a></div>
+
+<h2 id="negative-values"><span class="n">7</span>Values the screen blocks, but the API accepts</h2>
+<p>The app’s quantity picker stops at 1, so testers assume negative quantities are impossible. But the API is a separate door. Send <code>"qty": -3</code> straight to the cart API and it may accept it and make the order total negative. Anyone with a browser’s developer tools or a tool like Postman can do this.</p>
+<pre class="http">POST /api/cart/items
+{ "productId": 4, <span class="bad">"qty": -3</span> }
+
+200 OK
+{ "total": <span class="bad">-3897</span> }</pre>
+<p><strong>How to catch it:</strong> call the API directly with values the screen never sends: negative numbers, zero, huge numbers, empty strings, very long text and the wrong data types. The server must validate everything itself.</p>
+<div class="example"><span class="lbl">Real example</span><a class="t" href="/bugs/api-negative-qty.html">Cart API accepts quantity -3 and makes the total negative<br><span class="byline">P1 · Critical · Experienced</span></a><a class="go" href="/?p=api-negative-qty">Spot this bug →</a></div>
+
+<h2 id="ghost-data"><span class="n">8</span>Deleted data comes back</h2>
+<p>You delete item 9 from the cart and get a <code>204 No Content</code>. Then you read the cart and item 9 is still there. The delete may have hit a cache, a different replica or the wrong table. Either way, the success code lied.</p>
+<p><strong>How to catch it:</strong> after every create, update or delete, read the data back and check that it really changed. A status code only tells you what the server thinks happened.</p>
+<div class="example"><span class="lbl">Real example</span><a class="t" href="/bugs/api-delete-ghost.html">Deleted cart item 9 is still in the cart<br><span class="byline">P2 · Major · Experienced</span></a><a class="go" href="/?p=api-delete-ghost">Spot this bug →</a></div>
+
+<h2 id="tokens"><span class="n">9</span>Tokens that never expire</h2>
+<p>Access tokens are meant to be short lived, often around 15 minutes, so a stolen token stops working quickly. If a token is issued with an expiry ten years away, anyone who copies it from a log, a shared screenshot or a public Wi-Fi network can use the account for a decade.</p>
+<p><strong>How to catch it:</strong> decode the token (for a JWT, any JWT decoder will do) and read the <code>exp</code> value. Also check that old tokens stop working after sign-out and after a password change.</p>
+<div class="example"><span class="lbl">Real example</span><a class="t" href="/bugs/api-token-expiry.html">Access token is valid for 10 years instead of 15 minutes<br><span class="byline">P2 · Major · Experienced</span></a><a class="go" href="/?p=api-token-expiry">Spot this bug →</a></div>
+
+<h2 id="cors"><span class="n">10</span>CORS that trusts every website</h2>
+<p>CORS headers tell the browser which other websites may read your API’s responses. A common shortcut is to copy whatever <code>Origin</code> the request sends back into <code>Access-Control-Allow-Origin</code>, together with <code>Access-Control-Allow-Credentials: true</code>. That lets any website a signed-in user visits read their account data.</p>
+<pre class="http">GET /api/account
+Origin: https://evil.example
+
+200 OK
+<span class="bad">Access-Control-Allow-Origin: https://evil.example</span>
+Access-Control-Allow-Credentials: true</pre>
+<p><strong>How to catch it:</strong> send a request with a made-up <code>Origin</code> header and read the response headers. Only your own domains should ever be allowed when credentials are allowed.</p>
+<div class="example"><span class="lbl">Real example</span><a class="t" href="/bugs/api-cors.html">Account API trusts any website with the user’s cookies (CORS)<br><span class="byline">P1 · Critical · Experienced</span></a><a class="go" href="/?p=api-cors">Spot this bug →</a></div>
+
+<h2 id="more">Two more to keep in mind</h2>
+<p><strong>Error messages that say too much.</strong> Send a text id where a number is expected. If the error shows a stack trace, a database host name or file paths, attackers get a map of your system. Errors should be short; details belong in server logs.</p>
+<div class="example"><span class="lbl">Real example</span><a class="t" href="/bugs/api-stack-trace.html">Error response leaks the database host, user and file paths<br><span class="byline">P2 · Major · Intermediate</span></a><a class="go" href="/?p=api-stack-trace">Spot this bug →</a></div>
+<p><strong>Required fields that come back null.</strong> An active product with <code>"name": null</code> shows up as a blank card, or as the word “null” on screen. Check that required fields are always present and never empty.</p>
+<div class="example"><span class="lbl">Real example</span><a class="t" href="/bugs/api-null-name.html">Product API returns &quot;name&quot;: null for an active product<br><span class="byline">P2 · Major · Beginner</span></a><a class="go" href="/?p=api-null-name">Spot this bug →</a></div>
+
+<section class="check"><h3>Your API test checklist</h3><ul>
+<li>The id in the response matches the id you asked for</li>
+<li>The status code and the body agree (no errors inside a 2xx)</li>
+<li>No password hash, token or internal field in any response</li>
+<li>limit, page, sort and filter are really applied</li>
+<li>Every date is a real date, in the right time zone</li>
+<li>Negative, zero, huge and wrong-type values are rejected with a 400</li>
+<li>After a write, reading the data back shows the change</li>
+<li>Tokens expire, and old ones stop working after sign-out</li>
+<li>CORS allows only your own domains</li>
+<li>Error responses are short and reveal nothing internal</li>
+</ul></section>
+
+<p>None of these checks needs automation to start. A browser’s network tab, Postman or curl is enough to find every bug on this page. Once you have found one by hand, turn it into an automated check so it never comes back.</p>
+
+<h2 id="faq">Frequently asked questions</h2>
+<details class="faq" open><summary>What is the most common API bug?</summary><p>Responses that pass on the status code but carry wrong or missing data in the body, such as the wrong record, a null required field or an error message inside a 200 OK.</p></details>
+<details class="faq"><summary>Do I need to write code to test an API?</summary><p>No. Postman, the browser’s network tab or curl is enough to find every bug in this guide. Code helps later, when you want to repeat the checks on every build.</p></details>
+<details class="faq"><summary>Why test the API if the screen already blocks bad input?</summary><p>The screen is only one way in. Anyone can call the API directly with values the screen never sends, so the server must validate every input on its own.</p></details>
+<details class="faq"><summary>What status code should an API return when a record is not found?</summary><p>Usually 404 Not Found, with a short error message in the body. Returning 200 OK with an error message makes clients treat the failure as a success.</p></details>
+</article>
+<section class="more related"><h2>Keep reading</h2>
+<ul class="buglist"><li><a href="/articles/checkout-bugs.html">12 checkout bugs testers miss, and how to catch them</a><span>Frontend · 7 min</span></li><li><a href="/articles/bug-severity-vs-priority.html">Bug severity vs priority, explained with real examples</a><span>Testing basics · 6 min</span></li><li><a href="/bugs/#api">All API bugs in the Bug library</a><span>Bug library</span></li></ul></section>
+</main>
+<footer class="site">
+  <nav aria-label="Site"><a href="/">Play</a><a href="/articles/">Articles</a><a href="/bugs/">Bug library</a><a href="/about.html">About</a><a href="/privacy.html">Privacy Policy</a><a href="/terms.html">Terms</a><a href="/contact.html">Contact</a></nav>
+  <p>© 2026 QuizzifyTech. Free daily tech quizzes for testers and developers.</p>
+</footer>
+</div>
+<script src="/notice.js" defer></script>
+</body>
+</html>

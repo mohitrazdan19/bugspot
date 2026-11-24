@@ -3,6 +3,7 @@
 // No packages needed. It reads the PUZZLES data straight out of index.html.
 import fs from 'node:fs';
 import vm from 'node:vm';
+import { writeSitemap } from './sitemap.mjs';
 
 const SITE = 'https://quizzifytech.com/';
 const src = fs.readFileSync('index.html', 'utf8');
@@ -48,7 +49,7 @@ const adsStart = src.indexOf('<meta name="google-adsense-account"');
 const ADS = adsStart < 0 ? '' : src.slice(adsStart, src.indexOf('</script>', adsStart) + '</script>'.length);
 const LOGO = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 8.2c-2.6 0-4.4 1.9-4.4 4.6S9.4 19 12 19s4.4-3.6 4.4-6.2S14.6 8.2 12 8.2Z"/><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M12 8.2V19M9.3 6.4a2.7 2.7 0 0 1 5.4 0M7.6 12.3 4 10.6M16.4 12.3 20 10.6M8 16.4l-3.4 1.6M16 16.4l3.4 1.6"/></svg>';
 const FOOT = `<footer class="site">
-  <nav aria-label="Site"><a href="/">Play</a><a href="/bugs/">Bug library</a><a href="/about.html">About</a><a href="/privacy.html">Privacy Policy</a><a href="/terms.html">Terms</a><a href="/contact.html">Contact</a></nav>
+  <nav aria-label="Site"><a href="/">Play</a><a href="/articles/">Articles</a><a href="/bugs/">Bug library</a><a href="/about.html">About</a><a href="/privacy.html">Privacy Policy</a><a href="/terms.html">Terms</a><a href="/contact.html">Contact</a></nav>
   <p>© 2026 QuizzifyTech. Free daily tech quizzes for testers and developers.</p>
 </footer>`;
 
@@ -76,7 +77,7 @@ ${ADS}
 <body>
 <div class="bg" aria-hidden="true"><i></i><i></i></div>
 <div class="wrap">
-<header class="top"><a class="brand" href="/">${LOGO}QuizzifyTech</a><a class="play" href="/">Play today’s quiz</a></header>
+<header class="top"><a class="brand" href="/">${LOGO}QuizzifyTech</a><nav class="topnav"><a class="lnk" href="/bugs/">Bug library</a><a class="lnk" href="/articles/">Articles</a><a class="play" href="/">Play today’s quiz</a></nav></header>
 <main>
 ${body.trim()}
 </main>
@@ -163,8 +164,5 @@ ${['Easy', 'Medium', 'Hard'].map(d => { const l = byTrack[t].filter(p => p.diff 
 </section>`).join('\n')}`;
 fs.writeFileSync('bugs/index.html', page('bugs/', 'Bug library: ' + PUZZLES.length + ' software bugs explained', `${PUZZLES.length} real-world software bugs for testers, with steps to reproduce, expected vs actual results, severity and testing tips. Frontend, backend, API, database and AI testing.`, idx));
 
-const urls = [['', 'daily', '1.0'], ['bugs/', 'weekly', '0.8'], ['about.html', 'monthly', '0.6'], ['contact.html', 'yearly', '0.4'], ['privacy.html', 'yearly', '0.3'], ['terms.html', 'yearly', '0.3']]
-  .concat(PUZZLES.map(p => ['bugs/' + p.id + '.html', 'monthly', '0.6']));
-fs.writeFileSync('sitemap.xml', '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
-  urls.map(([u, f, pr]) => `  <url><loc>${SITE}${u}</loc><changefreq>${f}</changefreq><priority>${pr}</priority></url>`).join('\n') + '\n</urlset>\n');
+writeSitemap(PUZZLES.map(p => p.id));
 console.log('Built', PUZZLES.length, 'bug pages, bugs/index.html and sitemap.xml');
