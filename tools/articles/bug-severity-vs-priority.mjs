@@ -6,6 +6,7 @@ export default {
   topic: 'basics',
   kind: 'Explainer',
   published: '2026-11-24',
+  draft: true, // held back by Mohit 24 Nov; remove this line to publish (and set published to that day)
   lede: 'Severity is how bad a bug is. Priority is how soon it should be fixed. They often match, but the interesting bugs are the ones where they do not.',
   related: ['common-api-bugs', 'checkout-bugs'],
   libraryLinks: [['/bugs/', 'Every bug in the Bug library, with its severity', 'Bug library']],

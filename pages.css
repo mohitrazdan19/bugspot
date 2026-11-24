@@ -154,3 +154,4 @@ details.faq p { margin: 8px 0 2px; }
 .post h3 .n { display: inline-grid; place-items: center; width: 28px; height: 28px; margin-right: 8px; border-radius: 9px; background: linear-gradient(120deg, #7c5cff, #e2459a); color: #fff; font: 700 14px/1 var(--body); vertical-align: 2px; }
 .post h3 { font-size: 19px; margin-top: 26px; }
 .post td:first-child { white-space: nowrap; }
+.filters[hidden], .grid[hidden] { display: none; }

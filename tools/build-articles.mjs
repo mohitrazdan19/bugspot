@@ -95,6 +95,7 @@ const files = fs.readdirSync('tools/articles').filter(f => f.endsWith('.mjs')).s
 const ARTICLES = [];
 for (const f of files) {
   const a = (await import('./articles/' + f)).default;
+  if (a.draft) { console.log('Skipping draft', f); continue; }
   for (const k of ['slug', 'title', 'description', 'topic', 'published', 'lede', 'body']) if (!a[k]) throw new Error(f + ': missing ' + k);
   if (!TOPICS[a.topic]) throw new Error(f + ': unknown topic ' + a.topic);
   if (a.description.length > 160) console.warn(`warning: ${f} description is ${a.description.length} chars (Google shows about 155)`);
@@ -149,7 +150,7 @@ const idx = `<main>
 <h1>Learn to spot bugs faster</h1>
 <p class="lede">Short, practical guides for testers and developers. Every article links to real bugs you can try to find yourself.</p>
 </section>
-<nav class="filters" aria-label="Topics"><a class="on" href="#all" data-t="all">All</a>${used.map(t => `<a href="#${t}" data-t="${t}">${esc(TOPICS[t])}</a>`).join('')}</nav>
+<nav class="filters" aria-label="Topics"${used.length < 2 ? ' hidden' : ''}><a class="on" href="#all" data-t="all">All</a>${used.map(t => `<a href="#${t}" data-t="${t}">${esc(TOPICS[t])}</a>`).join('')}</nav>
 <a class="featured" href="/articles/${feat.slug}.html" data-t="${feat.topic}">
 ${cover(feat.topic, true)}
 <div>
@@ -159,7 +160,8 @@ ${cover(feat.topic, true)}
 <span class="byline">${meta(feat)}</span>
 </div>
 </a>
-<div class="grid">${rest.map(a => `<a class="card" href="/articles/${a.slug}.html" data-t="${a.topic}">${cover(a.topic)}<span class="kick">${esc(TOPICS[a.topic])}</span><h3>${esc(a.title)}</h3><p>${esc(a.description)}</p><span class="byline">${a.mins} min read</span></a>`).join('\n')}</div>
+${rest.length ? '' : '<p class="byline">More guides are on the way. New articles are added regularly.</p>'}
+<div class="grid"${rest.length ? '' : ' hidden'}>${rest.map(a => `<a class="card" href="/articles/${a.slug}.html" data-t="${a.topic}">${cover(a.topic)}<span class="kick">${esc(TOPICS[a.topic])}</span><h3>${esc(a.title)}</h3><p>${esc(a.description)}</p><span class="byline">${a.mins} min read</span></a>`).join('\n')}</div>
 <p class="byline" id="none" hidden>No articles on this topic yet. More are on the way.</p>
 <section class="strip"><div><h2>Practise on real screens</h2><p>8 new bugs every day. Free, no sign-up.</p></div><a class="play" href="/">Play today’s quiz</a></section>
 <section class="more"><h2>Looking for a specific bug?</h2><p>The <a href="/bugs/">Bug library</a> has ${ctx.PUZZLES.length} real-world bugs with steps to reproduce, expected and actual results, severity and a testing tip.</p></section>

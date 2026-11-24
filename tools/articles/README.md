@@ -11,7 +11,7 @@ Never edit the files in `articles/` by hand; they are overwritten.
 Fields: `slug` (file name of the page), `title`, `seoTitle` (optional, for the browser tab and Google),
 `description` (under 155 characters), `topic` (frontend, api, backend, database, ai or basics),
 `kind` (Guide, Checklist, Explainer...), `published` and optional `updated` (YYYY-MM-DD),
-`featured: true` to show it first, `lede`, `body` (HTML), `faq` ([question, answer] pairs, shown as
+`featured: true` to show it first, `draft: true` to keep it off the site, `lede`, `body` (HTML), `faq` ([question, answer] pairs, shown as
 FAQs and sent to Google as FAQ data), `related` (other article slugs) and `libraryLinks`.
 
 In `body`, `<h2 id="...">` headings make the table of contents, `{{bug:<puzzle id>}}` adds a

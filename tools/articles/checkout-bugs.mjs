@@ -6,6 +6,7 @@ export default {
   topic: 'frontend',
   kind: 'Checklist',
   published: '2026-11-24',
+  draft: true, // held back by Mohit 24 Nov; remove this line to publish (and set published to that day)
   lede: 'The checkout is where an app makes its money, and where small bugs cost the most. Here are twelve checkout bugs that slip through testing, grouped by where they hide.',
   related: ['common-api-bugs', 'bug-severity-vs-priority'],
   libraryLinks: [['/bugs/#frontend', 'All Frontend bugs in the Bug library', 'Bug library']],
