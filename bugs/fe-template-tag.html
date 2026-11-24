@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Notification shows raw template tags: “Hi {{first_name}}, your order #{{order_id}}” | QuizzifyTech</title>
+<meta name="description" content="Frontend testing bug: Notification shows raw template tags: “Hi {{first_name}}, your order #{{order_id}}”. Expected Hi Riya, your order #48213 is on its way!; actual Hi {{first_name}}, your order #{{order_id}} is on its way!. Steps to reproduce, why it matters and a testing tip.">
+<link rel="canonical" href="https://quizzifytech.com/bugs/fe-template-tag.html">
+<meta property="og:title" content="Notification shows raw template tags: “Hi {{first_name}}, your order #{{order_id}}” | QuizzifyTech">
+<meta property="og:description" content="Frontend testing bug: Notification shows raw template tags: “Hi {{first_name}}, your order #{{order_id}}”. Expected Hi Riya, your order #48213 is on its way!; actual Hi {{first_name}}, your order #{{order_id}} is on its way!. Steps to reproduce, why it matters and a testing tip.">
+<meta property="og:url" content="https://quizzifytech.com/bugs/fe-template-tag.html">
+<meta property="og:image" content="https://quizzifytech.com/og.png">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27%3E%3Crect width=%2724%27 height=%2724%27 rx=%276%27 fill=%27%23d6283a%27/%3E%3Cpath fill=%27%23fff%27 d=%27M12 8.2c-2.6 0-4.4 1.9-4.4 4.6S9.4 19 12 19s4.4-3.6 4.4-6.2S14.6 8.2 12 8.2Z%27/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Plus+Jakarta+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/pages.css">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Notification shows raw template tags: “Hi {{first_name}}, your order #{{order_id}}”","description":"Frontend testing bug: Notification shows raw template tags: “Hi {{first_name}}, your order #{{order_id}}”. Expected Hi Riya, your order #48213 is on its way!; actual Hi {{first_name}}, your order #{{order_id}} is on its way!. Steps to reproduce, why it matters and a testing tip.","url":"https://quizzifytech.com/bugs/fe-template-tag.html","about":"Frontend testing","isPartOf":{"@type":"WebSite","name":"QuizzifyTech","url":"https://quizzifytech.com/"}}</script>
+<script src="/gtm.js"></script>
+<meta name="google-adsense-account" content="ca-pub-3028142354862663">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3028142354862663" crossorigin="anonymous"></script>
+</head>
+<body>
+<div class="bg" aria-hidden="true"><i></i><i></i></div>
+<div class="wrap">
+<header class="top"><a class="brand" href="/"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 8.2c-2.6 0-4.4 1.9-4.4 4.6S9.4 19 12 19s4.4-3.6 4.4-6.2S14.6 8.2 12 8.2Z"/><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M12 8.2V19M9.3 6.4a2.7 2.7 0 0 1 5.4 0M7.6 12.3 4 10.6M16.4 12.3 20 10.6M8 16.4l-3.4 1.6M16 16.4l3.4 1.6"/></svg>QuizzifyTech</a><nav class="topnav"><a class="lnk lib" href="/bugs/">Bug library</a><a class="lnk" href="/articles/">Articles</a><a class="play" href="/">Play<span class="long"> today’s quiz</span></a></nav></header>
+<main>
+<p class="crumbs"><a href="/bugs/">Bug library</a> › <a href="/bugs/#frontend">Frontend testing</a></p>
+<article>
+<p class="eyebrow">Frontend testing · Notifications</p>
+<h1>Notification shows raw template tags: “Hi {{first_name}}, your order #{{order_id}}”</h1>
+<p class="chips"><span class="chip sev-P3">P3 · Minor</span><span class="chip">Beginner</span><span class="chip">Notifications</span></p>
+
+<div class="note try"><p><strong>Want to find it yourself first?</strong> This page gives away the answer. Play this bug on a fake app screen and see if you can spot it in three tries.</p><p><a class="play" href="/?p=fe-template-tag">Spot this bug</a></p></div>
+
+<h2>The clue</h2>
+<p>Read each notification as the customer would.</p>
+
+<h2>Steps to reproduce</h2>
+<ol><li>Place an order</li><li>Wait for the “Out for delivery” notification and open Alerts</li></ol>
+
+<h2>Expected result</h2>
+<p>Hi Riya, your order #48213 is on its way!</p>
+
+<h2>Actual result</h2>
+<p>Hi {{first_name}}, your order #{{order_id}} is on its way!</p>
+
+<h2>Why it matters</h2>
+<p>This is a minor (P3) bug. It does not stop anyone, but it looks careless and makes people trust the product less. It is usually fixed in a normal sprint.</p>
+
+<h2>Testing tip</h2>
+<p>Check every message template with real data. Placeholders that are not filled in look broken and untrustworthy.</p>
+
+<h2>How to find bugs like this</h2>
+<p>Frontend bugs are the ones users see on the screen: wrong totals, labels that do not match, broken layouts, dates that cannot be right and buttons that say the wrong thing. When you test, try these checks:</p>
+<ul><li>Add up every total and compare numbers that should match.</li><li>Read every label, plural and date out loud.</li><li>Try the smallest and largest values a field allows.</li><li>Check the screen on a small phone and with long text.</li></ul>
+</article>
+
+<section class="more">
+<h2>More Frontend testing bugs</h2>
+<ul class="buglist"><li><a href="/bugs/fe-epoch-date.html">Contact’s “last seen” shows 1 Jan 1970</a><span>P3 · Beginner</span></li><li><a href="/bugs/fe-otp-boxes.html">Screen asks for a 6-digit code but only has 4 boxes</a><span>P2 · Beginner</span></li><li><a href="/bugs/fe-dup-tab.html">Bottom tab bar shows “Workouts” twice</a><span>P3 · Beginner</span></li></ul>
+<p><a href="/bugs/">See all 158 bugs</a></p>
+</section>
+</main>
+<footer class="site">
+  <nav aria-label="Site"><a href="/">Play</a><a href="/articles/">Articles</a><a href="/bugs/">Bug library</a><a href="/about.html">About</a><a href="/privacy.html">Privacy Policy</a><a href="/terms.html">Terms</a><a href="/contact.html">Contact</a></nav>
+  <p>© 2026 QuizzifyTech. Free daily tech quizzes for testers and developers.</p>
+</footer>
+</div>
+<script src="/notice.js" defer></script>
+</body>
+</html>
