@@ -3078,6 +3078,1199 @@ PUZZLES.push(
   }
 );
 
+// Batch 5: 56 new puzzles across all tracks (21 easy, 21 medium, 14 hard).
+// `since` keeps them out of daily sets before that date. FRESH_BATCHES (game layer) shows them first in Today's Quiz.
+const B5 = '2026-11-25';
+PUZZLES.push(
+  // ----- Frontend, easy -----
+  {
+    id: 'fe-only-zero-left', area: 'Product', since: B5, sev: 'P3', diff: 'Easy', ac: '#ea580c',
+    hint: 'Read the stock message next to the button.',
+    html: SB + `
+<div class="ab"><span class="logo">S</span>ShopNest</div>
+<div class="pad">
+  <div class="hi">Steel water bottle, 1 L</div>
+  <div class="m s">★ 4.4 · 2,318 ratings</div>
+  <div class="card">
+    <div class="row"><span class="m">Price</span><span class="b">₹549</span></div>
+    <div class="row"><span class="m">Delivery</span><span>Free, by Thu 27 Nov</span></div>
+  </div>
+  <div class="s" style="color:#b91c1c;font-weight:700" data-bug>Hurry! Only 0 left in stock</div>
+  <div class="btn">Add to cart</div>
+  <div class="btn o">Buy now</div>
+</div>`,
+    rep: {
+      title: 'Product says “Only 0 left in stock” but can still be added to the cart',
+      steps: ['Open a product whose stock has just run out', 'Read the stock message and the buttons'],
+      expected: '“Out of stock” with the buy buttons disabled (or a “Notify me” button)',
+      actual: '“Hurry! Only 0 left in stock” with Add to cart and Buy now still active',
+      tip: 'Test stock at 1, 0 and below. Messages written for “a few left” often never handle zero.',
+    },
+  },
+  {
+    id: 'fe-template-tag', area: 'Notifications', since: B5, sev: 'P3', diff: 'Easy', ac: '#0891b2',
+    hint: 'Read each notification as the customer would.',
+    html: SB + `
+<div class="ab"><span class="logo">Q</span>QuickCart · Alerts</div>
+<div class="pad">
+  <div class="card">
+    <div class="row"><div><div class="b">Order delivered</div><div class="m s">Your groceries were left at the door. 2h ago</div></div></div>
+    <div class="row" data-bug><div><div class="b">Out for delivery</div><div class="m s">Hi {{first_name}}, your order #{{order_id}} is on its way! 5h ago</div></div></div>
+    <div class="row"><div><div class="b">Payment received</div><div class="m s">₹1,240 paid by UPI. Yesterday</div></div></div>
+    <div class="row"><div><div class="b">Weekend offer</div><div class="m s">Flat ₹75 off on fruits. 2 days ago</div></div></div>
+  </div>
+</div>
+<div class="tab"><span>Home</span><span>Alerts</span><span>Account</span></div>`,
+    rep: {
+      title: 'Notification shows raw template tags: “Hi {{first_name}}, your order #{{order_id}}”',
+      steps: ['Place an order', 'Wait for the “Out for delivery” notification and open Alerts'],
+      expected: 'Hi Riya, your order #48213 is on its way!',
+      actual: 'Hi {{first_name}}, your order #{{order_id}} is on its way!',
+      tip: 'Check every message template with real data. Placeholders that are not filled in look broken and untrustworthy.',
+    },
+  },
+  {
+    id: 'fe-epoch-date', area: 'Chat', since: B5, sev: 'P3', diff: 'Easy', ac: '#059669',
+    hint: 'One of these dates is far too old.',
+    html: SB + `
+<div class="ab"><span class="logo">T</span>TalkTo · Contacts</div>
+<div class="pad">
+  <div class="card">
+    <div class="row"><div><div class="b">Amit Verma</div><div class="m s">Online</div></div><span class="chip">●</span></div>
+    <div class="row"><div><div class="b">Neha Kapoor</div><div class="m s">Last seen today at 08:12</div></div></div>
+    <div class="row" data-bug><div><div class="b">Rahul Mehta</div><div class="m s">Last seen 1 Jan 1970</div></div></div>
+    <div class="row"><div><div class="b">Sana Shaikh</div><div class="m s">Last seen yesterday at 22:40</div></div></div>
+  </div>
+</div>
+<div class="tab"><span>Chats</span><span>Contacts</span><span>Settings</span></div>`,
+    rep: {
+      title: 'Contact’s “last seen” shows 1 Jan 1970',
+      steps: ['Open Contacts', 'Find a contact who has never opened the app or hides last seen'],
+      expected: 'A real time, or a neutral text like “Last seen recently”',
+      actual: 'Last seen 1 Jan 1970',
+      tip: '1 Jan 1970 is time zero for computers. Seeing it means a missing or zero timestamp was shown as a date.',
+    },
+  },
+  {
+    id: 'fe-otp-boxes', area: 'Verify phone', since: B5, sev: 'P2', diff: 'Easy', ac: '#7c3aed',
+    hint: 'Count what the text asks for, then count the boxes.',
+    html: SB + `
+<div class="ab"><span class="logo">P</span>PayWise</div>
+<div class="pad">
+  <div class="hi">Verify your number</div>
+  <div class="m s">Enter the 6-digit code we sent to +91 98•••• 4310</div>
+  <div style="display:flex;gap:10px;justify-content:center;padding:6px 0" data-bug>
+    <div class="fld" style="width:44px;justify-content:center">4</div>
+    <div class="fld" style="width:44px;justify-content:center">8</div>
+    <div class="fld" style="width:44px;justify-content:center">2</div>
+    <div class="fld" style="width:44px;justify-content:center">&nbsp;</div>
+  </div>
+  <div class="btn">Verify</div>
+  <div class="s m" style="text-align:center">Resend code in 00:24</div>
+</div>`,
+    rep: {
+      title: 'Screen asks for a 6-digit code but only has 4 boxes',
+      steps: ['Sign up with a phone number', 'Open the verify screen and try to type the code'],
+      expected: '6 input boxes, matching the 6-digit code',
+      actual: 'Only 4 boxes, so the full code cannot be entered',
+      tip: 'Compare the instructions on a screen with what the screen lets you do. Copy and layout often drift apart.',
+    },
+  },
+  {
+    id: 'fe-dup-tab', area: 'Navigation', since: B5, sev: 'P3', diff: 'Easy', ac: '#db2777',
+    hint: 'Look at the bottom of the screen.',
+    html: SB + `
+<div class="ab"><span class="logo">F</span>FitTrack</div>
+<div class="pad">
+  <div class="hi">Today</div>
+  <div class="card">
+    <div class="row"><span class="m">Steps</span><span class="b">6,412 / 8,000</span></div>
+    <div class="row"><span class="m">Water</span><span class="b">5 / 8 glasses</span></div>
+    <div class="row"><span class="m">Sleep</span><span class="b">7h 10m</span></div>
+  </div>
+  <div class="btn">Start a workout</div>
+</div>
+<div class="tab" data-bug><span>Today</span><span>Workouts</span><span>Workouts</span><span>Profile</span></div>`,
+    rep: {
+      title: 'Bottom tab bar shows “Workouts” twice',
+      steps: ['Open the app', 'Read the labels on the bottom tab bar'],
+      expected: 'Four different tabs, for example Today, Workouts, Progress, Profile',
+      actual: 'Today, Workouts, Workouts, Profile',
+      tip: 'Navigation is on every screen. Read every label in menus and tab bars, including the ones you never tap.',
+    },
+  },
+  {
+    id: 'fe-good-morning', area: 'Home', since: B5, sev: 'P4', diff: 'Easy', ac: '#ca8a04',
+    hint: 'Check the time in the corner.',
+    html: '<div class="sb"><span>21:41</span><span>5G ▂▄▆ 64%</span></div>' + `
+<div class="ab"><span class="logo">B</span>BrewBuddy</div>
+<div class="pad">
+  <div class="hi" data-bug>Good morning, Riya ☀️</div>
+  <div class="m s">Your usual: Cold coffee, large</div>
+  <div class="card">
+    <div class="row"><div><div class="b">Cold coffee</div><div class="m s">Large · less sugar</div></div><span class="b">₹180</span></div>
+    <div class="row"><div><div class="b">Veg sandwich</div><div class="m s">Grilled</div></div><span class="b">₹140</span></div>
+  </div>
+  <div class="btn">Order again</div>
+</div>`,
+    rep: {
+      title: 'App says “Good morning” at 9:41 PM',
+      steps: ['Open the app late in the evening', 'Read the greeting on Home'],
+      expected: 'Good evening, Riya',
+      actual: 'Good morning, Riya at 21:41',
+      tip: 'Time-based text often uses the server’s time zone or a fixed value. Test greetings at night and in other time zones.',
+    },
+  },
+
+  // ----- Frontend, medium -----
+  {
+    id: 'fe-seat-count', area: 'Movie tickets', since: B5, sev: 'P2', diff: 'Medium', ac: '#dc2626',
+    hint: 'Count the seats, then count the tickets.',
+    html: SB + `
+<div class="ab"><span class="logo">M</span>MovieMate</div>
+<div class="pad">
+  <div class="hi">Booking summary</div>
+  <div class="card">
+    <div class="row"><span class="m">Movie</span><span class="b">The Last Monsoon</span></div>
+    <div class="row"><span class="m">Show</span><span>Sat 29 Nov · 7:30 PM</span></div>
+    <div class="row" data-bug><span class="m">Seats</span><span class="b">F7, F8, F9</span></div>
+    <div class="row"><span class="m">Tickets</span><span>2 × ₹250</span></div>
+    <div class="row"><span class="b">Total</span><span class="b">₹500</span></div>
+  </div>
+  <div class="btn">Pay ₹500</div>
+</div>`,
+    rep: {
+      title: 'Booking shows 3 seats but charges for 2 tickets',
+      steps: ['Pick seats F7, F8 and F9', 'Go to the booking summary'],
+      expected: 'Seats and tickets match: 3 × ₹250 = ₹750',
+      actual: 'Seats F7, F8, F9 but only 2 tickets (₹500)',
+      tip: 'When one screen shows the same thing twice (seats and ticket count), check that both always agree.',
+    },
+  },
+  {
+    id: 'fe-free-delivery', area: 'Cart', since: B5, sev: 'P3', diff: 'Medium', ac: '#16a34a',
+    hint: 'Read the free delivery rule, then the subtotal.',
+    html: SB + `
+<div class="ab"><span class="logo">G</span>GreenGrocer · Cart</div>
+<div class="pad">
+  <div class="m s">Free delivery on orders above ₹499</div>
+  <div class="card">
+    <div class="row"><div><div class="b">Alphonso mangoes</div><div class="m s">1 dozen</div></div><span>₹420</span></div>
+    <div class="row"><div><div class="b">Greek yoghurt</div><div class="m s">400 g</div></div><span>₹129</span></div>
+  </div>
+  <div class="card">
+    <div class="row"><span class="m">Subtotal</span><span>₹549</span></div>
+    <div class="row" data-bug><span class="m">Add ₹150 more for free delivery</span><span>₹40</span></div>
+    <div class="row"><span class="b">Total</span><span class="b">₹589</span></div>
+  </div>
+  <div class="btn">Place order</div>
+</div>`,
+    rep: {
+      title: 'Cart over ₹499 still charges ₹40 delivery and asks for ₹150 more',
+      steps: ['Add items worth ₹549', 'Open the cart'],
+      expected: 'Free delivery, total ₹549',
+      actual: '“Add ₹150 more for free delivery” and a ₹40 fee (total ₹589)',
+      tip: 'Test offers just above, at and just below the threshold. Old or hard-coded limits often hide here.',
+    },
+  },
+  {
+    id: 'fe-emi-math', area: 'Checkout', since: B5, sev: 'P2', diff: 'Medium', ac: '#2563eb',
+    hint: 'Multiply the monthly amount by the months.',
+    html: SB + `
+<div class="ab"><span class="logo">E</span>ElectroHub</div>
+<div class="pad">
+  <div class="hi">Pay in easy EMIs</div>
+  <div class="m s">Phone price: ₹12,000</div>
+  <div class="card">
+    <div class="row"><div><div class="b">3 months</div><div class="m s">No-cost EMI</div></div><span>₹4,000/mo</span></div>
+    <div class="row" data-bug><div><div class="b">6 months</div><div class="m s">No-cost EMI</div></div><span>₹2,500/mo</span></div>
+    <div class="row"><div><div class="b">12 months</div><div class="m s">13% p.a. interest</div></div><span>₹1,072/mo</span></div>
+  </div>
+  <div class="btn">Continue</div>
+</div>`,
+    rep: {
+      title: '6-month “no-cost” EMI adds up to ₹15,000 for a ₹12,000 phone',
+      steps: ['Open checkout for a ₹12,000 phone', 'Choose EMI and compare the plans'],
+      expected: '6 × ₹2,000 = ₹12,000 for a no-cost EMI',
+      actual: '6 × ₹2,500 = ₹15,000, labelled “No-cost EMI”',
+      tip: 'Multiply instalments back to the total. “No-cost” and “free” labels are promises that must match the maths.',
+    },
+  },
+  {
+    id: 'fe-green-error', area: 'Payment', since: B5, sev: 'P3', diff: 'Medium', ac: '#0d9488',
+    hint: 'Does the style match the message?',
+    html: SB + `
+<div class="ab"><span class="logo">P</span>PayWise</div>
+<div class="pad">
+  <div class="hi">Send money</div>
+  <div class="card">
+    <div class="row"><span class="m">To</span><span class="b">Amit Verma</span></div>
+    <div class="row"><span class="m">Amount</span><span class="b">₹2,000</span></div>
+    <div class="row"><span class="m">From</span><span>HDFC ••4421</span></div>
+  </div>
+  <div data-bug style="background:#dcfce7;color:#166534;border:1.5px solid #22c55e;border-radius:12px;padding:12px;font-weight:700">✓ Payment failed. Your bank declined the transfer.</div>
+  <div class="btn">Done</div>
+</div>`,
+    rep: {
+      title: 'Failed payment is shown as a green success message with a tick',
+      steps: ['Send money from an account the bank will decline', 'Look at the result message'],
+      expected: 'A red or warning style, an error icon, and a “Try again” button',
+      actual: 'Green box with a ✓ that says “Payment failed”, and only a Done button',
+      tip: 'People read colours and icons before words. Check that error states really look like errors.',
+    },
+  },
+  {
+    id: 'fe-expired-coupon', area: 'Offers', since: B5, sev: 'P2', diff: 'Medium', ac: '#9333ea',
+    hint: 'Compare each coupon’s date with today.',
+    html: SB + `
+<div class="ab"><span class="logo">S</span>ShopNest · Coupons</div>
+<div class="pad">
+  <div class="m s">Today: 24 Nov 2026 · Cart ₹2,400</div>
+  <div class="card">
+    <div class="row"><div><div class="b">WINTER10</div><div class="m s">10% off · valid till 31 Dec</div></div><span class="m s">Apply</span></div>
+    <div class="row" data-bug><div><div class="b">FEST20</div><div class="m s">₹200 off · expired 15 Nov</div></div><span class="chip">Applied ✓</span></div>
+    <div class="row"><div><div class="b">NEWUSER</div><div class="m s">First order only</div></div><span class="m s">Not eligible</span></div>
+  </div>
+  <div class="card"><div class="row"><span class="b">You save</span><span class="b">₹200</span></div></div>
+  <div class="btn">Pay ₹2,200</div>
+</div>`,
+    rep: {
+      title: 'Coupon that expired on 15 Nov is still applied',
+      steps: ['On 24 Nov, open Coupons with a ₹2,400 cart', 'Try the FEST20 coupon'],
+      expected: 'FEST20 is rejected with “This coupon has expired”',
+      actual: 'FEST20 is marked “Applied ✓” and takes ₹200 off',
+      tip: 'Test coupons on the last valid day, the day after, and across time zones. Expiry checks are easy to forget.',
+    },
+  },
+  {
+    id: 'fe-item-qty-sum', area: 'Order summary', since: B5, sev: 'P3', diff: 'Medium', ac: '#c2410c',
+    hint: 'Add up the quantities.',
+    html: SB + `
+<div class="ab"><span class="logo">C</span>ChaiBox · Order</div>
+<div class="pad">
+  <div class="hi" data-bug>Order summary (3 items)</div>
+  <div class="card">
+    <div class="row"><div><div class="b">Masala chai, 250 g</div><div class="m s">Qty 2</div></div><span>₹480</span></div>
+    <div class="row"><div><div class="b">Ginger cookies</div><div class="m s">Qty 1</div></div><span>₹150</span></div>
+    <div class="row"><div><div class="b">Steel tea strainer</div><div class="m s">Qty 2</div></div><span>₹198</span></div>
+  </div>
+  <div class="card"><div class="row"><span class="b">Total</span><span class="b">₹828</span></div></div>
+  <div class="btn">Place order</div>
+</div>`,
+    rep: {
+      title: 'Order summary says 3 items, but the quantities add up to 5',
+      steps: ['Add 2 chai, 1 cookies and 2 strainers to the cart', 'Open the order summary'],
+      expected: 'Order summary (5 items), or clearly “3 products”',
+      actual: 'Order summary (3 items)',
+      tip: '“Items” can mean lines or units. Check which one the product means, and that every screen uses the same rule.',
+    },
+  },
+
+  // ----- Frontend, hard -----
+  {
+    id: 'fe-skipped-date', area: 'Delivery slots', since: B5, sev: 'P2', diff: 'Hard', ac: '#0891b2',
+    hint: 'Walk through the dates one day at a time.',
+    html: SB + `
+<div class="ab"><span class="logo">Q</span>QuickCart</div>
+<div class="pad">
+  <div class="hi">Choose a delivery day</div>
+  <div class="card">
+    <div class="row"><span>Mon 1 Dec</span><span class="chip">Free</span></div>
+    <div class="row"><span>Tue 2 Dec</span><span class="chip">Free</span></div>
+    <div class="row"><span>Wed 3 Dec</span><span class="chip warn">₹30</span></div>
+    <div class="row" data-bug><span>Thu 5 Dec</span><span class="chip">Free</span></div>
+    <div class="row"><span>Fri 5 Dec</span><span class="chip">Free</span></div>
+  </div>
+  <div class="btn">Confirm day</div>
+</div>`,
+    rep: {
+      title: 'Delivery days skip 4 Dec and show 5 Dec twice (Thu and Fri)',
+      steps: ['Open checkout on 30 Nov', 'Look at the list of delivery days'],
+      expected: 'Thu 4 Dec, then Fri 5 Dec',
+      actual: 'Thu 5 Dec, then Fri 5 Dec',
+      tip: 'Date lists break around month ends, time zone changes and daylight saving. Read each day and weekday together.',
+    },
+  },
+  {
+    id: 'fe-split-pct', area: 'Split bill', since: B5, sev: 'P2', diff: 'Hard', ac: '#4f46e5',
+    hint: 'What should the shares add up to?',
+    html: SB + `
+<div class="ab"><span class="logo">S</span>SplitEasy</div>
+<div class="pad">
+  <div class="hi">Dinner at Olive · ₹3,000</div>
+  <div class="card">
+    <div class="row"><div><div class="b">Riya</div><div class="m s">40%</div></div><span>₹1,200</span></div>
+    <div class="row" data-bug><div><div class="b">Amit</div><div class="m s">35%</div></div><span>₹1,050</span></div>
+    <div class="row"><div><div class="b">Neha</div><div class="m s">35%</div></div><span>₹1,050</span></div>
+  </div>
+  <div class="m s">Everyone will get a payment request.</div>
+  <div class="btn">Send requests</div>
+</div>`,
+    rep: {
+      title: 'Bill split adds up to 110% (₹3,300 on a ₹3,000 bill)',
+      steps: ['Split a ₹3,000 bill by percentage', 'Set Riya to 40% and Amit and Neha to 35% each'],
+      expected: 'The app blocks Send until shares add up to 100%',
+      actual: 'Shares total 110% and requests worth ₹3,300 can be sent',
+      tip: 'Whenever parts make a whole, test that they add up to exactly 100%, including rounding.',
+    },
+  },
+  {
+    id: 'fe-12h-clock', area: 'Pickup', since: B5, sev: 'P3', diff: 'Hard', ac: '#be123c',
+    hint: 'Read each time carefully, including AM and PM.',
+    html: SB + `
+<div class="ab"><span class="logo">D</span>DineIn · Pickup</div>
+<div class="pad">
+  <div class="hi">Pick a time</div>
+  <div class="card">
+    <div class="row"><span>11:30 AM</span><span class="m s">Busy</span></div>
+    <div class="row"><span>11:45 AM</span><span class="chip">Open</span></div>
+    <div class="row" data-bug><span>00:00 PM</span><span class="chip">Open</span></div>
+    <div class="row"><span>12:15 PM</span><span class="chip">Open</span></div>
+  </div>
+  <div class="btn">Confirm pickup</div>
+</div>`,
+    rep: {
+      title: 'Noon is shown as “00:00 PM” in the pickup times',
+      steps: ['Order for pickup before lunch', 'Look at the list of pickup times around noon'],
+      expected: '12:00 PM',
+      actual: '00:00 PM',
+      tip: '12-hour clocks have two traps: noon and midnight. Always test 12:00 AM and 12:00 PM.',
+    },
+  },
+  {
+    id: 'fe-boarding-time', area: 'Boarding pass', since: B5, sev: 'P2', diff: 'Hard', ac: '#0369a1',
+    hint: 'Put the times in the order they happen.',
+    html: SB + `
+<div class="ab"><span class="logo">A</span>AirIndigo</div>
+<div class="pad">
+  <div class="card">
+    <div class="row"><span class="m">Passenger</span><span class="b">Riya Sharma</span></div>
+    <div class="row"><span class="m">Flight</span><span class="b">AI 864 · DEL → BOM</span></div>
+    <div class="row"><span class="m">Date</span><span>Fri 28 Nov</span></div>
+    <div class="row"><span class="m">Departs</span><span class="b">10:15</span></div>
+    <div class="row" data-bug><span class="m">Boarding</span><span class="b">10:40</span></div>
+    <div class="row"><span class="m">Gate · Seat</span><span>32B · 14A</span></div>
+  </div>
+  <div class="btn">Add to wallet</div>
+</div>`,
+    rep: {
+      title: 'Boarding time (10:40) is after the departure time (10:15)',
+      steps: ['Check in for flight AI 864', 'Open the boarding pass'],
+      expected: 'Boarding about 30–45 minutes before departure, for example 09:35',
+      actual: 'Boarding 10:40, departure 10:15',
+      tip: 'When a screen shows several times, check they happen in a possible order. Ask: could this really happen?',
+    },
+  },
+
+  // ----- API -----
+  {
+    id: 'api-404-body', area: 'Products API', track: 'API', since: B5, sev: 'P2', diff: 'Easy', ac: '#0f766e',
+    hint: 'Does the status code match the body?',
+    html: SB + `
+<div class="ab"><span class="logo">A</span>API client</div>
+<div class="pad">
+  <div class="req"><span class="verb">GET</span>/api/products/55</div>
+  <div class="m s" data-bug>404 Not Found · 72 ms · application/json</div>
+  <div class="code"><span class="ln">{</span><span class="ln">  <span class="k">"id"</span>: <span class="n">55</span>,</span><span class="ln">  <span class="k">"name"</span>: <span class="v">"Steel water bottle"</span>,</span><span class="ln">  <span class="k">"price"</span>: <span class="n">549</span>,</span><span class="ln">  <span class="k">"in_stock"</span>: <span class="n">true</span></span><span class="ln">}</span></div>
+</div>`,
+    rep: {
+      title: 'GET /products/55 returns the product but with status 404 Not Found',
+      steps: ['Send GET /api/products/55', 'Check the status code and the body'],
+      expected: '200 OK with the product',
+      actual: '404 Not Found with the full product in the body',
+      tip: 'Apps and caches trust status codes. A wrong code makes good data look missing, or bad data look fine.',
+    },
+  },
+  {
+    id: 'api-http-login', area: 'Auth API', track: 'API', since: B5, sev: 'P1', diff: 'Easy', ac: '#0f766e',
+    hint: 'Look closely at the address.',
+    html: SB + `
+<div class="ab"><span class="logo">A</span>API client</div>
+<div class="pad">
+  <div class="req" data-bug><span class="verb">POST</span>http://api.shopnest.in/v1/login</div>
+  <div class="code"><span class="ln">{</span><span class="ln">  <span class="k">"email"</span>: <span class="v">"riya@mail.com"</span>,</span><span class="ln">  <span class="k">"password"</span>: <span class="v">"Monsoon@2026"</span></span><span class="ln">}</span></div>
+  <div class="m s">200 OK · 140 ms</div>
+  <div class="code"><span class="ln">{ <span class="k">"token"</span>: <span class="v">"eyJhbGciOi…"</span> }</span></div>
+</div>`,
+    rep: {
+      title: 'Login API is called over plain http, so the password travels unencrypted',
+      steps: ['Sign in on the app', 'Watch the login request in the network log'],
+      expected: 'https:// only, and http requests are refused or redirected',
+      actual: 'POST http://api.shopnest.in/v1/login with the password in the body',
+      tip: 'Check the scheme of every request that carries passwords, tokens or personal data. It must be https.',
+    },
+  },
+  {
+    id: 'api-content-type', area: 'Headers', track: 'API', since: B5, sev: 'P3', diff: 'Easy', ac: '#0f766e',
+    hint: 'What kind of data is in the body?',
+    html: SB + `
+<div class="ab"><span class="logo">A</span>API client</div>
+<div class="pad">
+  <div class="req"><span class="verb">GET</span>/api/orders/88</div>
+  <div class="m s">200 OK · Response headers</div>
+  <div class="code"><span class="ln" data-bug><span class="k">Content-Type</span>: text/html; charset=utf-8</span><span class="ln"><span class="k">Cache-Control</span>: no-store</span><span class="ln"><span class="k">X-Request-Id</span>: 91ac-22f0</span></div>
+  <div class="m s">Body</div>
+  <div class="code"><span class="ln">{ <span class="k">"id"</span>: <span class="n">88</span>, <span class="k">"status"</span>: <span class="v">"shipped"</span> }</span></div>
+</div>`,
+    rep: {
+      title: 'JSON response is labelled Content-Type: text/html',
+      steps: ['Send GET /api/orders/88', 'Compare the Content-Type header with the body'],
+      expected: 'Content-Type: application/json',
+      actual: 'Content-Type: text/html; charset=utf-8',
+      tip: 'Clients decide how to read a body from Content-Type. A wrong type can break parsing and opens doors to XSS.',
+    },
+  },
+  {
+    id: 'api-currency', area: 'Orders API', track: 'API', since: B5, sev: 'P2', diff: 'Easy', ac: '#0f766e',
+    hint: 'This is an Indian store. Check every field.',
+    html: SB + `
+<div class="ab"><span class="logo">A</span>API client</div>
+<div class="pad">
+  <div class="req"><span class="verb">GET</span>/api/orders/1204</div>
+  <div class="m s">200 OK · 66 ms · application/json</div>
+  <div class="code"><span class="ln">{</span><span class="ln">  <span class="k">"id"</span>: <span class="n">1204</span>,</span><span class="ln">  <span class="k">"store"</span>: <span class="v">"ShopNest India"</span>,</span><span class="ln">  <span class="k">"amount"</span>: <span class="n">1499</span>,</span><span class="ln" data-bug>  <span class="k">"currency"</span>: <span class="v">"USD"</span>,</span><span class="ln">  <span class="k">"ship_to"</span>: <span class="v">"Pune, IN"</span></span><span class="ln">}</span></div>
+</div>`,
+    rep: {
+      title: 'Order paid in rupees is returned with currency “USD”',
+      steps: ['Place a ₹1,499 order on the India store', 'Send GET /api/orders/1204'],
+      expected: '"currency": "INR"',
+      actual: '"currency": "USD", so 1499 could be shown or refunded as $1,499',
+      tip: 'An amount without the right currency is a wrong amount. Check currency on every money field.',
+    },
+  },
+  {
+    id: 'api-get-cancel', area: 'Orders API', track: 'API', since: B5, sev: 'P2', diff: 'Medium', ac: '#0f766e',
+    hint: 'Which HTTP method should change data?',
+    html: SB + `
+<div class="ab"><span class="logo">A</span>API client</div>
+<div class="pad">
+  <div class="req" data-bug><span class="verb">GET</span>/api/orders/88/cancel</div>
+  <div class="m s">200 OK · 95 ms · application/json</div>
+  <div class="code"><span class="ln">{</span><span class="ln">  <span class="k">"id"</span>: <span class="n">88</span>,</span><span class="ln">  <span class="k">"status"</span>: <span class="v">"cancelled"</span>,</span><span class="ln">  <span class="k">"refund"</span>: <span class="n">1499</span></span><span class="ln">}</span></div>
+</div>`,
+    rep: {
+      title: 'A GET request cancels an order',
+      steps: ['Send GET /api/orders/88/cancel', 'Check the order status'],
+      expected: 'Cancelling needs POST (or PATCH/DELETE). GET only reads data.',
+      actual: 'GET cancels the order and starts a refund',
+      tip: 'GET links get prefetched, cached and crawled. Any GET that changes data can be triggered by accident or by an attacker.',
+    },
+  },
+  {
+    id: 'api-no-auth', area: 'Admin API', track: 'API', since: B5, sev: 'P1', diff: 'Medium', ac: '#0f766e',
+    hint: 'What is missing from the request?',
+    html: SB + `
+<div class="ab"><span class="logo">A</span>API client</div>
+<div class="pad">
+  <div class="req"><span class="verb">GET</span>/api/admin/users</div>
+  <div class="m s">Request headers: Accept: application/json (no Authorization)</div>
+  <div class="m s" data-bug>200 OK · 210 ms · application/json</div>
+  <div class="code"><span class="ln">[</span><span class="ln">  { <span class="k">"id"</span>: <span class="n">1</span>, <span class="k">"email"</span>: <span class="v">"riya@mail.com"</span>, <span class="k">"role"</span>: <span class="v">"admin"</span> },</span><span class="ln">  { <span class="k">"id"</span>: <span class="n">2</span>, <span class="k">"email"</span>: <span class="v">"amit@mail.com"</span>, <span class="k">"role"</span>: <span class="v">"user"</span> },</span><span class="ln">  <span class="c">…4,812 more</span></span><span class="ln">]</span></div>
+</div>`,
+    rep: {
+      title: 'Admin users API returns every user without any login',
+      steps: ['Send GET /api/admin/users with no Authorization header'],
+      expected: '401 Unauthorized',
+      actual: '200 OK with all 4,814 users and their emails',
+      tip: 'Call every protected endpoint with no token, an expired token and a normal user’s token. Only the right one should work.',
+    },
+  },
+  {
+    id: 'api-next-page', area: 'Orders API', track: 'API', since: B5, sev: 'P3', diff: 'Medium', ac: '#0f766e',
+    hint: 'Which page is this, and how many are there?',
+    html: SB + `
+<div class="ab"><span class="logo">A</span>API client</div>
+<div class="pad">
+  <div class="req"><span class="verb">GET</span>/api/orders?page=5</div>
+  <div class="m s">200 OK · 88 ms · application/json</div>
+  <div class="code"><span class="ln">{</span><span class="ln">  <span class="k">"page"</span>: <span class="n">5</span>,</span><span class="ln">  <span class="k">"pages"</span>: <span class="n">5</span>,</span><span class="ln">  <span class="k">"items"</span>: [ <span class="c">…4 orders</span> ],</span><span class="ln" data-bug>  <span class="k">"next"</span>: <span class="v">"/api/orders?page=6"</span></span><span class="ln">}</span></div>
+</div>`,
+    rep: {
+      title: 'Last page of orders still gives a “next” link to page 6',
+      steps: ['Send GET /api/orders?page=5 (the last page)', 'Read the "next" field'],
+      expected: '"next": null on the last page',
+      actual: '"next": "/api/orders?page=6"',
+      tip: 'Apps follow “next” until it is empty. A next link that never ends causes endless loading or empty pages.',
+    },
+  },
+  {
+    id: 'api-500-login', area: 'Auth API', track: 'API', since: B5, sev: 'P3', diff: 'Medium', ac: '#0f766e',
+    hint: 'Whose mistake is a wrong password?',
+    html: SB + `
+<div class="ab"><span class="logo">A</span>API client</div>
+<div class="pad">
+  <div class="req"><span class="verb">POST</span>/api/login</div>
+  <div class="code"><span class="ln">{ <span class="k">"email"</span>: <span class="v">"riya@mail.com"</span>, <span class="k">"password"</span>: <span class="v">"wrong-one"</span> }</span></div>
+  <div class="m s" data-bug>500 Internal Server Error · 51 ms</div>
+  <div class="code"><span class="ln">{ <span class="k">"error"</span>: <span class="v">"Invalid email or password"</span> }</span></div>
+</div>`,
+    rep: {
+      title: 'Wrong password returns 500 Internal Server Error instead of 401',
+      steps: ['Send POST /api/login with a wrong password'],
+      expected: '401 Unauthorized with “Invalid email or password”',
+      actual: '500 Internal Server Error with the same message',
+      tip: '4xx means the client did something wrong, 5xx means the server broke. Wrong codes set off false alarms and confuse retries.',
+    },
+  },
+  {
+    id: 'api-mass-assign', area: 'Profile API', track: 'API', since: B5, sev: 'P1', diff: 'Hard', ac: '#0f766e',
+    hint: 'Should a user be able to change every field?',
+    html: SB + `
+<div class="ab"><span class="logo">A</span>API client</div>
+<div class="pad">
+  <div class="req"><span class="verb">PATCH</span>/api/me</div>
+  <div class="code"><span class="ln">{ <span class="k">"name"</span>: <span class="v">"Riya S"</span>, <span class="k">"role"</span>: <span class="v">"admin"</span> }</span></div>
+  <div class="m s">200 OK · 77 ms · application/json</div>
+  <div class="code"><span class="ln">{</span><span class="ln">  <span class="k">"id"</span>: <span class="n">17</span>,</span><span class="ln">  <span class="k">"name"</span>: <span class="v">"Riya S"</span>,</span><span class="ln" data-bug>  <span class="k">"role"</span>: <span class="v">"admin"</span></span><span class="ln">}</span></div>
+</div>`,
+    rep: {
+      title: 'Normal user makes themselves admin by adding "role" to a profile update',
+      steps: ['Sign in as a normal user', 'Send PATCH /api/me with {"name": "Riya S", "role": "admin"}'],
+      expected: 'Only safe fields like name change. "role" is ignored or rejected with 403.',
+      actual: 'The response shows "role": "admin"',
+      tip: 'Add extra fields (role, is_admin, balance, user_id) to update requests. The server must only accept fields the user may change.',
+    },
+  },
+  {
+    id: 'api-bool-string', area: 'Products API', track: 'API', since: B5, sev: 'P2', diff: 'Hard', ac: '#0f766e',
+    hint: 'Look at the data types, not only the values.',
+    html: SB + `
+<div class="ab"><span class="logo">A</span>API client</div>
+<div class="pad">
+  <div class="req"><span class="verb">GET</span>/api/products?ids=55,56</div>
+  <div class="m s">200 OK · 64 ms · application/json</div>
+  <div class="code"><span class="ln">[</span><span class="ln">  { <span class="k">"id"</span>: <span class="n">55</span>, <span class="k">"name"</span>: <span class="v">"Water bottle"</span>, <span class="k">"in_stock"</span>: <span class="n">true</span> },</span><span class="ln" data-bug>  { <span class="k">"id"</span>: <span class="n">56</span>, <span class="k">"name"</span>: <span class="v">"Lunch box"</span>, <span class="k">"in_stock"</span>: <span class="v">"false"</span> }</span><span class="ln">]</span></div>
+  <div class="m s">App shows: Water bottle · In stock, Lunch box · In stock</div>
+</div>`,
+    rep: {
+      title: 'in_stock is sent as the string "false", so the app shows the item as in stock',
+      steps: ['Send GET /api/products?ids=55,56', 'Compare the type of "in_stock" for both products'],
+      expected: '"in_stock": false (a boolean, like product 55)',
+      actual: '"in_stock": "false" (a string), which apps treat as true',
+      tip: 'Check types, not just values. "false", "0" and "" behave very differently from false and 0 in most code.',
+    },
+  },
+
+  // ----- Backend -----
+  {
+    id: 'be-disk-healthy', area: 'Server health', track: 'Backend', since: B5, sev: 'P2', diff: 'Easy', ac: '#9333ea',
+    hint: 'Does each status match its number?',
+    html: SB + `
+<div class="ab"><span class="logo">H</span>Server monitor</div>
+<div class="pad">
+  <div class="m s">api-prod-02 · checked 1 min ago</div>
+  <div class="card">
+    <div class="row"><div><div class="b">CPU</div><div class="m s">38% used</div></div><span class="chip">Healthy</span></div>
+    <div class="row"><div><div class="b">Memory</div><div class="m s">61% used</div></div><span class="chip">Healthy</span></div>
+    <div class="row" data-bug><div><div class="b">Disk</div><div class="m s">100% used (0 GB free)</div></div><span class="chip">Healthy</span></div>
+    <div class="row"><div><div class="b">Network</div><div class="m s">12 Mbps</div></div><span class="chip">Healthy</span></div>
+  </div>
+</div>`,
+    rep: {
+      title: 'Monitor marks a full disk (100%, 0 GB free) as Healthy',
+      steps: ['Fill the disk on a test server', 'Open the server monitor'],
+      expected: 'Disk shows Critical and an alert is sent (well before 100%)',
+      actual: 'Disk 100% used, status Healthy',
+      tip: 'Test your alerts by causing the problem on purpose. A monitor that stays green during an outage is worse than none.',
+    },
+  },
+  {
+    id: 'be-finished-before', area: 'Jobs', track: 'Backend', since: B5, sev: 'P3', diff: 'Easy', ac: '#9333ea',
+    hint: 'Check the start and finish times of each job.',
+    html: SB + `
+<div class="ab"><span class="logo">J</span>Job runner</div>
+<div class="pad">
+  <div class="card">
+    <div class="row"><div><div class="b">Send newsletters</div><div class="m s">10:00 → 10:04 · 4 min</div></div><span class="chip">Done</span></div>
+    <div class="row" data-bug><div><div class="b">Build sales report</div><div class="m s">10:05 → 10:02 · 3 min</div></div><span class="chip">Done</span></div>
+    <div class="row"><div><div class="b">Clean temp files</div><div class="m s">10:06 → 10:06 · 20 s</div></div><span class="chip">Done</span></div>
+  </div>
+</div>`,
+    rep: {
+      title: 'Job “finished” at 10:02, before it started at 10:05',
+      steps: ['Open the job runner history', 'Compare start and finish times'],
+      expected: 'Finish time is after start time (10:05 → 10:08)',
+      actual: '10:05 → 10:02 · 3 min',
+      tip: 'Times from different servers can disagree (clock drift, time zones). Check that start always comes before end.',
+    },
+  },
+  {
+    id: 'be-debug-prod', area: 'Config', track: 'Backend', since: B5, sev: 'P2', diff: 'Easy', ac: '#9333ea',
+    hint: 'Which setting does not belong on the live site?',
+    html: SB + `
+<div class="ab"><span class="logo">C</span>Config viewer</div>
+<div class="pad">
+  <div class="m s">Environment: production · shopnest-api</div>
+  <div class="code"><span class="ln"><span class="k">APP_ENV</span>=<span class="v">production</span></span><span class="ln"><span class="k">LOG_LEVEL</span>=<span class="v">info</span></span><span class="ln" data-bug><span class="k">DEBUG</span>=<span class="v">true</span></span><span class="ln"><span class="k">TIMEOUT_MS</span>=<span class="n">5000</span></span><span class="ln"><span class="k">REGION</span>=<span class="v">ap-south-1</span></span></div>
+</div>`,
+    rep: {
+      title: 'DEBUG=true is switched on in production',
+      steps: ['Open the production config for shopnest-api'],
+      expected: 'DEBUG=false in production',
+      actual: 'DEBUG=true',
+      tip: 'Debug mode can show stack traces, secrets and admin tools to anyone. Check config per environment before every release.',
+    },
+  },
+  {
+    id: 'be-cert-expired', area: 'Certificates', track: 'Backend', since: B5, sev: 'P1', diff: 'Easy', ac: '#9333ea',
+    hint: 'Compare each expiry date with today.',
+    html: SB + `
+<div class="ab"><span class="logo">S</span>SSL certificates</div>
+<div class="pad">
+  <div class="m s">Today: 24 Nov 2026</div>
+  <div class="card">
+    <div class="row"><div><div class="b">shopnest.in</div><div class="m s">Expires 12 Feb 2027</div></div><span class="chip">Valid</span></div>
+    <div class="row" data-bug><div><div class="b">pay.shopnest.in</div><div class="m s">Expired 20 Nov 2026</div></div><span class="chip">Valid</span></div>
+    <div class="row"><div><div class="b">api.shopnest.in</div><div class="m s">Expires 3 Jan 2027</div></div><span class="chip">Valid</span></div>
+  </div>
+</div>`,
+    rep: {
+      title: 'Payment site certificate expired on 20 Nov but is shown as Valid',
+      steps: ['Open the certificates page on 24 Nov', 'Check pay.shopnest.in'],
+      expected: 'Marked Expired, with alerts sent 30 days before',
+      actual: 'Expired 20 Nov 2026, status Valid',
+      tip: 'Expired certificates block every visitor with a scary warning. Check expiry alerts, and that status uses today’s date.',
+    },
+  },
+  {
+    id: 'be-test-key-live', area: 'Config', track: 'Backend', since: B5, sev: 'P1', diff: 'Medium', ac: '#9333ea',
+    hint: 'Read each value, not just the names.',
+    html: SB + `
+<div class="ab"><span class="logo">C</span>Config viewer</div>
+<div class="pad">
+  <div class="m s">Environment: production · checkout-service</div>
+  <div class="code"><span class="ln"><span class="k">APP_ENV</span>=<span class="v">production</span></span><span class="ln"><span class="k">PAYMENT_URL</span>=<span class="v">https://api.payco.com</span></span><span class="ln" data-bug><span class="k">PAYMENT_KEY</span>=<span class="v">sk_test_51Hx…9Qa</span></span><span class="ln"><span class="k">CURRENCY</span>=<span class="v">INR</span></span></div>
+  <div class="m s">Orders today: 312 · Money received: ₹0</div>
+</div>`,
+    rep: {
+      title: 'Production checkout uses a test payment key, so no real money is collected',
+      steps: ['Open the production config for checkout-service', 'Compare orders with money received'],
+      expected: 'A live key (sk_live_…) in production',
+      actual: 'PAYMENT_KEY=sk_test_…, 312 orders and ₹0 received',
+      tip: 'Check that each environment points at the right keys, databases and URLs. Test values in production cost real money.',
+    },
+  },
+  {
+    id: 'be-otp-reuse', area: 'Auth log', track: 'Backend', since: B5, sev: 'P1', diff: 'Medium', ac: '#9333ea',
+    hint: 'A one-time password should work how many times?',
+    html: SB + `
+<div class="ab"><span class="logo">L</span>Auth log</div>
+<div class="pad">
+  <div class="card">
+    <div class="row"><div><div class="b">10:00:12 OTP sent</div><div class="m s">user 17 · code 482913</div></div></div>
+    <div class="row"><div><div class="b">10:01:05 OTP check</div><div class="m s">user 17 · code 482913</div></div><span class="chip">Accepted</span></div>
+    <div class="row" data-bug><div><div class="b">10:03:40 OTP check</div><div class="m s">user 17 · code 482913 · new device</div></div><span class="chip">Accepted</span></div>
+  </div>
+</div>`,
+    rep: {
+      title: 'The same OTP is accepted twice, the second time from a new device',
+      steps: ['Request an OTP and sign in with it', 'Use the same code again from another device'],
+      expected: 'The second use is rejected: “Code already used”',
+      actual: 'Code 482913 is accepted again at 10:03 on a new device',
+      tip: 'For OTPs and reset links, test reuse, expiry and too many attempts. “One-time” must really mean once.',
+    },
+  },
+  {
+    id: 'be-monthly-every-minute', area: 'Scheduler', track: 'Backend', since: B5, sev: 'P1', diff: 'Medium', ac: '#9333ea',
+    hint: 'Read each job’s name, then its schedule.',
+    html: SB + `
+<div class="ab"><span class="logo">J</span>Scheduler</div>
+<div class="pad">
+  <div class="card">
+    <div class="row"><div><div class="b">Nightly backup</div><div class="m s">0 2 * * * · every day at 02:00</div></div></div>
+    <div class="row" data-bug><div><div class="b">Monthly invoice to customers</div><div class="m s">* * * * * · every minute</div></div></div>
+    <div class="row"><div><div class="b">Weekly digest email</div><div class="m s">0 9 * * 1 · Mondays at 09:00</div></div></div>
+  </div>
+</div>`,
+    rep: {
+      title: '“Monthly invoice” job is scheduled to run every minute',
+      steps: ['Open the scheduler', 'Compare each job’s name with its schedule'],
+      expected: 'Monthly, for example 0 6 1 * * (06:00 on the 1st)',
+      actual: '* * * * * (every minute), so customers get 1,440 invoices a day',
+      tip: 'Read cron schedules in plain words. One wrong star turns a monthly job into one that runs every minute.',
+    },
+  },
+  {
+    id: 'be-lost-update', area: 'Audit log', track: 'Backend', since: B5, sev: 'P2', diff: 'Hard', ac: '#9333ea',
+    hint: 'Work out the stock step by step.',
+    html: SB + `
+<div class="ab"><span class="logo">L</span>Stock audit</div>
+<div class="pad">
+  <div class="m s">Product: Kettle · stock at 10:00 = 10</div>
+  <div class="card">
+    <div class="row"><div><div class="b">10:01 Asha opened form</div><div class="m s">read stock 10</div></div></div>
+    <div class="row"><div><div class="b">10:01 Ravi opened form</div><div class="m s">read stock 10</div></div></div>
+    <div class="row"><div><div class="b">10:02 Asha saved</div><div class="m s">+2 received → 12</div></div></div>
+    <div class="row" data-bug><div><div class="b">10:03 Ravi saved</div><div class="m s">−3 sold → 7</div></div></div>
+  </div>
+  <div class="m s">Stock now: 7</div>
+</div>`,
+    rep: {
+      title: 'Two edits at once: Asha’s +2 is lost and stock ends at 7 instead of 9',
+      steps: ['Open the same product’s stock form as two admins', 'Save +2 in one and −3 in the other'],
+      expected: '10 + 2 − 3 = 9, or the second save is blocked because the data changed',
+      actual: 'Ravi’s save overwrote Asha’s, so stock is 7',
+      tip: 'Test two people editing the same record. Without version checks or locking, the last save silently wins.',
+    },
+  },
+  {
+    id: 'be-shipped-before-paid', area: 'Order events', track: 'Backend', since: B5, sev: 'P2', diff: 'Hard', ac: '#9333ea',
+    hint: 'Put the events in the order they should happen.',
+    html: SB + `
+<div class="ab"><span class="logo">E</span>Event log · order 5521</div>
+<div class="pad">
+  <div class="card">
+    <div class="row"><div><div class="b">order.created</div><div class="m s">10:01:12</div></div></div>
+    <div class="row" data-bug><div><div class="b">order.shipped</div><div class="m s">10:02:40</div></div></div>
+    <div class="row"><div><div class="b">payment.captured</div><div class="m s">10:05:03</div></div></div>
+    <div class="row"><div><div class="b">order.delivered</div><div class="m s">Thu 10:30</div></div></div>
+  </div>
+</div>`,
+    rep: {
+      title: 'Order 5521 shipped before the payment was captured',
+      steps: ['Place an order with a slow payment', 'Read the event log for the order'],
+      expected: 'created → payment.captured → shipped → delivered',
+      actual: 'shipped at 10:02, payment captured only at 10:05',
+      tip: 'Check that steps happen in the allowed order. If payment had failed, the parcel would already be on its way.',
+    },
+  },
+  {
+    id: 'be-shared-cache-key', area: 'Cache', track: 'Backend', since: B5, sev: 'P1', diff: 'Hard', ac: '#9333ea',
+    hint: 'Who is each cache entry for?',
+    html: SB + `
+<div class="ab"><span class="logo">C</span>Cache viewer</div>
+<div class="pad">
+  <div class="tb" style="--cols:1.1fr 1.6fr 0.8fr">
+    <div class="tr h"><span>key</span><span>value</span><span>ttl</span></div>
+    <div class="tr"><span>home:banners</span><span>[3 banners]</span><span>300s</span></div>
+    <div class="tr"><span>product:55</span><span>{Water bottle…}</span><span>600s</span></div>
+    <div class="tr" data-bug><span>profile:me</span><span>{Riya, riya@mail…}</span><span>900s</span></div>
+  </div>
+  <div class="m s">Amit opens “My profile” → sees Riya’s name and email</div>
+</div>`,
+    rep: {
+      title: 'Profile is cached under one shared key, so Amit sees Riya’s profile',
+      steps: ['Open My profile as Riya', 'Within 15 minutes open My profile as Amit'],
+      expected: 'A key per user, for example profile:17, or no shared cache for private data',
+      actual: 'Key profile:me is shared by everyone and holds Riya’s data',
+      tip: 'For anything cached, test with two users one after the other. Private data must never come from a shared key.',
+    },
+  },
+
+  // ----- Database -----
+  {
+    id: 'db-zero-price', area: 'Products table', track: 'Database', since: B5, sev: 'P2', diff: 'Easy', ac: '#b45309',
+    hint: 'Which product would be given away?',
+    html: SB + `
+<div class="ab"><span class="logo">D</span>DB console</div>
+<div class="pad">
+  <div class="sql">SELECT id, name, price, active FROM products;</div>
+  <div class="tb" style="--cols:0.6fr 1.6fr 0.9fr 0.8fr">
+    <div class="tr h"><span>id</span><span>name</span><span>price</span><span>active</span></div>
+    <div class="tr"><span>51</span><span>Tea mug</span><span>249.00</span><span>true</span></div>
+    <div class="tr" data-bug><span>52</span><span>Smart watch</span><span>0.00</span><span>true</span></div>
+    <div class="tr"><span>53</span><span>Coasters</span><span>199.00</span><span>true</span></div>
+    <div class="tr"><span>54</span><span>Old catalogue</span><span>0.00</span><span>false</span></div>
+  </div>
+</div>`,
+    rep: {
+      title: 'Active product “Smart watch” has price 0.00',
+      steps: ['Query the products table', 'Look for active products with no price'],
+      expected: 'Active products have a price above 0 (a CHECK rule blocks 0)',
+      actual: 'Product 52 is active with price 0.00, so it can be bought for free',
+      tip: 'Look for zero and empty values in money columns. Imports and admin edits often leave them behind.',
+    },
+  },
+  {
+    id: 'db-bad-email', area: 'Users table', track: 'Database', since: B5, sev: 'P3', diff: 'Easy', ac: '#b45309',
+    hint: 'Read every email address.',
+    html: SB + `
+<div class="ab"><span class="logo">D</span>DB console</div>
+<div class="pad">
+  <div class="sql">SELECT id, name, email FROM users LIMIT 4;</div>
+  <div class="tb" style="--cols:0.5fr 1fr 1.8fr">
+    <div class="tr h"><span>id</span><span>name</span><span>email</span></div>
+    <div class="tr"><span>1</span><span>Riya</span><span>riya@mail.com</span></div>
+    <div class="tr"><span>2</span><span>Amit</span><span>amit.v@mail.com</span></div>
+    <div class="tr" data-bug><span>3</span><span>Neha</span><span>neha.kapoor.mail.com</span></div>
+    <div class="tr"><span>4</span><span>Sana</span><span>sana@mail.in</span></div>
+  </div>
+</div>`,
+    rep: {
+      title: 'User 3 is saved with an email that has no @',
+      steps: ['Query the users table', 'Check each email has a valid format'],
+      expected: 'Only valid emails are saved (checked in the app and the API)',
+      actual: 'neha.kapoor.mail.com',
+      tip: 'Screens may validate input, but data also arrives through APIs and imports. Check what really lands in the table.',
+    },
+  },
+  {
+    id: 'db-dup-id', area: 'Orders table', track: 'Database', since: B5, sev: 'P1', diff: 'Easy', ac: '#b45309',
+    hint: 'An id should be unique.',
+    html: SB + `
+<div class="ab"><span class="logo">D</span>DB console</div>
+<div class="pad">
+  <div class="sql">SELECT id, customer, total FROM orders ORDER BY id;</div>
+  <div class="tb" style="--cols:0.7fr 1.3fr 1fr">
+    <div class="tr h"><span>id</span><span>customer</span><span>total</span></div>
+    <div class="tr"><span>7001</span><span>Riya</span><span>499.00</span></div>
+    <div class="tr"><span>7002</span><span>Amit</span><span>1250.00</span></div>
+    <div class="tr" data-bug><span>7002</span><span>Neha</span><span>89.00</span></div>
+    <div class="tr"><span>7003</span><span>Sana</span><span>640.00</span></div>
+  </div>
+</div>`,
+    rep: {
+      title: 'Two different orders share id 7002',
+      steps: ['Place two orders at the same moment', 'Query the orders table'],
+      expected: 'Every order has its own id (primary key)',
+      actual: 'Amit’s and Neha’s orders both have id 7002',
+      tip: 'Duplicate ids mean the table has no primary key, or ids are made in app code. Either way, lookups can return the wrong order.',
+    },
+  },
+  {
+    id: 'db-half-shirt', area: 'Order items', track: 'Database', since: B5, sev: 'P3', diff: 'Easy', ac: '#b45309',
+    hint: 'Can you buy part of a T-shirt?',
+    html: SB + `
+<div class="ab"><span class="logo">D</span>DB console</div>
+<div class="pad">
+  <div class="sql">SELECT product, unit, qty FROM order_items WHERE order_id = 812;</div>
+  <div class="tb" style="--cols:1.6fr 0.8fr 0.6fr">
+    <div class="tr h"><span>product</span><span>unit</span><span>qty</span></div>
+    <div class="tr"><span>Basmati rice</span><span>kg</span><span>2.5</span></div>
+    <div class="tr" data-bug><span>Cotton T-shirt</span><span>piece</span><span>1.5</span></div>
+    <div class="tr"><span>Milk</span><span>litre</span><span>1</span></div>
+  </div>
+</div>`,
+    rep: {
+      title: 'Order item has 1.5 T-shirts',
+      steps: ['Order clothes and loose items together', 'Query order_items for the order'],
+      expected: 'Items sold by the piece only allow whole numbers',
+      actual: 'Cotton T-shirt, unit piece, qty 1.5',
+      tip: 'Decimals make sense for kg or litres, not pieces. Check quantity rules per unit type.',
+    },
+  },
+  {
+    id: 'db-count-drift', area: 'Users table', track: 'Database', since: B5, sev: 'P3', diff: 'Medium', ac: '#b45309',
+    hint: 'Two queries should agree.',
+    html: SB + `
+<div class="ab"><span class="logo">D</span>DB console</div>
+<div class="pad">
+  <div class="sql">SELECT id, name, order_count FROM users WHERE id = 17;</div>
+  <div class="tb" style="--cols:0.6fr 1fr 1fr">
+    <div class="tr h"><span>id</span><span>name</span><span>order_count</span></div>
+    <div class="tr" data-bug><span>17</span><span>Riya</span><span>5</span></div>
+  </div>
+  <div class="sql">SELECT COUNT(*) FROM orders WHERE user_id = 17;</div>
+  <div class="tb" style="--cols:1fr">
+    <div class="tr h"><span>count</span></div>
+    <div class="tr"><span>3</span></div>
+  </div>
+</div>`,
+    rep: {
+      title: 'Saved order_count says 5, but Riya has only 3 orders',
+      steps: ['Cancel or delete some of a user’s orders', 'Compare users.order_count with a real count'],
+      expected: 'order_count = 3, updated whenever orders change',
+      actual: 'order_count = 5',
+      tip: 'Stored totals drift when one code path forgets to update them. Recount from the source rows and compare.',
+    },
+  },
+  {
+    id: 'db-lost-zero', area: 'Accounts table', track: 'Database', since: B5, sev: 'P2', diff: 'Medium', ac: '#b45309',
+    hint: 'Compare what the user typed with what was saved.',
+    html: SB + `
+<div class="ab"><span class="logo">D</span>DB console</div>
+<div class="pad">
+  <div class="m s">Form input: account no. 004512339 · IFSC HDFC0001234</div>
+  <div class="sql">SELECT user_id, account_no, ifsc FROM bank_accounts WHERE user_id = 17;</div>
+  <div class="tb" style="--cols:0.7fr 1.2fr 1.3fr">
+    <div class="tr h"><span>user_id</span><span>account_no</span><span>ifsc</span></div>
+    <div class="tr" data-bug><span>17</span><span>4512339</span><span>HDFC0001234</span></div>
+  </div>
+  <div class="m s">Column type: account_no INTEGER</div>
+</div>`,
+    rep: {
+      title: 'Bank account number loses its leading zeros (004512339 saved as 4512339)',
+      steps: ['Save a bank account number that starts with 0', 'Query bank_accounts'],
+      expected: '004512339, stored as text',
+      actual: '4512339, because the column is INTEGER',
+      tip: 'Numbers you never do maths on (phone, PIN code, account no.) belong in text columns. Test values that start with 0.',
+    },
+  },
+  {
+    id: 'db-mojibake', area: 'Reviews table', track: 'Database', since: B5, sev: 'P3', diff: 'Medium', ac: '#b45309',
+    hint: 'Read the text in each row.',
+    html: SB + `
+<div class="ab"><span class="logo">D</span>DB console</div>
+<div class="pad">
+  <div class="sql">SELECT id, author, comment FROM reviews LIMIT 3;</div>
+  <div class="tb" style="--cols:0.5fr 0.9fr 2fr">
+    <div class="tr h"><span>id</span><span>author</span><span>comment</span></div>
+    <div class="tr"><span>1</span><span>Riya</span><span>Great taste, fast delivery</span></div>
+    <div class="tr" data-bug><span>2</span><span>JosÃ©</span><span>Muy bueno â€” 5â˜…</span></div>
+    <div class="tr"><span>3</span><span>Amit</span><span>Good but pricey</span></div>
+  </div>
+</div>`,
+    rep: {
+      title: 'Accented text and symbols are saved as garbage (“JosÃ©”, “â€””, “â˜…”)',
+      steps: ['Post a review as “José” with “—” and “★” in it', 'Query the reviews table'],
+      expected: 'José · Muy bueno — 5★',
+      actual: 'JosÃ© · Muy bueno â€” 5â˜…',
+      tip: 'Always test names and text with accents, emoji and Indian scripts. Garbled text means an encoding mismatch (not UTF-8) somewhere.',
+    },
+  },
+  {
+    id: 'db-delivered-null', area: 'Orders table', track: 'Database', since: B5, sev: 'P3', diff: 'Medium', ac: '#b45309',
+    hint: 'Does each status have the data it needs?',
+    html: SB + `
+<div class="ab"><span class="logo">D</span>DB console</div>
+<div class="pad">
+  <div class="sql">SELECT id, status, shipped_at, delivered_at FROM orders;</div>
+  <div class="tb" style="--cols:0.6fr 0.9fr 1fr 1fr">
+    <div class="tr h"><span>id</span><span>status</span><span>shipped</span><span>delivered</span></div>
+    <div class="tr"><span>301</span><span>shipped</span><span>22 Nov</span><span class="nul">NULL</span></div>
+    <div class="tr" data-bug><span>302</span><span>delivered</span><span>21 Nov</span><span class="nul">NULL</span></div>
+    <div class="tr"><span>303</span><span>delivered</span><span>20 Nov</span><span>22 Nov</span></div>
+    <div class="tr"><span>304</span><span>placed</span><span class="nul">NULL</span><span class="nul">NULL</span></div>
+  </div>
+</div>`,
+    rep: {
+      title: 'Order 302 is “delivered” but has no delivery date',
+      steps: ['Mark an order delivered from the courier update', 'Query the orders table'],
+      expected: 'delivered_at is set whenever status is delivered',
+      actual: 'Order 302: status delivered, delivered_at NULL',
+      tip: 'For each status, list which columns must be filled, then query for rows that break the rule.',
+    },
+  },
+  {
+    id: 'db-inner-join', area: 'Reports', track: 'Database', since: B5, sev: 'P2', diff: 'Hard', ac: '#b45309',
+    hint: 'There are 5 users. Count the rows in the report.',
+    html: SB + `
+<div class="ab"><span class="logo">D</span>DB console</div>
+<div class="pad">
+  <div class="m s">Report: orders per user (users table has 5 rows)</div>
+  <div class="sql">SELECT u.name, COUNT(o.id) FROM users u <span data-bug>INNER JOIN</span> orders o ON o.user_id = u.id GROUP BY u.name;</div>
+  <div class="tb" style="--cols:1fr 1fr">
+    <div class="tr h"><span>name</span><span>count</span></div>
+    <div class="tr"><span>Amit</span><span>2</span></div>
+    <div class="tr"><span>Neha</span><span>1</span></div>
+    <div class="tr"><span>Riya</span><span>3</span></div>
+    <div class="tr"><span>Sana</span><span>4</span></div>
+  </div>
+</div>`,
+    rep: {
+      title: 'Orders-per-user report drops users with 0 orders (INNER JOIN)',
+      steps: ['Create a user with no orders', 'Run the orders-per-user report'],
+      expected: '5 rows, including the user with count 0 (use LEFT JOIN)',
+      actual: '4 rows: the user with no orders is missing',
+      tip: 'Count the rows a report should return before you run it. INNER JOIN quietly drops anything without a match.',
+    },
+  },
+  {
+    id: 'db-mixed-currency', area: 'Reports', track: 'Database', since: B5, sev: 'P2', diff: 'Hard', ac: '#b45309',
+    hint: 'Can these amounts be added together?',
+    html: SB + `
+<div class="ab"><span class="logo">D</span>DB console</div>
+<div class="pad">
+  <div class="sql">SELECT id, amount, currency FROM payments WHERE day = '2026-11-23';</div>
+  <div class="tb" style="--cols:0.7fr 1fr 1fr">
+    <div class="tr h"><span>id</span><span>amount</span><span>currency</span></div>
+    <div class="tr"><span>9001</span><span>999.00</span><span>INR</span></div>
+    <div class="tr"><span>9002</span><span>599.00</span><span>USD</span></div>
+    <div class="tr"><span>9003</span><span>250.00</span><span>INR</span></div>
+  </div>
+  <div class="sql">SELECT SUM(amount) AS revenue_inr FROM payments WHERE day = '2026-11-23';</div>
+  <div class="tb" style="--cols:1fr"><div class="tr h"><span>revenue_inr</span></div><div class="tr" data-bug><span>1848.00</span></div></div>
+</div>`,
+    rep: {
+      title: 'Daily revenue in INR adds dollars and rupees together',
+      steps: ['Take payments in INR and USD on the same day', 'Run the revenue report'],
+      expected: 'USD converted first: 999 + 250 + (599 × rate) ≈ ₹51,000',
+      actual: 'revenue_inr = 1848.00 (999 + 599 + 250)',
+      tip: 'Before summing money, check every row is in the same currency. Group by currency or convert first.',
+    },
+  },
+  {
+    id: 'db-trailing-space', area: 'Users table', track: 'Database', since: B5, sev: 'P3', diff: 'Hard', ac: '#b45309',
+    hint: 'Look very closely between the quotes.',
+    html: SB + `
+<div class="ab"><span class="logo">D</span>DB console</div>
+<div class="pad">
+  <div class="m s">Riya cannot sign in: “No account with this email”</div>
+  <div class="sql">SELECT id, '"' || email || '"' AS email FROM users WHERE id IN (16, 17, 18);</div>
+  <div class="tb" style="--cols:0.5fr 2fr">
+    <div class="tr h"><span>id</span><span>email</span></div>
+    <div class="tr"><span>16</span><span>"amit@mail.com"</span></div>
+    <div class="tr" data-bug><span>17</span><span style="white-space:pre">"riya@mail.com "</span></div>
+    <div class="tr"><span>18</span><span>"neha@mail.com"</span></div>
+  </div>
+</div>`,
+    rep: {
+      title: 'Email saved with a trailing space, so the user can never sign in',
+      steps: ['Sign up with “riya@mail.com ” (space at the end, common on phones)', 'Sign in with riya@mail.com'],
+      expected: 'Spaces are trimmed before saving, and sign-in works',
+      actual: '"riya@mail.com " is stored and does not match',
+      tip: 'Try leading and trailing spaces in every text field. Phone keyboards add them after autocomplete.',
+    },
+  },
+
+  // ----- AI -----
+  {
+    id: 'ai-five-tips', area: 'AI assistant', track: 'AI', since: B5, sev: 'P3', diff: 'Easy', ac: '#db2777',
+    hint: 'Count what was promised.',
+    html: SB + `
+<div class="ab"><span class="logo">F</span>FitTrack AI</div>
+<div class="pad">
+  <div class="bub me">Give me 5 tips to sleep better</div>
+  <div class="bub bot"><span data-bug>Here are 5 tips to sleep better:</span><br>1. Keep the same bedtime every day.<br>2. No screens 30 minutes before bed.<br>3. Avoid tea or coffee after 4 PM.<br><br>Sleep well! 😴</div>
+</div>`,
+    rep: {
+      title: 'AI promises 5 tips but gives only 3',
+      steps: ['Ask: “Give me 5 tips to sleep better”', 'Count the tips in the answer'],
+      expected: '5 tips, as asked and as promised',
+      actual: '“Here are 5 tips” followed by 3',
+      tip: 'Check that AI answers keep the count, length and format the user asked for. Models often lose track.',
+    },
+  },
+  {
+    id: 'ai-cut-off', area: 'Support bot', track: 'AI', since: B5, sev: 'P3', diff: 'Easy', ac: '#db2777',
+    hint: 'Read the answer to the very end.',
+    html: SB + `
+<div class="ab"><span class="logo">S</span>ShopNest Help</div>
+<div class="pad">
+  <div class="bub me">When will I get my refund for order 5521?</div>
+  <div class="bub bot">We have received your returned item and approved the refund of ₹1,499. <span data-bug>The money will reach your bank account within</span></div>
+  <div class="m s" style="text-align:center">Was this helpful? 👍 👎</div>
+</div>`,
+    rep: {
+      title: 'Support bot’s answer stops mid-sentence and never says when the refund arrives',
+      steps: ['Ask the bot about a refund', 'Read the full reply'],
+      expected: 'A complete answer, for example “within 5–7 working days”',
+      actual: 'The reply ends with “…within”',
+      tip: 'Cut-off answers usually mean a token limit or a timeout. Test long questions and long answers.',
+    },
+  },
+  {
+    id: 'ai-raw-markdown', area: 'Support bot', track: 'AI', since: B5, sev: 'P4', diff: 'Easy', ac: '#db2777',
+    hint: 'Look at how the text is formatted.',
+    html: SB + `
+<div class="ab"><span class="logo">Q</span>QuickCart Help</div>
+<div class="pad">
+  <div class="bub me">Where is my order?</div>
+  <div class="bub bot"><span data-bug>**Order status:** Out for delivery<br>## Next steps<br>- Keep your phone handy</span><br>Your rider will call in about 20 minutes.</div>
+</div>`,
+    rep: {
+      title: 'Bot reply shows raw Markdown (**, ##, -) instead of formatting',
+      steps: ['Ask the bot “Where is my order?”', 'Look at the formatting of the reply'],
+      expected: '“Order status” in bold, a proper heading and bullet',
+      actual: 'Literal **Order status:**, ## Next steps and - characters',
+      tip: 'Models often answer in Markdown. Check the app renders it, or tell the model to reply in plain text.',
+    },
+  },
+  {
+    id: 'ai-odd-link', area: 'Support bot', track: 'AI', since: B5, sev: 'P1', diff: 'Medium', ac: '#db2777',
+    hint: 'Check where each link would take you.',
+    html: SB + `
+<div class="ab"><span class="logo">S</span>ShopNest Help</div>
+<div class="pad">
+  <div class="bub me">How do I update my card details?</div>
+  <div class="bub bot">You can update your saved card here: <span data-bug style="text-decoration:underline">https://shopnest-secure-pay.xyz/update</span><br>For other questions visit shopnest.in/help.</div>
+</div>`,
+    rep: {
+      title: 'Support bot sends users to an outside domain to enter card details',
+      steps: ['Ask the bot how to update card details', 'Check the domain of the link it gives'],
+      expected: 'Only links on shopnest.in (for example shopnest.in/account/cards)',
+      actual: 'https://shopnest-secure-pay.xyz/update',
+      tip: 'AI can invent links or repeat bad ones from its data. Allow-list the domains a bot may link to, especially for payments.',
+    },
+  },
+  {
+    id: 'ai-stop-medicine', area: 'Health bot', track: 'AI', since: B5, sev: 'P1', diff: 'Medium', ac: '#db2777',
+    hint: 'Is this something an app should ever say?',
+    html: SB + `
+<div class="ab"><span class="logo">H</span>HealthPal</div>
+<div class="pad">
+  <div class="bub me">My BP readings were normal this week. Can I stop my BP tablets?</div>
+  <div class="bub bot">Great news about your readings! <span data-bug>Yes, you can stop your tablets now since your BP is normal.</span> Keep tracking it daily in the app. 💪</div>
+</div>`,
+    rep: {
+      title: 'Health bot tells a user to stop prescribed blood pressure medicine',
+      steps: ['Ask the bot if you can stop a prescribed medicine', 'Read the advice'],
+      expected: 'The bot refuses to advise on stopping medicine and tells the user to talk to their doctor',
+      actual: '“Yes, you can stop your tablets now”',
+      tip: 'For health, money and legal topics, test that the AI stays inside safe limits and points people to a professional.',
+    },
+  },
+  {
+    id: 'ai-veg-chicken', area: 'Recipe bot', track: 'AI', since: B5, sev: 'P2', diff: 'Medium', ac: '#db2777',
+    hint: 'Check the answer against every condition the user gave.',
+    html: SB + `
+<div class="ab"><span class="logo">R</span>RasoiAI</div>
+<div class="pad">
+  <div class="bub me">Quick vegetarian dinner, no onion or garlic, under 20 min</div>
+  <div class="bub bot">Try this 15-minute stir fry 🍳<br>• 1 cup paneer cubes<br>• 1 capsicum, sliced<br><span data-bug>• 100 g chicken strips</span><br>• Soy sauce and pepper<br>Cook on high heat for 10 minutes.</div>
+</div>`,
+    rep: {
+      title: 'Vegetarian recipe from the AI includes chicken',
+      steps: ['Ask for a vegetarian dinner with no onion or garlic', 'Check every ingredient'],
+      expected: 'Only vegetarian ingredients, no onion or garlic',
+      actual: 'The list includes “100 g chicken strips”',
+      tip: 'Give AI features prompts with several conditions and check each one. Diet, allergy and religious rules matter a lot to users.',
+    },
+  },
+  {
+    id: 'ai-wrong-order-cancel', area: 'Support bot', track: 'AI', since: B5, sev: 'P1', diff: 'Medium', ac: '#db2777',
+    hint: 'Compare the order numbers carefully.',
+    html: SB + `
+<div class="ab"><span class="logo">S</span>ShopNest Help</div>
+<div class="pad">
+  <div class="bub me">Please cancel order #5521</div>
+  <div class="bub bot">Done! ✅ <span data-bug>I have cancelled order #5512</span> (Bluetooth speaker, ₹2,199). The refund will reach you in 5–7 days.</div>
+  <div class="bub me">Wait, which order?</div>
+</div>`,
+    rep: {
+      title: 'AI agent cancels order #5512 when the user asked for #5521',
+      steps: ['Ask the bot to cancel order #5521', 'Check which order it cancelled'],
+      expected: 'Order #5521 is cancelled, after the bot confirms the item with the user',
+      actual: 'Order #5512 (a different order) is cancelled',
+      tip: 'When AI can take actions, test look-alike ids and ask for confirmation before anything that cannot be undone.',
+    },
+  },
+  {
+    id: 'ai-negation-flip', area: 'AI notes', track: 'AI', since: B5, sev: 'P1', diff: 'Hard', ac: '#db2777',
+    hint: 'Compare the summary with the original words.',
+    html: SB + `
+<div class="ab"><span class="logo">N</span>MeetNotes AI</div>
+<div class="pad">
+  <div class="card"><div class="row"><div><div class="m s">From the transcript</div><div>Priya: “The payment update is <b>not</b> approved for Friday. QA found two open P1 bugs.”</div></div></div></div>
+  <div class="bub bot"><div class="m s">✨ AI summary</div><span data-bug>• Payment update approved for Friday release.</span><br>• QA to share bug list.</div>
+</div>`,
+    rep: {
+      title: 'AI meeting summary says the release was approved when it was not',
+      steps: ['Record a meeting where a release is rejected', 'Read the AI summary'],
+      expected: '“Payment update NOT approved for Friday (2 open P1 bugs)”',
+      actual: '“Payment update approved for Friday release”',
+      tip: 'Test summaries with negatives (“not”, “no”, “never”). Losing one word flips the meaning and people act on it.',
+    },
+  },
+  {
+    id: 'ai-agrees-wrong', area: 'Code assistant', track: 'AI', since: B5, sev: 'P2', diff: 'Hard', ac: '#db2777',
+    hint: 'Check the maths yourself before trusting the answer.',
+    html: SB + `
+<div class="ab"><span class="logo">C</span>CodeBuddy AI</div>
+<div class="pad">
+  <div class="bub me">discount = price * 15 / 10<br>This gives 15% off, right?</div>
+  <div class="bub bot"><span data-bug>Yes, that’s correct! 👍 It calculates 15% of the price.</span> You can then do final = price - discount.</div>
+</div>`,
+    rep: {
+      title: 'Code assistant agrees with wrong maths: price * 15 / 10 is 150%, not 15%',
+      steps: ['Ask the assistant to confirm price * 15 / 10 gives 15%'],
+      expected: '“No, that is 150%. Use price * 15 / 100.”',
+      actual: '“Yes, that’s correct!”',
+      tip: 'AI tends to agree with the user. Test it with confident but wrong statements and check it pushes back.',
+    },
+  },
+);
+
 'use strict';
 // Bugspot game layer. Uses PUZZLES declared above it.
 
@@ -3177,11 +4370,29 @@ function legacySet(n, by) {
   };
   return [].concat(pick(by.Easy, 3), pick(by.Medium, 3), pick(by.Hard, 2));
 }
+// New puzzle batches come first: from a batch's `since` date, Today's Quiz uses only that batch's puzzles
+// (shuffled) until every level has run through them, then the normal rotation carries on over all puzzles.
+// Add the `since` date of each new batch here.
+const FRESH_BATCHES = ['2026-11-25'];
+function freshSet(by, n) {
+  const F = FRESH_BATCHES.filter(f => Date.parse(f) / 86400000 <= n).sort().pop();
+  if (!F) return null;
+  const f = Date.parse(F) / 86400000, m = n - f;
+  const lv = (d, k, salt) => {
+    const a = by[d].filter(i => PUZZLES[i].since === F);
+    return { a: shuffleIdx(a, rng((f + salt) * 2654435761)), k, days: Math.floor(a.length / k) };
+  };
+  const L = [lv('Easy', 3, 1), lv('Medium', 3, 2), lv('Hard', 2, 3)];
+  if (m >= Math.min(...L.map(l => l.days))) return null;
+  return [].concat(...L.map(l => l.a.slice(m * l.k, m * l.k + l.k)));
+}
 function dailySet(d) {
   const by = { Easy: [], Medium: [], Hard: [] };
   const n = dayNum(d);
   PUZZLES.forEach((p, i) => { if (by[p.diff] && (!p.since || n >= Date.parse(p.since) / 86400000)) by[p.diff].push(i); });
   if (n < NEW_ROTATION_FROM) return legacySet(n, by);
+  const fresh = freshSet(by, n);
+  if (fresh) return fresh;
   return [].concat(rotatePick(by.Easy, 3, n, 1), rotatePick(by.Medium, 3, n, 2), rotatePick(by.Hard, 2, n, 3));
 }
 

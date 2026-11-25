@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Email saved with a trailing space, so the user can never sign in | QuizzifyTech</title>
+<meta name="description" content="Database testing bug: Email saved with a trailing space, so the user can never sign in. Expected Spaces are trimmed before saving, and sign-in works; actual &quot;riya@mail.com &quot; is stored and does not match. Steps to reproduce, why it matters and a testing tip.">
+<link rel="canonical" href="https://quizzifytech.com/bugs/db-trailing-space.html">
+<meta property="og:title" content="Email saved with a trailing space, so the user can never sign in | QuizzifyTech">
+<meta property="og:description" content="Database testing bug: Email saved with a trailing space, so the user can never sign in. Expected Spaces are trimmed before saving, and sign-in works; actual &quot;riya@mail.com &quot; is stored and does not match. Steps to reproduce, why it matters and a testing tip.">
+<meta property="og:url" content="https://quizzifytech.com/bugs/db-trailing-space.html">
+<meta property="og:image" content="https://quizzifytech.com/og.png">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27%3E%3Crect width=%2724%27 height=%2724%27 rx=%276%27 fill=%27%23d6283a%27/%3E%3Cpath fill=%27%23fff%27 d=%27M12 8.2c-2.6 0-4.4 1.9-4.4 4.6S9.4 19 12 19s4.4-3.6 4.4-6.2S14.6 8.2 12 8.2Z%27/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Plus+Jakarta+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/pages.css">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Email saved with a trailing space, so the user can never sign in","description":"Database testing bug: Email saved with a trailing space, so the user can never sign in. Expected Spaces are trimmed before saving, and sign-in works; actual \"riya@mail.com \" is stored and does not match. Steps to reproduce, why it matters and a testing tip.","url":"https://quizzifytech.com/bugs/db-trailing-space.html","about":"Database testing","isPartOf":{"@type":"WebSite","name":"QuizzifyTech","url":"https://quizzifytech.com/"}}</script>
+<script src="/gtm.js"></script>
+<meta name="google-adsense-account" content="ca-pub-3028142354862663">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3028142354862663" crossorigin="anonymous"></script>
+</head>
+<body>
+<div class="bg" aria-hidden="true"><i></i><i></i></div>
+<div class="wrap">
+<header class="top"><a class="brand" href="/"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 8.2c-2.6 0-4.4 1.9-4.4 4.6S9.4 19 12 19s4.4-3.6 4.4-6.2S14.6 8.2 12 8.2Z"/><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M12 8.2V19M9.3 6.4a2.7 2.7 0 0 1 5.4 0M7.6 12.3 4 10.6M16.4 12.3 20 10.6M8 16.4l-3.4 1.6M16 16.4l3.4 1.6"/></svg>QuizzifyTech</a><nav class="topnav"><a class="lnk lib" href="/bugs/">Bug library</a><a class="lnk" href="/articles/">Articles</a><a class="play" href="/">Play<span class="long"> today’s quiz</span></a></nav></header>
+<main>
+<p class="crumbs"><a href="/bugs/">Bug library</a> › <a href="/bugs/#database">Database testing</a></p>
+<article>
+<p class="eyebrow">Database testing · Users table</p>
+<h1>Email saved with a trailing space, so the user can never sign in</h1>
+<p class="chips"><span class="chip sev-P3">P3 · Minor</span><span class="chip">Experienced</span><span class="chip">Users table</span></p>
+
+<div class="note try"><p><strong>Want to find it yourself first?</strong> This page gives away the answer. Play this bug on a fake app screen and see if you can spot it in three tries.</p><p><a class="play" href="/?p=db-trailing-space">Spot this bug</a></p></div>
+
+<h2>The clue</h2>
+<p>Look very closely between the quotes.</p>
+
+<h2>Steps to reproduce</h2>
+<ol><li>Sign up with “riya@mail.com ” (space at the end, common on phones)</li><li>Sign in with riya@mail.com</li></ol>
+
+<h2>Expected result</h2>
+<p>Spaces are trimmed before saving, and sign-in works</p>
+
+<h2>Actual result</h2>
+<p>&quot;riya@mail.com &quot; is stored and does not match</p>
+
+<h2>Why it matters</h2>
+<p>This is a minor (P3) bug. It does not stop anyone, but it looks careless and makes people trust the product less. It is usually fixed in a normal sprint.</p>
+
+<h2>Testing tip</h2>
+<p>Try leading and trailing spaces in every text field. Phone keyboards add them after autocomplete.</p>
+
+<h2>How to find bugs like this</h2>
+<p>Database bugs show up when you look at the tables: duplicate rows, joins that double totals, deleted users still active, values cut short or saved in the wrong type. When you test, try these checks:</p>
+<ul><li>Run the query yourself and count the rows.</li><li>Look for duplicates that differ only in case or spaces.</li><li>Check deleted and archived records.</li><li>Compare stored values with what the user typed.</li></ul>
+</article>
+
+<section class="more">
+<h2>More Database testing bugs</h2>
+<ul class="buglist"><li><a href="/bugs/db-null-total.html">Paid order 103 has a NULL total</a><span>P2 · Beginner</span></li><li><a href="/bugs/db-dup-email.html">Same email signed up twice with different capital letters</a><span>P2 · Intermediate</span></li><li><a href="/bugs/db-orphan.html">Order item points to order 209, which does not exist</a><span>P2 · Intermediate</span></li></ul>
+<p><a href="/bugs/">See all 158 bugs</a></p>
+</section>
+</main>
+<footer class="site">
+  <nav aria-label="Site"><a href="/">Play</a><a href="/articles/">Articles</a><a href="/bugs/">Bug library</a><a href="/about.html">About</a><a href="/privacy.html">Privacy Policy</a><a href="/terms.html">Terms</a><a href="/contact.html">Contact</a></nav>
+  <p>© 2026 QuizzifyTech. Free daily tech quizzes for testers and developers.</p>
+</footer>
+</div>
+<script src="/notice.js" defer></script>
+</body>
+</html>
