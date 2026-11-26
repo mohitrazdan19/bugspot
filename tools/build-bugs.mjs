@@ -14,6 +14,15 @@ const ctx = {};
 vm.runInNewContext(src.slice(start + '<script>'.length, end) + '\n;this.PUZZLES = PUZZLES;', ctx);
 const PUZZLES = ctx.PUZZLES;
 
+// Published articles that use a bug ({{bug:id}} card or a /bugs/<id>.html link), so each bug page can link back to them.
+const GUIDES = {};
+for (const f of fs.readdirSync('tools/articles').filter(f => f.endsWith('.mjs')).sort()) {
+  const a = (await import('./articles/' + f)).default;
+  if (a.draft) continue;
+  const ids = new Set([...a.body.matchAll(/\{\{bug:([\w-]+)\}\}|\/bugs\/([\w-]+)\.html/g)].map(m => m[1] || m[2]));
+  ids.forEach(id => (GUIDES[id] = GUIDES[id] || []).push(a));
+}
+
 const TRACKS = ['Frontend', 'Backend', 'API', 'Database', 'AI'];
 const TRACK_LABEL = { AI: 'AI testing' };
 const DIFF = { Easy: 'Beginner', Medium: 'Intermediate', Hard: 'Experienced' };
@@ -131,7 +140,11 @@ PUZZLES.forEach(p => {
 <ul>${TRACK_CHECK[t].map(s => '<li>' + s + '</li>').join('')}</ul>
 </article>
 
-<section class="more">
+${(GUIDES[p.id] || []).length ? `<section class="more">
+<h2>Learn more in our guides</h2>
+<ul class="buglist">${GUIDES[p.id].map(a => `<li><a href="/articles/${a.slug}.html">${esc(a.title)}</a><span>Article</span></li>`).join('')}</ul>
+</section>
+` : ''}<section class="more">
 <h2>More ${esc(tl(t))} bugs</h2>
 <ul class="buglist">${related.map(x => `<li><a href="/bugs/${x.id}.html">${esc(x.rep.title)}</a><span>${x.sev} · ${DIFF[x.diff]}</span></li>`).join('')}</ul>
 <p><a href="/bugs/">See all ${PUZZLES.length} bugs</a></p>

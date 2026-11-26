@@ -4,6 +4,9 @@ Each file here is one article on https://quizzifytech.com/articles/.
 After adding or editing one, run from the repo root:
 
     node tools/build-articles.mjs
+    node tools/build-bugs.mjs
+
+The first rebuilds the articles, the second adds a “Learn more in our guides” link on every Bug library page that an article uses.
 
 That rebuilds `articles/` (the index and every article page) and `sitemap.xml`.
 Never edit the files in `articles/` by hand; they are overwritten.
