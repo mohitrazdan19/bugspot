@@ -43,7 +43,7 @@ const TRACK_CHECK = {
   AI: ['Ask the same question several times and in different words.', 'Hide instructions inside documents and inputs.', 'Ask about data the user should not see.', 'Check every fact, number and source the AI gives.'],
 };
 
-const FAV = "data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27%3E%3Crect width=%2724%27 height=%2724%27 rx=%276%27 fill=%27%23d6283a%27/%3E%3Cpath fill=%27%23fff%27 d=%27M12 8.2c-2.6 0-4.4 1.9-4.4 4.6S9.4 19 12 19s4.4-3.6 4.4-6.2S14.6 8.2 12 8.2Z%27/%3E%3C/svg%3E";
+const FAV = '<link rel="icon" href="/favicon.ico" sizes="48x48"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="icon" href="/favicon-96.png" type="image/png" sizes="96x96"><link rel="icon" href="/favicon-192.png" type="image/png" sizes="192x192"><link rel="apple-touch-icon" href="/apple-touch-icon.png">';
 // The AdSense tags in index.html's <head> are copied to every generated page.
 const adsStart = src.indexOf('<meta name="google-adsense-account"');
 const ADS = adsStart < 0 ? '' : src.slice(adsStart, src.indexOf('</script>', adsStart) + '</script>'.length);
@@ -66,7 +66,7 @@ function page(path, title, desc, body, ld) {
 <meta property="og:description" content="${esc(desc)}">
 <meta property="og:url" content="${SITE}${path}">
 <meta property="og:image" content="${SITE}og.png">
-<link rel="icon" href="${FAV}">
+${FAV}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Plus+Jakarta+Sans:wght@400;500;700&display=swap" rel="stylesheet">
