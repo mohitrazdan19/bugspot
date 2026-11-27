@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Test cases for login page: 40 examples with expected results | QuizzifyTech</title>
+<meta name="description" content="Login page test cases with expected results: positive, negative, OTP, security and UI checks. Ready to use at work or in a QA interview.">
+<link rel="canonical" href="https://quizzifytech.com/articles/test-cases-for-login-page.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="QuizzifyTech">
+<meta property="og:title" content="Test cases for login page: 40 examples with expected results">
+<meta property="og:description" content="Login page test cases with expected results: positive, negative, OTP, security and UI checks. Ready to use at work or in a QA interview.">
+<meta property="og:url" content="https://quizzifytech.com/articles/test-cases-for-login-page.html">
+<meta property="og:image" content="https://quizzifytech.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta property="article:published_time" content="2026-11-26">
+<meta property="article:modified_time" content="2026-11-26">
+<link rel="icon" href="/favicon.ico" sizes="48x48"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="icon" href="/favicon-96.png" type="image/png" sizes="96x96"><link rel="icon" href="/favicon-192.png" type="image/png" sizes="192x192"><link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Plus+Jakarta+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/pages.css">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"40 test cases for a login page (functional, negative, security and UI)","description":"Login page test cases with expected results: positive, negative, OTP, security and UI checks. Ready to use at work or in a QA interview.","image":"https://quizzifytech.com/og.png","datePublished":"2026-11-26","dateModified":"2026-11-26","author":{"@type":"Organization","name":"QuizzifyTech","url":"https://quizzifytech.com/"},"publisher":{"@type":"Organization","name":"QuizzifyTech","url":"https://quizzifytech.com/"},"mainEntityOfPage":"https://quizzifytech.com/articles/test-cases-for-login-page.html","articleSection":"Testing basics","wordCount":1268}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Articles","item":"https://quizzifytech.com/articles/"},{"@type":"ListItem","position":2,"name":"40 test cases for a login page (functional, negative, security and UI)","item":"https://quizzifytech.com/articles/test-cases-for-login-page.html"}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How many test cases can you write for a login page?","acceptedAnswer":{"@type":"Answer","text":"Easily 40 or more when you include positive, negative, security, UI, accessibility, performance and compatibility checks. In an interview, name the groups and give a few strong examples from each."}},{"@type":"Question","name":"What are negative test cases for a login page?","acceptedAnswer":{"@type":"Answer","text":"Wrong password, unregistered user, empty fields, invalid email format, password in the wrong case, very long input, a deleted account and wrong, expired or reused OTPs."}},{"@type":"Question","name":"What security test cases should a login page have?","acceptedAnswer":{"@type":"Answer","text":"Password masking, https with POST, no password in the URL, account lock after repeated failures, SQL injection and script injection checks, no stack traces in errors, and old sessions ending after a password change."}},{"@type":"Question","name":"Should the error message say whether the username or the password is wrong?","acceptedAnswer":{"@type":"Answer","text":"No. A general message such as “Email or password is incorrect” stops attackers from finding out which accounts exist."}}]}</script>
+<script src="/gtm.js"></script>
+<meta name="google-adsense-account" content="ca-pub-3028142354862663">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3028142354862663" crossorigin="anonymous"></script>
+</head>
+<body>
+<div class="bg" aria-hidden="true"><i></i><i></i></div>
+<div class="wrap">
+<header class="top"><a class="brand" href="/"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 8.2c-2.6 0-4.4 1.9-4.4 4.6S9.4 19 12 19s4.4-3.6 4.4-6.2S14.6 8.2 12 8.2Z"/><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M12 8.2V19M9.3 6.4a2.7 2.7 0 0 1 5.4 0M7.6 12.3 4 10.6M16.4 12.3 20 10.6M8 16.4l-3.4 1.6M16 16.4l3.4 1.6"/></svg>QuizzifyTech</a><nav class="topnav"><a class="lnk lib" href="/bugs/">Bug library</a><a class="lnk" href="/articles/" aria-current="page">Articles</a><a class="play" href="/">Play<span class="long"> today’s quiz</span></a></nav></header>
+<main class="post">
+<p class="crumbs"><a href="/articles/">Articles</a> › <a href="/articles/#basics">Testing basics</a></p>
+<article>
+<p class="eyebrow">Testing basics · Checklist</p>
+<h1>40 test cases for a login page (functional, negative, security and UI)</h1>
+<p class="lede">“Write test cases for a login page” is the most asked practical question in QA interviews. Here are 40 test cases, grouped the way an experienced tester thinks about them.</p>
+<div class="author"><i>Q</i><span><strong>QuizzifyTech team</strong><br><time datetime="2026-11-26">Published 26 Nov 2026</time> · 6 min read</span></div>
+<div class="cover c-career"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5zM20 5.5A1.5 1.5 0 0 0 18.5 4H13v16h5.5a1.5 1.5 0 0 0 1.5-1.5z"/><path d="M7 8h1.5M7 11h1.5M15.5 8H17M15.5 11H17"/></svg><b>Testing basics</b></div>
+<nav class="toc" aria-label="In this guide"><strong>In this guide</strong><ol><li><a href="#positive">Positive test cases</a></li><li><a href="#negative">Negative test cases</a></li><li><a href="#security">Security test cases</a></li><li><a href="#ui">UI and usability test cases</a></li><li><a href="#other">Performance and compatibility</a></li><li><a href="#interview">How to answer this in an interview</a></li></ol></nav>
+
+<p>A login page has two fields and one button, which is exactly why interviewers love it. Anyone can list five test cases. A good tester lists forty, because they think about the data, the server, the attacker, the slow network and the person using a screen reader, not just the happy path.</p>
+<p>Use this list as a checklist at work, or learn the groups for your next interview. Each test case has an expected result, because a test case without one is just an idea.</p>
+
+<h2 id="positive">Positive test cases</h2>
+<p>These check that the login works for a real user doing the right thing.</p>
+<div class="tbl"><table>
+<thead><tr><th>#</th><th>Test case</th><th>Expected result</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>Log in with a valid username and valid password</td><td>User lands on the home or dashboard page, signed in</td></tr>
+<tr><td>2</td><td>Log in with a registered email instead of a username (if allowed)</td><td>Login succeeds</td></tr>
+<tr><td>3</td><td>Log in with a registered mobile number and correct OTP</td><td>Login succeeds</td></tr>
+<tr><td>4</td><td>Press Enter in the password field instead of clicking Login</td><td>Form submits, same as clicking Login</td></tr>
+<tr><td>5</td><td>Tick “Remember me”, log in, close and reopen the browser</td><td>User is still signed in</td></tr>
+<tr><td>6</td><td>Log in, then click Logout</td><td>Session ends; the back button does not show the signed-in page</td></tr>
+<tr><td>7</td><td>Email with capital letters (Riya@Mail.com) for an account saved in lower case</td><td>Login succeeds, emails are compared without case</td></tr>
+<tr><td>8</td><td>Email with a space before or after it</td><td>Spaces are trimmed and login succeeds</td></tr>
+</tbody></table></div>
+<p>Cases 7 and 8 look small, but they hide real database bugs. If an email was saved with a trailing space, that user may never be able to sign in.</p>
+<div class="example"><span class="lbl">Real example</span><a class="t" href="/bugs/db-trailing-space.html">Email saved with a trailing space, so the user can never sign in<br><span class="byline">P3 · Minor · Experienced</span></a><a class="go" href="/?p=db-trailing-space">Spot this bug →</a></div>
+
+<h2 id="negative">Negative test cases</h2>
+<p>These check that the login refuses what it should refuse, with a helpful message.</p>
+<div class="tbl"><table>
+<thead><tr><th>#</th><th>Test case</th><th>Expected result</th></tr></thead>
+<tbody>
+<tr><td>9</td><td>Valid username, wrong password</td><td>Login fails with a general message such as “Email or password is incorrect”</td></tr>
+<tr><td>10</td><td>Unregistered username, any password</td><td>The same general message as case 9, so attackers cannot tell which accounts exist</td></tr>
+<tr><td>11</td><td>Both fields empty, click Login</td><td>Both fields show “required” messages; no request is sent</td></tr>
+<tr><td>12</td><td>Username filled, password empty</td><td>Password field shows “required”</td></tr>
+<tr><td>13</td><td>Password in the wrong case (PASSWORD instead of password)</td><td>Login fails: passwords are case sensitive</td></tr>
+<tr><td>14</td><td>Invalid email format such as riya@@mail..com</td><td>Field shows “Enter a valid email”</td></tr>
+<tr><td>15</td><td>Only spaces in both fields</td><td>Treated as empty</td></tr>
+<tr><td>16</td><td>Very long input (500+ characters)</td><td>Input is limited or rejected cleanly; no crash or server error</td></tr>
+<tr><td>17</td><td>Login with a deactivated or deleted account</td><td>Login fails with a clear message to contact support</td></tr>
+<tr><td>18</td><td>Wrong OTP, then an expired OTP</td><td>Both rejected with the right message</td></tr>
+<tr><td>19</td><td>Use the same OTP a second time</td><td>Rejected: an OTP works only once</td></tr>
+</tbody></table></div>
+<div class="example"><span class="lbl">Real example</span><a class="t" href="/bugs/email-val.html">Invalid email “riya@@mail..com” is accepted as valid<br><span class="byline">P3 · Minor · Intermediate</span></a><a class="go" href="/?p=email-val">Spot this bug →</a></div>
+<div class="example"><span class="lbl">Real example</span><a class="t" href="/bugs/be-otp-reuse.html">The same OTP is accepted twice, the second time from a new device<br><span class="byline">P1 · Critical · Intermediate</span></a><a class="go" href="/?p=be-otp-reuse">Spot this bug →</a></div>
+
+<h2 id="security">Security test cases</h2>
+<p>This is the group that separates freshers from experienced testers in an interview. Even if you are not a security tester, you should check these.</p>
+<div class="tbl"><table>
+<thead><tr><th>#</th><th>Test case</th><th>Expected result</th></tr></thead>
+<tbody>
+<tr><td>20</td><td>Type in the password field</td><td>Characters are masked; the show/hide eye icon works both ways</td></tr>
+<tr><td>21</td><td>Check the login request in browser DevTools (Network tab)</td><td>Sent over https with POST; the password is never in the URL</td></tr>
+<tr><td>22</td><td>Enter a wrong password 5 times</td><td>Account is locked for a while or a CAPTCHA appears</td></tr>
+<tr><td>23</td><td>Enter <code>' OR '1'='1</code> in both fields (SQL injection)</td><td>Login fails normally; no database error is shown</td></tr>
+<tr><td>24</td><td>Enter <code>&lt;script&gt;alert(1)&lt;/script&gt;</code> as username</td><td>Shown as plain text, never run as a script</td></tr>
+<tr><td>25</td><td>Copy the password field and paste it elsewhere</td><td>Copying from the password field is blocked</td></tr>
+<tr><td>26</td><td>Change the password on one device, then use the old session on another</td><td>The old session is signed out</td></tr>
+<tr><td>27</td><td>Wrong password returns which status code? (check in DevTools)</td><td>401 or 400 with a clean message, not 500</td></tr>
+<tr><td>28</td><td>Read the error responses and the page source</td><td>No stack traces, database names or server paths</td></tr>
+<tr><td>29</td><td>Check the OTP screen and the API response</td><td>The OTP is never shown on screen or sent back in the response</td></tr>
+</tbody></table></div>
+<div class="example"><span class="lbl">Real example</span><a class="t" href="/bugs/pass-url.html">Password is sent in the URL query string<br><span class="byline">P1 · Critical · Intermediate</span></a><a class="go" href="/?p=pass-url">Spot this bug →</a></div>
+<div class="example"><span class="lbl">Real example</span><a class="t" href="/bugs/api-500-login.html">Wrong password returns 500 Internal Server Error instead of 401<br><span class="byline">P3 · Minor · Intermediate</span></a><a class="go" href="/?p=api-500-login">Spot this bug →</a></div>
+<div class="example"><span class="lbl">Real example</span><a class="t" href="/bugs/be-old-session.html">Old session still works after the password was changed<br><span class="byline">P1 · Critical · Experienced</span></a><a class="go" href="/?p=be-old-session">Spot this bug →</a></div>
+
+<div class="tryit"><span class="bugicon"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 8.2c-2.6 0-4.4 1.9-4.4 4.6S9.4 19 12 19s4.4-3.6 4.4-6.2S14.6 8.2 12 8.2Z"/><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M12 8.2V19M9.3 6.4a2.7 2.7 0 0 1 5.4 0M7.6 12.3 4 10.6M16.4 12.3 20 10.6M8 16.4l-3.4 1.6M16 16.4l3.4 1.6"/></svg></span><p><strong>Think you would catch these?</strong><br>Today’s quiz hides 8 bugs in fake app screens. Free, no sign-up.</p><a class="play" href="/">Play today’s quiz</a></div>
+
+<h2 id="ui">UI and usability test cases</h2>
+<div class="tbl"><table>
+<thead><tr><th>#</th><th>Test case</th><th>Expected result</th></tr></thead>
+<tbody>
+<tr><td>30</td><td>Check labels, placeholders and button text for spelling</td><td>No typos, such as “Sing in”</td></tr>
+<tr><td>31</td><td>Press Tab from the top of the page</td><td>Focus moves username → password → Login in a logical order</td></tr>
+<tr><td>32</td><td>Open the page on a small phone (360 px wide)</td><td>Fields and button fit; nothing is cut off or overlapping</td></tr>
+<tr><td>33</td><td>Open the on-screen keyboard on mobile</td><td>The Login button is still reachable</td></tr>
+<tr><td>34</td><td>Use a screen reader</td><td>Each field and button is read out with a clear name</td></tr>
+<tr><td>35</td><td>Check the “Forgot password” link</td><td>Opens the reset flow</td></tr>
+<tr><td>36</td><td>Error message colour and wording</td><td>Errors look like errors (not green) and say how to fix the problem</td></tr>
+</tbody></table></div>
+<div class="example"><span class="lbl">Real example</span><a class="t" href="/bugs/cta-typo.html">Typo on the main button: “Sing in”<br><span class="byline">P4 · Cosmetic · Beginner</span></a><a class="go" href="/?p=cta-typo">Spot this bug →</a></div>
+
+<h2 id="other">Performance and compatibility</h2>
+<div class="tbl"><table>
+<thead><tr><th>#</th><th>Test case</th><th>Expected result</th></tr></thead>
+<tbody>
+<tr><td>37</td><td>Log in on Chrome, Firefox, Safari and Edge</td><td>Works the same everywhere</td></tr>
+<tr><td>38</td><td>Log in on a slow 3G network (DevTools throttling)</td><td>A loading state shows; the button cannot be pressed twice</td></tr>
+<tr><td>39</td><td>Double click the Login button quickly</td><td>Only one login request is sent</td></tr>
+<tr><td>40</td><td>Response time for login under normal load</td><td>Within the agreed limit, for example under 2 seconds</td></tr>
+</tbody></table></div>
+
+<h2 id="interview">How to answer this in an interview</h2>
+<p>Do not read out forty cases. Interviewers want to see how you think. Say the groups first: “I would cover positive cases, negative cases, security, UI and accessibility, and performance.” Then give two or three strong examples from each group, and finish with one case most people forget, such as the same OTP working twice or the old session staying alive after a password change. If they ask for the format, use the columns from our guide on <a href="/articles/how-to-write-a-test-case.html">how to write a test case</a>.</p>
+
+<h2 id="faq">Frequently asked questions</h2>
+<details class="faq" open><summary>How many test cases can you write for a login page?</summary><p>Easily 40 or more when you include positive, negative, security, UI, accessibility, performance and compatibility checks. In an interview, name the groups and give a few strong examples from each.</p></details>
+<details class="faq"><summary>What are negative test cases for a login page?</summary><p>Wrong password, unregistered user, empty fields, invalid email format, password in the wrong case, very long input, a deleted account and wrong, expired or reused OTPs.</p></details>
+<details class="faq"><summary>What security test cases should a login page have?</summary><p>Password masking, https with POST, no password in the URL, account lock after repeated failures, SQL injection and script injection checks, no stack traces in errors, and old sessions ending after a password change.</p></details>
+<details class="faq"><summary>Should the error message say whether the username or the password is wrong?</summary><p>No. A general message such as “Email or password is incorrect” stops attackers from finding out which accounts exist.</p></details>
+</article>
+<section class="more related"><h2>Keep reading</h2>
+<ul class="buglist"><li><a href="/articles/how-to-write-a-test-case.html">How to write a test case, with format and examples</a><span>Testing basics · 5 min</span></li><li><a href="/articles/manual-testing-interview-questions.html">35 manual testing interview questions for freshers, with answers</a><span>Testing basics · 8 min</span></li><li><a href="/articles/how-to-write-a-bug-report.html">How to write a bug report, with a real example and template</a><span>Testing basics · 7 min</span></li><li><a href="/bugs/password-plain.html">Password visible while the field says hidden</a><span>Bug library</span></li><li><a href="/bugs/otp-shown.html">OTP shown on the verification screen</a><span>Bug library</span></li></ul></section>
+</main>
+<footer class="site">
+  <nav aria-label="Site"><a href="/">Play</a><a href="/articles/">Articles</a><a href="/bugs/">Bug library</a><a href="/about.html">About</a><a href="/privacy.html">Privacy Policy</a><a href="/terms.html">Terms</a><a href="/contact.html">Contact</a></nav>
+  <p>© 2026 QuizzifyTech. Free daily tech quizzes for testers and developers.</p>
+</footer>
+</div>
+<script src="/notice.js" defer></script>
+</body>
+</html>

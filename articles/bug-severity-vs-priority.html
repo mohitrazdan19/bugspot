@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bug severity vs priority: the difference, with real examples | QuizzifyTech</title>
+<meta name="description" content="Severity is how bad a bug is. Priority is how soon to fix it. Learn the four severity levels and the four tricky combinations, with real bug examples.">
+<link rel="canonical" href="https://quizzifytech.com/articles/bug-severity-vs-priority.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="QuizzifyTech">
+<meta property="og:title" content="Bug severity vs priority: the difference, with real examples">
+<meta property="og:description" content="Severity is how bad a bug is. Priority is how soon to fix it. Learn the four severity levels and the four tricky combinations, with real bug examples.">
+<meta property="og:url" content="https://quizzifytech.com/articles/bug-severity-vs-priority.html">
+<meta property="og:image" content="https://quizzifytech.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta property="article:published_time" content="2026-11-26">
+<meta property="article:modified_time" content="2026-11-26">
+<link rel="icon" href="/favicon.ico" sizes="48x48"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="icon" href="/favicon-96.png" type="image/png" sizes="96x96"><link rel="icon" href="/favicon-192.png" type="image/png" sizes="192x192"><link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Plus+Jakarta+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/pages.css">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Bug severity vs priority, explained with real examples","description":"Severity is how bad a bug is. Priority is how soon to fix it. Learn the four severity levels and the four tricky combinations, with real bug examples.","image":"https://quizzifytech.com/og.png","datePublished":"2026-11-26","dateModified":"2026-11-26","author":{"@type":"Organization","name":"QuizzifyTech","url":"https://quizzifytech.com/"},"publisher":{"@type":"Organization","name":"QuizzifyTech","url":"https://quizzifytech.com/"},"mainEntityOfPage":"https://quizzifytech.com/articles/bug-severity-vs-priority.html","articleSection":"Testing basics","wordCount":1254}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Articles","item":"https://quizzifytech.com/articles/"},{"@type":"ListItem","position":2,"name":"Bug severity vs priority, explained with real examples","item":"https://quizzifytech.com/articles/bug-severity-vs-priority.html"}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Who decides the severity of a bug?","acceptedAnswer":{"@type":"Answer","text":"Usually the tester who reports it, because they understand the impact best. The team can adjust it during triage."}},{"@type":"Question","name":"Who decides the priority of a bug?","acceptedAnswer":{"@type":"Answer","text":"Usually the product owner, project manager or team lead, because priority depends on release plans, customers and cost."}},{"@type":"Question","name":"Can a bug have low severity and high priority?","acceptedAnswer":{"@type":"Answer","text":"Yes. A spelling mistake on the main sign-in button or in the company name is cosmetic, but every visitor sees it, so it should be fixed straight away."}},{"@type":"Question","name":"Can a bug have high severity and low priority?","acceptedAnswer":{"@type":"Answer","text":"Yes, for example a crash in an old app version that almost nobody uses, or a serious bug in a feature that is not released yet. The reason for waiting should be written in the ticket."}},{"@type":"Question","name":"Is P1 severity or priority?","acceptedAnswer":{"@type":"Answer","text":"It depends on the team. Some teams use P1 to P4 for priority and S1 to S4 for severity. On QuizzifyTech, P1 to P4 describe severity. Agree on one meaning in your team and write it in your bug template."}}]}</script>
+<script src="/gtm.js"></script>
+<meta name="google-adsense-account" content="ca-pub-3028142354862663">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3028142354862663" crossorigin="anonymous"></script>
+</head>
+<body>
+<div class="bg" aria-hidden="true"><i></i><i></i></div>
+<div class="wrap">
+<header class="top"><a class="brand" href="/"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 8.2c-2.6 0-4.4 1.9-4.4 4.6S9.4 19 12 19s4.4-3.6 4.4-6.2S14.6 8.2 12 8.2Z"/><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M12 8.2V19M9.3 6.4a2.7 2.7 0 0 1 5.4 0M7.6 12.3 4 10.6M16.4 12.3 20 10.6M8 16.4l-3.4 1.6M16 16.4l3.4 1.6"/></svg>QuizzifyTech</a><nav class="topnav"><a class="lnk lib" href="/bugs/">Bug library</a><a class="lnk" href="/articles/" aria-current="page">Articles</a><a class="play" href="/">Play<span class="long"> today’s quiz</span></a></nav></header>
+<main class="post">
+<p class="crumbs"><a href="/articles/">Articles</a> › <a href="/articles/#basics">Testing basics</a></p>
+<article>
+<p class="eyebrow">Testing basics · Explainer</p>
+<h1>Bug severity vs priority, explained with real examples</h1>
+<p class="lede">Severity is how bad a bug is. Priority is how soon it should be fixed. They often match, but the interesting bugs are the ones where they do not.</p>
+<div class="author"><i>Q</i><span><strong>QuizzifyTech team</strong><br><time datetime="2026-11-26">Published 26 Nov 2026</time> · 6 min read</span></div>
+<div class="cover c-career"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5zM20 5.5A1.5 1.5 0 0 0 18.5 4H13v16h5.5a1.5 1.5 0 0 0 1.5-1.5z"/><path d="M7 8h1.5M7 11h1.5M15.5 8H17M15.5 11H17"/></svg><b>Testing basics</b></div>
+<nav class="toc" aria-label="In this guide"><strong>In this guide</strong><ol><li><a href="#severity">What severity means</a></li><li><a href="#priority">What priority means</a></li><li><a href="#combinations">The four combinations</a></li><li><a href="#how-to-set">How to set severity in a bug report</a></li><li><a href="#mistakes">Common mistakes</a></li><li><a href="#interview">How to answer this in an interview</a></li></ol></nav>
+
+<p>“What is the difference between severity and priority?” is one of the most common QA interview questions, and one of the most common arguments in bug triage meetings. The short answer fits in one line. The useful answer needs examples, so this guide uses real bugs from our Bug library.</p>
+
+<h2 id="severity">What severity means</h2>
+<p><strong>Severity is the impact of a bug on the user or the business.</strong> It answers the question: if this bug happens, how bad is it? The tester who finds the bug usually sets the severity, because they know best what it does. Severity does not change much over time. A bug that loses money is serious today and serious next month.</p>
+<p>Most teams use four levels. On QuizzifyTech we write them as P1 to P4:</p>
+<div class="tbl"><table>
+<thead><tr><th>Level</th><th>What it means</th><th>Real example</th></tr></thead>
+<tbody>
+<tr><td><strong>P1 · Critical</strong></td><td>Loses money, exposes private data or blocks a key task.</td><td><a href="/bugs/cart-total.html">Order total is ₹100 lower than the items plus delivery</a></td></tr>
+<tr><td><strong>P2 · Major</strong></td><td>The feature partly works, but users get wrong information or a broken step.</td><td><a href="/bugs/keyboard.html">On-screen keyboard hides the Pay button</a></td></tr>
+<tr><td><strong>P3 · Minor</strong></td><td>Nobody is blocked, but it looks careless and costs trust.</td><td><a href="/bugs/pagination.html">Result range reads “21–20 of 45”</a></td></tr>
+<tr><td><strong>P4 · Cosmetic</strong></td><td>A small visual or wording slip.</td><td><a href="/bugs/plural-msg.html">“1 new messages” instead of “1 new message”</a></td></tr>
+</tbody></table></div>
+<p>A note on names: some companies write severity as S1 to S4 and keep P1 to P4 for priority, others use words such as Blocker, Critical, Major, Minor and Trivial. The labels matter less than agreeing on them as a team. Whatever you use, write it down once in your bug report template.</p>
+
+<h2 id="priority">What priority means</h2>
+<p><strong>Priority is the order in which bugs get fixed.</strong> It answers the question: given everything else the team has to do, how soon should this be fixed? Priority is usually set by the product owner or the team lead, because it depends on things a tester may not know: the release date, which customers are affected, marketing plans and how much the fix costs.</p>
+<p>Priority changes over time. A bug in a feature that launches next week can jump to the top of the list on Monday.</p>
+
+<h2 id="combinations">The four combinations</h2>
+<p>Most bugs are either serious and urgent, or minor and not urgent, and nobody argues about those. The two mixed cases are where severity and priority really differ, and they are what interviewers want to hear about.</p>
+
+<h3>High severity, high priority</h3>
+<p>The easy case. Customers are being charged the wrong amount or seeing someone else’s data. Stop the release, fix it now.</p>
+<div class="example"><span class="lbl">Real example</span><a class="t" href="/bugs/failed-but-charged.html">Screen says “Payment failed” while the order is confirmed and charged<br><span class="byline">P1 · Critical · Experienced</span></a><a class="go" href="/?p=failed-but-charged">Spot this bug →</a></div>
+
+<h3>Low severity, high priority</h3>
+<p>The classic interview example is a typo, and it is a real one. A spelling mistake does not stop anyone from using the product, so its severity is cosmetic. But if the typo is on the main button of the sign-in screen, or in the company’s name on the home page, every visitor sees it on launch day. That makes it a quick, cheap fix that should happen today.</p>
+<div class="example"><span class="lbl">Real example</span><a class="t" href="/bugs/cta-typo.html">Typo on the main button: “Sing in”<br><span class="byline">P4 · Cosmetic · Beginner</span></a><a class="go" href="/?p=cta-typo">Spot this bug →</a></div>
+
+<h3>High severity, low priority</h3>
+<p>A bug can be serious and still wait. Imagine a crash that only happens on an old app version used by a handful of people, in a feature that is being removed next sprint. The impact on those users is severe, but the team may decide to fix it by removing the feature rather than by patching it now. Another common case is a serious bug behind a feature flag that no customer can reach yet.</p>
+<p>Be careful with this one. “High severity, low priority” should be a conscious decision with a reason written in the ticket, not a way to forget about a real problem.</p>
+
+<h3>Low severity, low priority</h3>
+<p>Small slips on screens few people visit. They still deserve a ticket, because many small slips add up to a product that feels unfinished. They are good work for a quiet afternoon or a new team member.</p>
+<div class="example"><span class="lbl">Real example</span><a class="t" href="/bugs/lorem.html">Placeholder text (“Lorem ipsum”) shown as the product description<br><span class="byline">P4 · Cosmetic · Beginner</span></a><a class="go" href="/?p=lorem">Spot this bug →</a></div>
+
+<div class="tryit"><span class="bugicon"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 8.2c-2.6 0-4.4 1.9-4.4 4.6S9.4 19 12 19s4.4-3.6 4.4-6.2S14.6 8.2 12 8.2Z"/><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M12 8.2V19M9.3 6.4a2.7 2.7 0 0 1 5.4 0M7.6 12.3 4 10.6M16.4 12.3 20 10.6M8 16.4l-3.4 1.6M16 16.4l3.4 1.6"/></svg></span><p><strong>Think you would catch these?</strong><br>Today’s quiz hides 8 bugs in fake app screens. Free, no sign-up.</p><a class="play" href="/">Play today’s quiz</a></div>
+
+<h2 id="how-to-set">How to set severity in a bug report</h2>
+<p>Ask three questions, in this order:</p>
+<ol>
+<li><strong>Can it lose money, leak data or break the law?</strong> Then it is critical, even if it looks small on screen. A wrong tax amount is a one-digit slip and still a P1.</li>
+<li><strong>Does it stop or mislead the user in a main task?</strong> Wrong information, a broken step or a workaround nobody would find: major.</li>
+<li><strong>Is it only about how the product looks or reads?</strong> Minor if it costs trust, cosmetic if it is a small visual or wording slip.</li>
+</ol>
+<div class="example"><span class="lbl">Real example</span><a class="t" href="/bugs/gst-wrong.html">GST at 18% on ₹1,500 is shown as ₹207 instead of ₹270<br><span class="byline">P1 · Critical · Intermediate</span></a><a class="go" href="/?p=gst-wrong">Spot this bug →</a></div>
+<p>Then write one sentence that explains your choice, such as “P1 because every invoice over ₹1,000 shows the wrong GST”. That sentence saves a long discussion in triage, and it helps the product owner set a sensible priority.</p>
+
+<h2 id="mistakes">Common mistakes</h2>
+<ul>
+<li><strong>Marking everything critical.</strong> If every bug is P1, nothing is. Save the top level for bugs that really lose money, data or a key task.</li>
+<li><strong>Judging by how hard the fix is.</strong> Severity is about impact, not effort. A one-line fix can be a P1.</li>
+<li><strong>Judging by how it looks.</strong> Some of the worst bugs are invisible on screen: a password in the logs, a backup that is empty, a token that never expires.</li>
+<li><strong>Setting priority without the business context.</strong> Testers can suggest a priority, but the final call belongs to whoever plans the work.</li>
+</ul>
+
+<h2 id="interview">How to answer this in an interview</h2>
+<p>Keep it short and give examples: “Severity is how much damage a bug does, and the tester sets it. Priority is how soon we fix it, and the product owner sets it based on the business. They usually go together, but not always. A typo on the home page is low severity but high priority. A crash in a feature nobody can reach yet can be high severity but lower priority.” Then offer one example from your own work. Interviewers remember a real story far better than a definition.</p>
+
+<h2 id="faq">Frequently asked questions</h2>
+<details class="faq" open><summary>Who decides the severity of a bug?</summary><p>Usually the tester who reports it, because they understand the impact best. The team can adjust it during triage.</p></details>
+<details class="faq"><summary>Who decides the priority of a bug?</summary><p>Usually the product owner, project manager or team lead, because priority depends on release plans, customers and cost.</p></details>
+<details class="faq"><summary>Can a bug have low severity and high priority?</summary><p>Yes. A spelling mistake on the main sign-in button or in the company name is cosmetic, but every visitor sees it, so it should be fixed straight away.</p></details>
+<details class="faq"><summary>Can a bug have high severity and low priority?</summary><p>Yes, for example a crash in an old app version that almost nobody uses, or a serious bug in a feature that is not released yet. The reason for waiting should be written in the ticket.</p></details>
+<details class="faq"><summary>Is P1 severity or priority?</summary><p>It depends on the team. Some teams use P1 to P4 for priority and S1 to S4 for severity. On QuizzifyTech, P1 to P4 describe severity. Agree on one meaning in your team and write it in your bug template.</p></details>
+</article>
+<section class="more related"><h2>Keep reading</h2>
+<ul class="buglist"><li><a href="/articles/how-to-write-a-bug-report.html">How to write a bug report, with a real example and template</a><span>Testing basics · 7 min</span></li><li><a href="/articles/bug-life-cycle.html">Bug life cycle (defect life cycle) explained with every status</a><span>Testing basics · 5 min</span></li><li><a href="/articles/manual-testing-interview-questions.html">35 manual testing interview questions for freshers, with answers</a><span>Testing basics · 8 min</span></li><li><a href="/bugs/">Every bug in the Bug library, with its severity</a><span>Bug library</span></li></ul></section>
+</main>
+<footer class="site">
+  <nav aria-label="Site"><a href="/">Play</a><a href="/articles/">Articles</a><a href="/bugs/">Bug library</a><a href="/about.html">About</a><a href="/privacy.html">Privacy Policy</a><a href="/terms.html">Terms</a><a href="/contact.html">Contact</a></nav>
+  <p>© 2026 QuizzifyTech. Free daily tech quizzes for testers and developers.</p>
+</footer>
+</div>
+<script src="/notice.js" defer></script>
+</body>
+</html>

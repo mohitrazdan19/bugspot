@@ -6,9 +6,8 @@ export default {
   topic: 'api',
   kind: 'Guide',
   published: '2026-11-24',
-  featured: true,
   lede: 'A 200 OK can still be broken. These are the API bugs we see most often, how to spot each one in the response, and a checklist you can use on your next test run.',
-  related: ['checkout-bugs', 'bug-severity-vs-priority'],
+  related: ['bug-severity-vs-priority', 'how-to-write-a-bug-report', 'checkout-bugs'],
   libraryLinks: [['/bugs/#api', 'All API bugs in the Bug library', 'Bug library']],
   body: `
 <p>Most API testing stops at the status code. The request went through, the response was 200, the test passed. But many of the worst bugs live inside the body of a successful response, where nobody looks. An API can return the wrong customer, leak a password hash or quietly ignore your filter, and still answer with a cheerful 200.</p>

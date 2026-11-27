@@ -5,10 +5,9 @@ export default {
   description: 'Severity is how bad a bug is. Priority is how soon to fix it. Learn the four severity levels and the four tricky combinations, with real bug examples.',
   topic: 'basics',
   kind: 'Explainer',
-  published: '2026-11-24',
-  draft: true, // held back by Mohit 24 Nov; remove this line to publish (and set published to that day)
+  published: '2026-11-26',
   lede: 'Severity is how bad a bug is. Priority is how soon it should be fixed. They often match, but the interesting bugs are the ones where they do not.',
-  related: ['common-api-bugs', 'checkout-bugs'],
+  related: ['how-to-write-a-bug-report', 'bug-life-cycle', 'manual-testing-interview-questions'],
   libraryLinks: [['/bugs/', 'Every bug in the Bug library, with its severity', 'Bug library']],
   body: `
 <p>“What is the difference between severity and priority?” is one of the most common QA interview questions, and one of the most common arguments in bug triage meetings. The short answer fits in one line. The useful answer needs examples, so this guide uses real bugs from our Bug library.</p>
